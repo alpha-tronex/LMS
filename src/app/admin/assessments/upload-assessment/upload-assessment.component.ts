@@ -4,8 +4,8 @@ import { QuestionType } from '@models/quiz';
 
 @Component({
     selector: 'app-upload-quiz',
-    templateUrl: './upload-quiz.component.html',
-    styleUrls: ['./upload-quiz.component.css'],
+    templateUrl: './upload-assessment.component.html',
+    styleUrls: ['./upload-assessment.component.css'],
     standalone: false
 })
 export class UploadQuizComponent implements OnInit {

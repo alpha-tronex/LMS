@@ -1,24 +1,25 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
-import { UploadQuizComponent } from './upload-quiz.component';
+import { CreateQuizComponent } from './create-assessment.component';
 
-describe('UploadQuizComponent', () => {
-  let component: UploadQuizComponent;
-  let fixture: ComponentFixture<UploadQuizComponent>;
+describe('CreateQuizComponent', () => {
+  let component: CreateQuizComponent;
+  let fixture: ComponentFixture<CreateQuizComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      declarations: [ UploadQuizComponent ],
+      imports: [RouterTestingModule, HttpClientTestingModule],
+      declarations: [ CreateQuizComponent ],
       schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(UploadQuizComponent);
+    fixture = TestBed.createComponent(CreateQuizComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

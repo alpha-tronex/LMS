@@ -8,10 +8,10 @@ import { AdminBreadcrumbComponent } from './admin-breadcrumb/admin-breadcrumb.co
 import { AdminMenuComponent } from './admin-menu/admin-menu.component';
 import { UserManagementComponent } from './users/user-management/user-management.component';
 import { UserDetailsComponent } from './users/user-details/user-details.component';
-import { CreateQuizComponent } from './quizzes/create-quiz/create-quiz.component';
-import { EditQuizComponent } from './quizzes/edit-quiz/edit-quiz.component';
-import { UploadQuizComponent } from './quizzes/upload-quiz/upload-quiz.component';
-import { QuizManagementComponent } from './quizzes/quiz-management/quiz-management.component';
+import { CreateQuizComponent } from './assessments/create-assessment/create-assessment.component';
+import { EditQuizComponent } from './assessments/edit-assessment/edit-assessment.component';
+import { UploadQuizComponent } from './assessments/upload-assessment/upload-assessment.component';
+import { QuizManagementComponent } from './assessments/assessment-management/assessment-management.component';
 import { SharedModule } from '../shared/shared.module';
 
 @NgModule({

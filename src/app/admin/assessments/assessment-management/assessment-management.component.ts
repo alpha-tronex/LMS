@@ -5,8 +5,8 @@ import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-quiz-management',
-    templateUrl: './quiz-management.component.html',
-    styleUrls: ['./quiz-management.component.css'],
+  templateUrl: './assessment-management.component.html',
+  styleUrls: ['./assessment-management.component.css'],
     standalone: false
 })
 export class QuizManagementComponent implements OnInit {

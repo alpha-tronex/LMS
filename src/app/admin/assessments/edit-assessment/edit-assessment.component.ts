@@ -18,8 +18,8 @@ interface Question {
 
 @Component({
     selector: 'app-edit-quiz',
-    templateUrl: './edit-quiz.component.html',
-    styleUrls: ['./edit-quiz.component.css'],
+  templateUrl: './edit-assessment.component.html',
+  styleUrls: ['./edit-assessment.component.css'],
     standalone: false
 })
 export class EditQuizComponent implements OnInit, AfterViewInit {
