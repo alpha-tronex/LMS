@@ -20,6 +20,10 @@ export class AdminBreadcrumbComponent implements OnInit {
     'admin': 'Admin',
     'user-management': 'User Management',
     'user-details': 'User Details',
+    'create-assessment': 'Create Assessment',
+    'upload-assessment': 'Upload Assessment',
+    'assessment-management': 'Assessment Management',
+    'edit-assessment': 'Edit Assessment',
     'create-quiz': 'Create Assessment',
     'upload-quiz': 'Upload Assessment',
     'quiz-management': 'Assessment Management',
@@ -55,8 +59,8 @@ export class AdminBreadcrumbComponent implements OnInit {
       let url = currentPath + `/${cleanSegment}`;
 
       // Special case: parameterized route base isn't navigable; clicking should go back to the list view.
-      if (cleanSegment === 'edit-quiz') {
-        url = '/admin/quiz-management';
+      if (cleanSegment === 'edit-quiz' || cleanSegment === 'edit-assessment') {
+        url = '/admin/assessment-management';
       } else if (cleanSegment === 'user-details') {
         url = '/admin/user-management';
       } else {

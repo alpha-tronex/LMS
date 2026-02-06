@@ -26,6 +26,13 @@ export class BreadcrumbComponent implements OnInit {
     'admin': 'Admin',
     'user-management': 'User Management',
     'user-details': 'User Details',
+    // Canonical assessment routes
+    'assessment-management': 'Assessment Management',
+    'create-assessment': 'Create Assessment',
+    'upload-assessment': 'Upload Assessment',
+    'edit-assessment': 'Edit Assessment',
+
+    // Legacy quiz routes (kept for backwards compatibility)
     'quiz-management': 'Assessment Management',
     'create-quiz': 'Create Assessment',
     'upload-quiz': 'Upload Assessment',
@@ -74,14 +81,18 @@ export class BreadcrumbComponent implements OnInit {
       return;
     }
 
-    // Admin: edit assessment page is a parameterized route (edit-quiz/:id).
-    if (segments[0] === 'admin' && segments[1] === 'edit-quiz' && segments.length >= 3) {
+    // Admin: edit assessment page is a parameterized route.
+    if (
+      segments[0] === 'admin' &&
+      (segments[1] === 'edit-assessment' || segments[1] === 'edit-quiz') &&
+      segments.length >= 3
+    ) {
       const quizId = segments[2];
       this.breadcrumbs = [
         { label: 'Home', url: '/home' },
         { label: 'Admin', url: '/admin' },
-        { label: 'Assessment Management', url: '/admin/quiz-management' },
-        { label: 'Edit Assessment', url: `/admin/edit-quiz/${quizId}` }
+        { label: 'Assessment Management', url: '/admin/assessment-management' },
+        { label: 'Edit Assessment', url: `/admin/edit-assessment/${quizId}` }
       ];
       return;
     }

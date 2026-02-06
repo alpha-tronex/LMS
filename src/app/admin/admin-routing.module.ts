@@ -12,10 +12,17 @@ const routes: Routes = [
   { path: '', component: AdminDashboardComponent },
   { path: 'user-management', component: UserManagementComponent },
   { path: 'user-details/:id', component: UserDetailsComponent },
-  { path: 'create-quiz', component: CreateQuizComponent },
-  { path: 'edit-quiz/:id', component: EditQuizComponent },
-  { path: 'upload-quiz', component: UploadQuizComponent },
-  { path: 'quiz-management', component: QuizManagementComponent }
+  // New canonical assessment routes
+  { path: 'create-assessment', component: CreateQuizComponent },
+  { path: 'edit-assessment/:id', component: EditQuizComponent },
+  { path: 'upload-assessment', component: UploadQuizComponent },
+  { path: 'assessment-management', component: QuizManagementComponent },
+
+  // Legacy quiz routes (kept for backwards compatibility)
+  { path: 'create-quiz', redirectTo: 'create-assessment', pathMatch: 'full' },
+  { path: 'edit-quiz/:id', redirectTo: 'edit-assessment/:id' },
+  { path: 'upload-quiz', redirectTo: 'upload-assessment', pathMatch: 'full' },
+  { path: 'quiz-management', redirectTo: 'assessment-management', pathMatch: 'full' }
 ];
 
 @NgModule({

@@ -27,21 +27,21 @@ export class AdminMenuComponent {
       title: 'Create Assessment',
       description: 'Create a new assessment from scratch',
       icon: 'fas fa-plus-circle',
-      route: '/admin/create-quiz',
+      route: '/admin/create-assessment',
       color: 'success'
     },
     {
       title: 'Upload Assessment',
       description: 'Upload an assessment from a JSON file',
       icon: 'fas fa-upload',
-      route: '/admin/upload-quiz',
+      route: '/admin/upload-assessment',
       color: 'info'
     },
     {
       title: 'Assessment Management',
-      description: 'Edit assessments and manage assessment data',
+      description: 'Manage assessments and user data',
       icon: 'fas fa-cogs',
-      route: '/admin/quiz-management',
+      route: '/admin/assessment-management',
       color: 'warning'
     }
   ];

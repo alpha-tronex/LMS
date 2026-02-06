@@ -326,7 +326,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
       next: (_response) => {
         this.successMessage = 'Assessment updated successfully!';
         setTimeout(() => {
-          this.router.navigate(['/admin/quiz-management']);
+          this.router.navigate(['/admin/assessment-management']);
         }, 2000);
       },
       error: (error) => {
@@ -342,7 +342,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   }
   onCancelModalConfirm() {
     this.showCancelModal = false;
-    this.router.navigate(['/admin/quiz-management']);
+    this.router.navigate(['/admin/assessment-management']);
   }
   onCancelModalDismiss() {
     this.showCancelModal = false;
