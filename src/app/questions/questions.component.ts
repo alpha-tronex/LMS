@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Question, QuestionType, Quiz } from '../models/quiz';
-import { QuestionsService } from '../services/questions-service';
-import { LoginService } from '../services/login-service';
+import { Question, QuestionType, Quiz } from '@models/quiz';
+import { QuestionsService } from '@core/services/questions-service';
+import { LoginService } from '@core/services/login-service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-questions',
@@ -22,8 +23,13 @@ export class QuestionsComponent implements OnInit {
   resultsAccepted: boolean = false;
   startTime: number;
   elapsedTime: number = 0;
-
-  constructor(private questionsService: QuestionsService, private router: Router, private route: ActivatedRoute, private loginService: LoginService) { }
+  constructor(
+    private questionsService: QuestionsService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private loginService: LoginService,
+    private logger: LoggerService
+  ) { }
 
   ngOnInit() {
     // Get quiz ID from route params
@@ -41,9 +47,9 @@ export class QuestionsComponent implements OnInit {
           this.setQuestionType();
         }
       },
-      error: (error) => console.error('Error fetching questions:', error)
+      error: (error) => this.logger.error('Error fetching questions', error)
     });
-    console.log('questions, questions, questions');
+    this.logger.debug('QuestionsComponent initialized');
   }
 
   goPrevious() {
@@ -108,8 +114,8 @@ export class QuestionsComponent implements OnInit {
       // Calculate elapsed time in seconds
       this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
       this.submitted = true;
-      console.log('Quiz submitted:', this.quiz);
-      console.log('Time taken:', this.elapsedTime, 'seconds');
+      this.logger.debug('Quiz submitted', this.quiz);
+      this.logger.debug('Time taken (seconds)', this.elapsedTime);
     }
   }
 
@@ -137,7 +143,7 @@ export class QuestionsComponent implements OnInit {
   acceptResults() {
     // Prevent multiple submissions
     if (this.resultsAccepted) {
-      console.log('Results already accepted, ignoring duplicate submission');
+      this.logger.warn('Results already accepted; ignoring duplicate submission');
       return;
     }
     
@@ -145,7 +151,7 @@ export class QuestionsComponent implements OnInit {
     this.resultsAccepted = true;
     
     // Could navigate to home or show confirmation
-    console.log('Results accepted');
+    this.logger.info('Results accepted');
     // Calculate score
     let score = 0;
     this.quiz.questions.forEach(question => {
@@ -175,12 +181,12 @@ export class QuestionsComponent implements OnInit {
     // Save to database
     this.questionsService.saveQuiz(this.getUsername(), quizData).subscribe({
       next: (response) => {
-        console.log('Quiz saved successfully:', response);
+        this.logger.info('Quiz saved successfully', response);
         // Redirect to history page
         this.router.navigate(['/history']);
       },
       error: (error) => {
-        console.error('Error saving quiz:', error);
+        this.logger.error('Error saving quiz', error);
         // Still redirect even if save fails
         this.router.navigate(['/history']);
       }

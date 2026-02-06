@@ -150,6 +150,7 @@ module.exports = function(app, User) {
                 if (uname !== undefined) updateData.username = uname;
                 if (type !== undefined) updateData.type = type;
                 if (address !== undefined) updateData.address = address;
+                updateData.updatedAt = new Date();
 
                 const updatedUser = await User.findByIdAndUpdate(
                     userId,

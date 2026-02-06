@@ -23,3 +23,9 @@ export enum QuestionType {
     MultipleChoice = 'MultipleChoice',
     SingleAnswer = 'SingleAnswer'
 }
+
+export const QuestionTypeLabels: Record<QuestionType, string> = {
+    [QuestionType.TrueFalse]: 'True or False',
+    [QuestionType.MultipleChoice]: 'Multiple Choice',
+    [QuestionType.SingleAnswer]: 'Single Answer'
+};

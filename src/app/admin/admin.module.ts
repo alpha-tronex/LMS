@@ -12,6 +12,7 @@ import { CreateQuizComponent } from './quizzes/create-quiz/create-quiz.component
 import { EditQuizComponent } from './quizzes/edit-quiz/edit-quiz.component';
 import { UploadQuizComponent } from './quizzes/upload-quiz/upload-quiz.component';
 import { QuizManagementComponent } from './quizzes/quiz-management/quiz-management.component';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { QuizManagementComponent } from './quizzes/quiz-management/quiz-manageme
   imports: [
     CommonModule,
     FormsModule,
-    AdminRoutingModule
+    AdminRoutingModule,
+    SharedModule
   ],
   providers: [provideHttpClient(withInterceptorsFromDi())]
 })

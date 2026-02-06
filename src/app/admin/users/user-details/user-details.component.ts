@@ -1,10 +1,11 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminUserService } from '../../../services/admin-user.service';
-import { LoginService } from '../../../services/login-service';
-import { UtilService, State, Country } from '../../../services/util.service';
-import { ValidationService } from '../../../services/validation.service';
-import { User } from '../../../models/users';
+import { AdminUserService } from '@admin/services/admin-user.service';
+import { LoginService } from '@core/services/login-service';
+import { UtilService, State, Country } from '@shared/services/util.service';
+import { ValidationService } from '@shared/services/validation.service';
+import { User } from '@models/users';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-user-details',
@@ -29,7 +30,8 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
     private adminUserService: AdminUserService,
     private loginService: LoginService,
     private utilService: UtilService,
-    private validationService: ValidationService
+    private validationService: ValidationService,
+    private logger: LoggerService
   ) { }
 
   ngOnInit() {
@@ -47,7 +49,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
         this.states = data;
       },
       error: (error) => {
-        console.error('Error loading states:', error);
+        this.logger.error('Error loading states', error);
       }
     });
 
@@ -57,7 +59,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
         this.countries = data;
       },
       error: (error) => {
-        console.error('Error loading countries:', error);
+        this.logger.error('Error loading countries', error);
       }
     });
   }
@@ -109,7 +111,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
         }, 100);
       },
       error: (error) => {
-        console.error('Error loading user:', error);
+        this.logger.error('Error loading user', error);
         this.errorMessage = 'Failed to load user details: ' + error;
         this.loading = false;
       }
@@ -167,7 +169,7 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
         }, 5000);
       },
       error: (error) => {
-        console.error('Error updating user:', error);
+        this.logger.error('Error updating user', error);
         this.errorMessage = 'Failed to update user: ' + error;
         this.saving = false;
         

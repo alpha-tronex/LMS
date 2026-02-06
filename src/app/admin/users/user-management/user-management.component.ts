@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from '../../../models/users';
-import { AdminUserService } from '../../../services/admin-user.service';
-import { LoginService } from '../../../services/login-service';
+import { User } from '@models/users';
+import { AdminUserService } from '@admin/services/admin-user.service';
+import { LoginService } from '@core/services/login-service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-user-management',
@@ -16,7 +17,8 @@ export class UserManagementComponent implements OnInit {
   errorMessage: string = '';
   reviewedQuiz: any = null;
   private modalInstance: any = null;
-  private confirmModalInstance: any = null;
+  // private confirmModalInstance: any = null;
+    showConfirmModal: boolean = false;
   confirmAction: 'promote' | 'delete' | null = null;
   confirmUser: User | null = null;
   confirmMessage: string = '';
@@ -41,7 +43,8 @@ export class UserManagementComponent implements OnInit {
 
   constructor(
     private adminUserService: AdminUserService,
-    private loginService: LoginService
+    private loginService: LoginService,
+    private logger: LoggerService
   ) { }
 
   ngOnInit() {
@@ -58,7 +61,7 @@ export class UserManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading users:', error);
+        this.logger.error('Error loading users', error);
         this.errorMessage = 'Failed to load users. Please try again.';
         this.loading = false;
       }
@@ -97,7 +100,7 @@ export class UserManagementComponent implements OnInit {
       this.confirmAction = null; // Informational only
       this.confirmTitle = 'Cannot Demote Yourself';
       this.confirmMessage = 'You cannot demote your own account from administrator while logged in.';
-      this.showConfirmModal();
+      this.showConfirmModal = true;
       return;
     }
     
@@ -105,7 +108,7 @@ export class UserManagementComponent implements OnInit {
     this.confirmAction = 'promote';
     this.confirmTitle = 'Change User Type';
     this.confirmMessage = `Are you sure you want to ${action} user "${user.uname}"?`;
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   private executePromote(): void {
@@ -117,7 +120,7 @@ export class UserManagementComponent implements OnInit {
     const newType = currentType === 'admin' ? 'student' : 'admin';
     
     this.adminUserService.updateUserType(this.confirmUser.id, newType).subscribe({
-      next: (updatedUser) => {
+      next: (_updatedUser) => {
         // Update the selected user
         if (this.selectedUser && this.selectedUser.id === this.confirmUser!.id) {
           this.selectedUser.type = newType;
@@ -129,10 +132,10 @@ export class UserManagementComponent implements OnInit {
           this.users[userIndex].type = newType;
         }
         
-        console.log('User type updated successfully');
+        this.logger.info('User type updated successfully');
       },
       error: (error) => {
-        console.error('Error updating user type:', error);
+        this.logger.error('Error updating user type', error);
         alert('Failed to update user type: ' + error);
       }
     });
@@ -150,7 +153,7 @@ export class UserManagementComponent implements OnInit {
       this.confirmAction = null; // No action, just informational
       this.confirmTitle = 'Cannot Delete Account';
       this.confirmMessage = 'You cannot delete your own account while logged in.';
-      this.showConfirmModal();
+      this.showConfirmModal = true;
       return;
     }
 
@@ -158,7 +161,7 @@ export class UserManagementComponent implements OnInit {
     this.confirmAction = 'delete';
     this.confirmTitle = 'Delete User';
     this.confirmMessage = `Are you sure you want to delete user "${user.uname}"?`;
-    this.showConfirmModal();
+    this.showConfirmModal = true;
   }
 
   private executeDelete(): void {
@@ -179,7 +182,7 @@ export class UserManagementComponent implements OnInit {
         alert('User deleted successfully');
       },
       error: (error) => {
-        console.error('Error deleting user:', error);
+        this.logger.error('Error deleting user', error);
         alert('Failed to delete user: ' + error);
       }
     });
@@ -243,22 +246,10 @@ export class UserManagementComponent implements OnInit {
     return question.answers[answerNum - 1];
   }
 
-  private showConfirmModal(): void {
-    const modalElement = document.getElementById('confirmModal');
-    if (modalElement) {
-      // Dispose of existing instance if any
-      if (this.confirmModalInstance) {
-        this.confirmModalInstance.dispose();
-      }
-      this.confirmModalInstance = new (window as any).bootstrap.Modal(modalElement);
-      this.confirmModalInstance.show();
-    }
-  }
+  // showConfirmModal is now a boolean property controlling modal visibility
 
   closeConfirmModal(): void {
-    if (this.confirmModalInstance) {
-      this.confirmModalInstance.hide();
-    }
+    this.showConfirmModal = false;
     // Reset confirmation state
     this.confirmAction = null;
     this.confirmUser = null;

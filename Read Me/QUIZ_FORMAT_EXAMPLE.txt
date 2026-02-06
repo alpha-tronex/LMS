@@ -1,6 +1,5 @@
 title: Sample Quiz Title
 
-questionNum: 0
 questionType: MultipleChoice
 question: Which of the following are programming languages?
 answer1: JavaScript
@@ -11,7 +10,6 @@ answer5: Ruby
 answer6: Markdown
 correct: 1,3,5
 
-questionNum: 1
 questionType: SingleAnswer
 question: What does HTTP stand for?
 answer1: HyperText Transfer Protocol
@@ -20,14 +18,12 @@ answer3: HyperText Transmission Process
 answer4: High Tech Transfer Protocol
 correct: 1
 
-questionNum: 2
 questionType: TrueFalse
 question: JavaScript and Java are the same programming language.
 answer1: True
 answer2: False
 correct: 2
 
-questionNum: 3
 questionType: MultipleChoice
 question: Which of the following are JavaScript frameworks?
 answer1: React
@@ -38,7 +34,6 @@ answer5: Flask
 answer6: Next.js
 correct: 1,3,4,6
 
-questionNum: 4
 questionType: SingleAnswer
 question: Which method is used to add an element to the end of an array in JavaScript?
 answer1: append()
@@ -47,7 +42,6 @@ answer3: push()
 answer4: insert()
 correct: 3
 
-questionNum: 5
 questionType: SingleAnswer
 question: According to the saying, \"To be or not to be\" is from which Shakespeare play?
 answer1: Macbeth
@@ -56,7 +50,6 @@ answer3: Romeo and Juliet
 answer4: Othello
 correct: 2
 
-questionNum: 6
 questionType: TrueFalse
 question: The phrase 'Hello World' is traditionally the first program written by beginners.
 answer1: True

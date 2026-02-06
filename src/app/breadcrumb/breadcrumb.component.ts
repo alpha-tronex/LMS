@@ -23,7 +23,13 @@ export class BreadcrumbComponent implements OnInit {
     'login': 'Login',
     'register': 'Register',
     'questions': 'Take Quiz',
-    'admin': 'Admin'
+    'admin': 'Admin',
+    'user-management': 'User Management',
+    'user-details': 'User Details',
+    'quiz-management': 'Quiz Management',
+    'create-quiz': 'Create Quiz',
+    'upload-quiz': 'Upload Quiz',
+    'edit-quiz': 'Edit Quiz'
   };
 
   constructor(
@@ -51,9 +57,34 @@ export class BreadcrumbComponent implements OnInit {
       return;
     }
     
-    // Remove query parameters and split path
-    const path = url.split('?')[0];
+    // Remove query parameters/hash and split path
+    const path = url.split('?')[0].split('#')[0];
     const segments = path.split('/').filter(segment => segment);
+
+    // Admin: user details page is a parameterized route (user-details/:id).
+    // The naive cumulative URL builder would create /admin/user-details (invalid) which redirects.
+    if (segments[0] === 'admin' && segments[1] === 'user-details' && segments.length >= 3) {
+      const userId = segments[2];
+      this.breadcrumbs = [
+        { label: 'Home', url: '/home' },
+        { label: 'Admin', url: '/admin' },
+        { label: 'User Management', url: '/admin/user-management' },
+        { label: 'User Details', url: `/admin/user-details/${userId}` }
+      ];
+      return;
+    }
+
+    // Admin: edit quiz page is a parameterized route (edit-quiz/:id).
+    if (segments[0] === 'admin' && segments[1] === 'edit-quiz' && segments.length >= 3) {
+      const quizId = segments[2];
+      this.breadcrumbs = [
+        { label: 'Home', url: '/home' },
+        { label: 'Admin', url: '/admin' },
+        { label: 'Quiz Management', url: '/admin/quiz-management' },
+        { label: 'Edit Quiz', url: `/admin/edit-quiz/${quizId}` }
+      ];
+      return;
+    }
     
     this.breadcrumbs = [
       { label: 'Home', url: '/home' }

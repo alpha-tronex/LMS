@@ -32,19 +32,6 @@
       "correct": [
         1
       ]
-    },
-    {
-      "questionNum": 2,
-      "questionType": "TrueFalse",
-      "instructions": "Select the correct answer (True or False)",
-      "question": "Ramadan is the month of fasting",
-      "answers": [
-        "True",
-        "False"
-      ],
-      "correct": [
-        1
-      ]
     }
   ]
 }

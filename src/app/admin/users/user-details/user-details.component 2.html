@@ -1,0 +1,228 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+    
+    <h2 class="mb-4">User Details</h2>
+    
+    <div class="card text-dark">
+      <div class="card-body">
+        <div class="row text-start">
+          <div class="col-md-8 offset-md-2">
+            
+            <div *ngIf="clientErrors?.length" class="alert alert-warning alert-dismissible fade show" role="alert">
+              <strong>Validation Errors:</strong>
+              <ul class="mb-0">
+                <li *ngFor="let err of clientErrors">{{ err }}</li>
+              </ul>
+              <button type="button" class="btn-close" (click)="clientErrors = []" aria-label="Close"></button>
+            </div>
+            
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+              <strong>Error!</strong> {{ errorMessage }}
+              <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+              <strong>Success!</strong> {{ successMessage }}
+              <button type="button" class="btn-close" (click)="successMessage = ''" aria-label="Close"></button>
+            </div>
+
+            <div *ngIf="loading" class="text-center py-4">
+              <p>Loading user details...</p>
+            </div>
+
+            <div *ngIf="!loading && user && user.address">
+              <form #userForm="ngForm" (ngSubmit)="saveUser()">
+                
+                <!-- Username (readonly) -->
+                <div class="mb-3">
+                  <label for="username" class="form-label"><strong>Username:</strong></label>
+                  <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-control" 
+                    [(ngModel)]="user.uname" 
+                    readonly>
+                </div>
+
+                <!-- Type (readonly) -->
+                <div class="mb-3">
+                  <label for="type" class="form-label"><strong>Type:</strong></label>
+                  <input 
+                    type="text" 
+                    id="type" 
+                    name="type" 
+                    class="form-control" 
+                    [value]="user.type || 'student'" 
+                    readonly>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Editable Fields -->
+                <h5 class="mb-3">Editable Information</h5>
+
+                <!-- First Name -->
+                <div class="mb-3">
+                  <label for="fname" class="form-label">First Name:</label>
+                  <input 
+                    type="text" 
+                    id="fname" 
+                    name="fname" 
+                    class="form-control" 
+                    [class.is-invalid]="isFieldInvalid('fname')"
+                    [(ngModel)]="user.fname"
+                    #fnameInput>
+                </div>
+
+                <!-- Last Name -->
+                <div class="mb-3">
+                  <label for="lname" class="form-label">Last Name:</label>
+                  <input 
+                    type="text" 
+                    id="lname" 
+                    name="lname" 
+                    class="form-control" 
+                    [class.is-invalid]="isFieldInvalid('lname')"
+                    [(ngModel)]="user.lname">
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email:</label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-control" 
+                    [class.is-invalid]="isFieldInvalid('email')"
+                    [(ngModel)]="user.email">
+                </div>
+
+                <!-- Phone -->
+                <div class="mb-3">
+                  <label for="phone" class="form-label">Phone:</label>
+                  <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    class="form-control" 
+                    placeholder="(888) 123-4567"
+                    [class.is-invalid]="isFieldInvalid('phone')"
+                    [(ngModel)]="user.phone">
+                </div>
+
+                <hr class="my-4">
+                <h5 class="mb-3">Address</h5>
+
+                <!-- Street 1 -->
+                <div class="mb-3">
+                  <label for="street1" class="form-label">Street 1:</label>
+                  <input 
+                    type="text" 
+                    id="street1" 
+                    name="street1" 
+                    class="form-control" 
+                    [(ngModel)]="user.address.street1">
+                </div>
+
+                <!-- Street 2 -->
+                <div class="mb-3">
+                  <label for="street2" class="form-label">Street 2:</label>
+                  <input 
+                    type="text" 
+                    id="street2" 
+                    name="street2" 
+                    class="form-control" 
+                    [(ngModel)]="user.address.street2">
+                </div>
+
+                <!-- Street 3 -->
+                <div class="mb-3">
+                  <label for="street3" class="form-label">Street 3:</label>
+                  <input 
+                    type="text" 
+                    id="street3" 
+                    name="street3" 
+                    class="form-control" 
+                    [(ngModel)]="user.address.street3">
+                </div>
+
+                <!-- City -->
+                <div class="mb-3">
+                  <label for="city" class="form-label">City:</label>
+                  <input 
+                    type="text" 
+                    id="city" 
+                    name="city" 
+                    class="form-control" 
+                    [(ngModel)]="user.address.city">
+                </div>
+
+                <!-- State -->
+                <div class="mb-3">
+                  <label for="state" class="form-label">State:</label>
+                  <select 
+                    id="state" 
+                    name="state" 
+                    class="form-control form-select" 
+                    [(ngModel)]="user.address.state">
+                    <option value="">-- Select State --</option>
+                    <option *ngFor="let state of states" [value]="state.code">{{ state.name }}</option>
+                  </select>
+                </div>
+
+                <!-- Zip Code -->
+                <div class="mb-3">
+                  <label for="zipCode" class="form-label">Zip Code:</label>
+                  <input 
+                    type="text" 
+                    id="zipCode" 
+                    name="zipCode" 
+                    class="form-control" 
+                    [class.is-invalid]="isFieldInvalid('zipCode')"
+                    [(ngModel)]="user.address.zipCode"
+                    #zipCode="ngModel"
+                    placeholder="12345 or 12345-6789">
+                </div>
+
+                <!-- Country -->
+                <div class="mb-3">
+                  <label for="country" class="form-label">Country:</label>
+                  <select 
+                    id="country" 
+                    name="country" 
+                    class="form-control form-select" 
+                    [(ngModel)]="user.address.country">
+                    <option value="">-- Select Country --</option>
+                    <option *ngFor="let country of countries" [value]="country.code">{{ country.name }}</option>
+                  </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="mt-4 d-flex gap-2 justify-content-center">
+                  <button 
+                    type="submit" 
+                    class="btn btn-primary" 
+                    [disabled]="saving || !userForm.valid">
+                    <span *ngIf="saving">Saving...</span>
+                    <span *ngIf="!saving">Save Changes</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary" 
+                    (click)="cancel()"
+                    [disabled]="saving">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

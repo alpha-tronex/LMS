@@ -71,6 +71,11 @@ export class ValidationService {
     if (!phone || typeof phone !== 'string') {
       return { valid: false, error: 'Phone number is required' };
     }
+
+    const digitsOnly = phone.replace(/\D/g, '');
+    if (digitsOnly.length > 0 && digitsOnly.length < 10) {
+      return { valid: false, error: 'Phone number must be at least 10 digits' };
+    }
     
     const phoneRegex = /^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
     if (!phoneRegex.test(phone)) {

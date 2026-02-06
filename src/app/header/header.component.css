@@ -7,3 +7,68 @@
 #navbarResponsive.collapsing {
   transition: height .5s ease !important;
 }
+
+/* Add submenu styles for right-opening dropdown */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: 0;
+  display: none;
+  position: absolute;
+}
+
+/* Allow click-toggle to open submenu (Bootstrap uses .show) */
+.dropdown-submenu > .dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
+}
+
+/* Mobile/tablet: keep submenu within viewport by rendering inline */
+@media (max-width: 991.98px) {
+  .dropdown-submenu > .dropdown-menu {
+    position: static;
+    top: auto;
+    left: auto;
+    margin-top: 0.25rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    width: calc(100% - 1rem);
+  }
+
+  /* Center submenu items in responsive view */
+  .dropdown-submenu > .dropdown-menu .dropdown-item {
+    text-align: center;
+  }
+
+  /* Hover isn't reliable on touch devices */
+  .dropdown-submenu:hover > .dropdown-menu:not(.show) {
+    display: none;
+  }
+
+  /* On small screens, `.show` should always win */
+  .dropdown-submenu > .dropdown-menu.show {
+    display: block;
+  }
+}
+
+.dropdown-submenu > .dropdown-item:after {
+  /* content: "▶"; */
+  float: right;
+  margin-left: 5px;
+  font-size: 0.8em;
+}
+
+.modal {
+  z-index: 1050;
+}
+.modal-backdrop {
+  z-index:99999;
+}

@@ -45,6 +45,7 @@ module.exports = function(app, User) {
                 
                 // Add the completed quiz to user's quizzes array
                 user.quizzes.push(quizData);
+                user.updatedAt = new Date();
                 await user.save();
                 
                 console.log('Quiz saved for user:', username);

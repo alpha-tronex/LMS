@@ -1,25 +1,9 @@
 {
+  "id": 2,
   "title": "Islam 101.2",
   "questions": [
     {
       "questionNum": 0,
-      "questionType": "MultipleChoice",
-      "instructions": "Select all correct answers",
-      "question": "Who were some the leaders of the Muslim ummat after the death of the Prophet (SAS)?",
-      "answers": [
-        "Abu Bakr Saddiq (RA)",
-        "Abu Huraira (RA)",
-        "Umar Al-Khattab (RA)",
-        "Utthman (RA)"
-      ],
-      "correct": [
-        1,
-        3,
-        4
-      ]
-    },
-    {
-      "questionNum": 1,
       "questionType": "SingleAnswer",
       "instructions": "Select the correct answer",
       "question": "Who was the first man to accept Islam after the Prophet (SAS)?",
@@ -34,7 +18,7 @@
       ]
     },
     {
-      "questionNum": 2,
+      "questionNum": 1,
       "questionType": "TrueFalse",
       "instructions": "Select the correct answer (True or False)",
       "question": "Was Khadija (RA) the first woman to accept Isalm?",
@@ -45,7 +29,21 @@
       "correct": [
         1
       ]
+    },
+    {
+      "questionNum": 2,
+      "questionType": "SingleAnswer",
+      "instructions": "Select the correct answer",
+      "question": "How many years did Muhammed (SAS) teach Islam in Mecca before migrating to Medina?",
+      "answers": [
+        "10",
+        "15",
+        "13",
+        "8"
+      ],
+      "correct": [
+        3
+      ]
     }
-  ],
-  "id": 2
+  ]
 }

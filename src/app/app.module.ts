@@ -14,12 +14,13 @@ import { AccountComponent } from './account/account.component';
 import { RegisterComponent } from './register/register.component';
 import { HistoryComponent } from './history/history.component';
 import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
-import { LoginService } from './services/login-service';
-import { QuestionsService } from './services/questions-service';
-import { AuthInterceptor } from './services/auth.interceptor';
+import { LoginService } from '@core/services/login-service';
+import { QuestionsService } from '@core/services/questions-service';
+import { AuthInterceptor } from '@core/services/auth.interceptor';
+import { SharedModule } from './shared/shared.module';
 
-
-@NgModule({ declarations: [
+@NgModule({
+    declarations: [
         AppComponent,
         QuestionsComponent,
         HomeComponent,
@@ -33,14 +34,16 @@ import { AuthInterceptor } from './services/auth.interceptor';
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
-        FormsModule], providers: [
-        LoginService, 
-        QuestionsService, 
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: AuthInterceptor,
-            multi: true
-        },
-        provideHttpClient(withInterceptorsFromDi())
-    ] })
+        FormsModule,
+        SharedModule], providers: [
+            LoginService,
+            QuestionsService,
+            {
+                provide: HTTP_INTERCEPTORS,
+                useClass: AuthInterceptor,
+                multi: true
+            },
+            provideHttpClient(withInterceptorsFromDi())
+        ]
+})
 export class AppModule { }

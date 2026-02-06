@@ -82,7 +82,9 @@ module.exports = function(app, User) {
                     email: email || '',
                     password: hash,
                     phone: phone || '',
-                    type: 'student'
+                    type: 'student',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
                 });
                 console.log('before save');
 
@@ -256,7 +258,8 @@ module.exports = function(app, User) {
                         lname: lname,
                         email: email,
                         phone: phone,
-                        address: address || {}
+                        address: address || {},
+                        updatedAt: new Date()
                     },
                     { new: true }
                 );

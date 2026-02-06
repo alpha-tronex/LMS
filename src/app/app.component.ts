@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { LoginService } from './services/login-service';
-import { IdleTimeoutService } from './services/idle-timeout.service';
+import { LoginService } from '@core/services/login-service';
+import { IdleTimeoutService } from '@core/services/idle-timeout.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-root',
@@ -21,7 +22,8 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private loginService: LoginService,
-    private idleTimeoutService: IdleTimeoutService
+    private idleTimeoutService: IdleTimeoutService,
+    private logger: LoggerService
   ) {}
 
   ngOnInit(): void {
@@ -35,7 +37,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // Start idle monitoring for already logged in user
         this.idleTimeoutService.startWatching();
       } catch (e) {
-        console.error('Error parsing stored user:', e);
+        this.logger.error('Error parsing stored user', e);
         localStorage.removeItem('currentUser');
       }
     }

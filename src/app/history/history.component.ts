@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { QuestionsService } from '../services/questions-service';
-import { LoginService } from '../services/login-service';
+import { QuestionsService } from '@core/services/questions-service';
+import { LoginService } from '@core/services/login-service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-history',
@@ -14,7 +15,11 @@ export class HistoryComponent implements OnInit {
   loading: boolean = true;
   error: string = '';
 
-  constructor(private questionsService: QuestionsService, private loginService: LoginService) {}
+  constructor(
+    private questionsService: QuestionsService,
+    private loginService: LoginService,
+    private logger: LoggerService
+  ) {}
 
   ngOnInit() {
     // Check if user is logged in using localStorage
@@ -39,7 +44,7 @@ export class HistoryComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading quiz history:', error);
+        this.logger.error('Error loading quiz history', error);
         this.error = 'Failed to load quiz history';
         this.loading = false;
       }

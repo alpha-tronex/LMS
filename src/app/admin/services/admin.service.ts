@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { User } from '../models/users';
+import { User } from '@models/users';
+import { LoggerService } from '@core/services/logger.service';
 
 /**
  * @deprecated This service has been split into AdminUserService and AdminQuizService.
@@ -16,80 +17,80 @@ import { User } from '../models/users';
 })
 export class AdminService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private logger: LoggerService) { }
 
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>('/api/admin/users').pipe(
-      catchError(this.handleError)
+      catchError((error) => this.handleError(error))
     );
   }
 
   getUserById(userId: string): Observable<User> {
     return this.http.get<User>(`/api/admin/user/${userId}`).pipe(
-      catchError(this.handleError)
+      catchError((error) => this.handleError(error))
     );
   }
 
   updateUser(user: User): Observable<User> {
     return this.http.put<User>(`/api/admin/user/${user.id}`, user).pipe(
-      tap(response => console.log('User updated:', response)),
-      catchError(this.handleError)
+      tap(response => this.logger.info('User updated', response)),
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteUser(userId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}`).pipe(
-      tap(() => console.log('User deleted:', userId)),
-      catchError(this.handleError)
+      tap(() => this.logger.info('User deleted', { userId })),
+      catchError((error) => this.handleError(error))
     );
   }
 
   updateUserType(userId: string, type: string): Observable<User> {
     return this.http.patch<User>(`/api/admin/user/${userId}/type`, { type }).pipe(
-      tap(response => console.log('User type updated:', response)),
-      catchError(this.handleError)
+      tap(response => this.logger.info('User type updated', response)),
+      catchError((error) => this.handleError(error))
     );
   }
 
   // Quiz Management Methods
   deleteUserQuizData(userId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/quizzes`).pipe(
-      tap(() => console.log('User quiz data deleted:', userId)),
-      catchError(this.handleError)
+      tap(() => this.logger.info('User quiz data deleted', { userId })),
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteSpecificUserQuiz(userId: string, quizId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/quiz/${quizId}`).pipe(
-      tap(() => console.log('Specific quiz deleted from user:', userId, quizId)),
-      catchError(this.handleError)
+      tap(() => this.logger.info('Specific quiz deleted from user', { userId, quizId })),
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllUsersQuizData(): Observable<any> {
     return this.http.delete('/api/admin/quizzes/all-users-data').pipe(
-      tap(() => console.log('All users quiz data deleted')),
-      catchError(this.handleError)
+      tap(() => this.logger.info('All users quiz data deleted')),
+      catchError((error) => this.handleError(error))
     );
   }
 
   getAvailableQuizzes(): Observable<any[]> {
     return this.http.get<any[]>('/api/quizzes').pipe(
-      catchError(this.handleError)
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteQuizFile(quizId: string): Observable<any> {
     return this.http.delete(`/api/admin/quiz-file/${quizId}`).pipe(
-      tap(() => console.log('Quiz file deleted:', quizId)),
-      catchError(this.handleError)
+      tap(() => this.logger.info('Quiz file deleted', { quizId })),
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllQuizFiles(): Observable<any> {
     return this.http.delete('/api/admin/quiz-files/all').pipe(
-      tap(() => console.log('All quiz files deleted')),
-      catchError(this.handleError)
+      tap(() => this.logger.info('All quiz files deleted')),
+      catchError((error) => this.handleError(error))
     );
   }
 
@@ -104,7 +105,7 @@ export class AdminService {
       errorMessage = error.error?.error || error.error?.message || error.message || 'Server error';
     }
     
-    console.error('Admin service error:', errorMessage);
+    this.logger.error('Admin service error', errorMessage);
     return throwError(() => errorMessage);
   }
 }

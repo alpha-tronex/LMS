@@ -1,9 +1,9 @@
 <section class="masthead bg-primary text-white text-center">
   <div class="container">
     <app-admin-breadcrumb></app-admin-breadcrumb>
-    
+
     <h2 class="mb-4">Edit Quiz</h2>
-    
+
     <!-- Loading Spinner -->
     <div *ngIf="isLoading" class="text-center py-5">
       <div class="spinner-border text-white" role="status">
@@ -31,45 +31,36 @@
 
         <!-- Quiz Title -->
         <div class="mb-4">
-          <label for="quizTitle" class="form-label font-weight-bold">
+          <label for="quizTitle" class="form-label font-weight-bold text-center w-100">
             <i class="fas fa-heading"></i> Quiz Title *
           </label>
-          <input 
-            type="text" 
-            class="form-control form-control-lg" 
-            id="quizTitle"
-            #quizTitleInput
-            [(ngModel)]="quizTitle"
-            placeholder="Enter quiz title..."
-            [disabled]="isSubmitting">
+          <input type="text" class="form-control form-control-lg" id="quizTitle" #quizTitleInput [(ngModel)]="quizTitle"
+            placeholder="Enter quiz title..." [disabled]="isSubmitting">
         </div>
 
         <!-- Questions List -->
         <div *ngIf="questions.length > 0" class="mb-4">
-          <h5 class="mb-3">
+          <h5 class="mb-3 text-center">
             <i class="fas fa-list"></i> Questions ({{ questions.length }})
           </h5>
           <div class="accordion" id="questionsAccordion">
             <div class="card mb-2" *ngFor="let question of questions; let i = index">
               <div class="card-header" [id]="'heading' + i">
                 <h2 class="mb-0">
-                  <button class="btn btn-link btn-block text-left" type="button" 
-                          data-toggle="collapse" 
-                          [attr.data-target]="'#question' + i"
-                          [attr.aria-expanded]="false"
-                          [attr.aria-controls]="'question' + i">
+                  <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                    [attr.data-target]="'#question' + i" [attr.aria-expanded]="false"
+                    [attr.aria-controls]="'question' + i">
                     <strong>Question {{ i + 1 }}:</strong>&nbsp;{{ question.questionText }}
                   </button>
                 </h2>
               </div>
-              <div [id]="'question' + i" class="collapse" 
-                   [attr.aria-labelledby]="'heading' + i"
-                   data-parent="#questionsAccordion">
+              <div [id]="'question' + i" class="collapse" [attr.aria-labelledby]="'heading' + i"
+                data-parent="#questionsAccordion">
                 <div class="card-body">
                   <ul class="list-group mb-3">
-                    <li *ngFor="let answer of question.answers; let j = index" 
-                        class="list-group-item d-flex justify-content-between align-items-center"
-                        [ngClass]="{'list-group-item-success': answer.isCorrect}">
+                    <li *ngFor="let answer of question.answers; let j = index"
+                      class="list-group-item d-flex justify-content-between align-items-center"
+                      [ngClass]="{'list-group-item-success': answer.isCorrect}">
                       {{ answer.text }}
                       <span *ngIf="answer.isCorrect" class="badge badge-success">
                         <i class="fas fa-check"></i> Correct
@@ -80,7 +71,7 @@
                     <button class="btn btn-sm btn-warning" (click)="editQuestion(i)">
                       <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-sm btn-danger" (click)="removeQuestion(i)">
+                    <button class="btn btn-sm btn-danger" (click)="openDeleteQuestionModal(i)" [disabled]="isSubmitting">
                       <i class="fas fa-trash"></i> Delete
                     </button>
                   </div>
@@ -88,122 +79,109 @@
               </div>
             </div>
           </div>
+
+        <alpha-tronex-modal
+          [show]="showDeleteModal"
+          [title]="'Delete Question?'"
+          [type]="'danger'"
+          [content]="deleteModalContent"
+          [scrollToTopOnHide]="true"
+          (confirm)="onDeleteModalConfirm()"
+          (close)="onDeleteModalDismiss()">
+          <div modal-actions>
+            <button type="button" class="btn btn-secondary" (click)="onDeleteModalDismiss()">Cancel</button>
+            <button type="button" class="btn btn-danger ml-2 mr-3" (click)="onDeleteModalConfirm()">Yes, Delete</button>
+          </div>
+        </alpha-tronex-modal>
         </div>
 
         <!-- Current Question Form -->
         <div class="card bg-light">
           <div class="card-header">
             <h5 class="mb-0">
-              <i class="fas fa-question-circle"></i> 
+              <i class="fas fa-question-circle"></i>
               {{ questions.length > 0 ? 'Add Another Question' : 'Add First Question' }}
             </h5>
           </div>
           <div class="card-body">
+
             <!-- Question Text -->
-            <div class="mb-3">
+            <div class="mb-3 text-center">
               <label for="questionText" class="form-label font-weight-bold">Question Text *</label>
-              <textarea 
-                class="form-control" 
-                id="questionText"
-                rows="3"
-                [(ngModel)]="currentQuestion.questionText"
-                placeholder="Enter your question..."
+              <textarea class="form-control w-75 mx-auto" id="questionText" rows="3"
+                [(ngModel)]="currentQuestion.questionText" placeholder="Enter your question..."
                 [disabled]="isSubmitting"></textarea>
             </div>
 
             <!-- Question Type -->
-            <div class="mb-3">
-              <label for="questionType" class="form-label font-weight-bold">Question Type</label>
-              <select 
-                class="form-control" 
-                id="questionType"
-                [(ngModel)]="currentQuestion.questionType"
-                (ngModelChange)="onQuestionTypeChange()"
-                [disabled]="isSubmitting">
-                <option *ngFor="let type of questionTypes" [value]="type">{{ type }}</option>
+            <div class="mb-3 text-center">
+              <label for="questionType" class="form-label font-weight-bold">Question Type * </label>
+              <select class="form-control w-50 mx-auto" id="questionType" [(ngModel)]="currentQuestion.questionType"
+                (ngModelChange)="onQuestionTypeChange()" [disabled]="isSubmitting">
+                <option value="" disabled selected>Select a question type</option>
+                <option *ngFor="let type of questionTypes" [value]="type">{{ QuestionTypeLabels[type] }}</option>
               </select>
-              <small class="form-text text-muted mt-2">
-                <i class="fas fa-info-circle"></i> Instructions: {{ currentQuestion.instructions }}
-              </small>
             </div>
 
             <!-- Answers -->
-            <div class="mb-3">
+            <div class="mb-3 text-center">
               <label class="form-label font-weight-bold">
                 <i class="fas fa-list-ul"></i> Answer Options *
               </label>
-              
-              <div *ngFor="let answer of currentQuestion.answers; let i = index" class="input-group mb-2">
-                <div class="input-group-prepend">
-                  <div class="input-group-text">
-                    <input 
-                      class="form-check-input mt-0" 
-                      type="checkbox"
-                      [(ngModel)]="answer.isCorrect"
-                      [disabled]="isSubmitting"
-                      title="Mark as correct answer">
+              <div class="w-75 mx-auto">
+                <div *ngFor="let answer of currentQuestion.answers; let i = index" class="input-group mb-2">
+                  <div class="input-group-prepend">
+                    <div class="input-group-text">
+                      <input class="form-check-input mt-0" type="checkbox" [(ngModel)]="answer.isCorrect"
+                        [disabled]="isSubmitting" title="Mark as correct answer">
+                    </div>
+                  </div>
+                  <input type="text" class="form-control" #answerInput [(ngModel)]="answer.text"
+                    placeholder="Answer option {{ i + 1 }}..." [disabled]="isSubmitting">
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-danger" type="button" (click)="removeAnswer(i)"
+                      [disabled]="currentQuestion.answers.length <= 1 || isSubmitting" title="Remove this answer">
+                      <i class="fas fa-times"></i>
+                    </button>
                   </div>
                 </div>
-                <input 
-                  type="text" 
-                  class="form-control"
-                  #answerInput
-                  [(ngModel)]="answer.text"
-                  placeholder="Answer option {{ i + 1 }}..."
-                  [disabled]="isSubmitting">
-                <div class="input-group-append">
-                  <button 
-                    class="btn btn-outline-danger" 
-                    type="button"
-                    (click)="removeAnswer(i)"
-                    [disabled]="currentQuestion.answers.length <= 1 || isSubmitting"
-                    title="Remove this answer">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
+                <button class="btn btn-sm btn-outline-primary mt-2" (click)="addAnswer()" [disabled]="isSubmitting">
+                  <i class="fas fa-plus"></i> Add Another Answer
+                </button>
               </div>
-
-              <button 
-                class="btn btn-sm btn-outline-primary" 
-                (click)="addAnswer()"
-                [disabled]="isSubmitting">
-                <i class="fas fa-plus"></i> Add Another Answer
-              </button>
-              
-              <small class="form-text text-muted mt-2">
-                <i class="fas fa-info-circle"></i> Check the box next to correct answer(s)
-              </small>
             </div>
 
             <!-- Add Question Button -->
-            <div class="d-grid">
-              <button 
-                class="btn btn-success btn-lg mr-2" 
-                (click)="addQuestion()"
-                [disabled]="isSubmitting">
+            <div class="d-grid text-center">
+              <button class="btn btn-success btn-lg mr-2" (click)="addQuestion()" [disabled]="isSubmitting">
                 <i class="fas fa-plus-circle"></i> Add Question
               </button>
-              <small class="text-muted mt-2">
-                <i class="fas fa-info-circle"></i> Click to save this question and start a new one
-              </small>
             </div>
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="mt-4 d-flex justify-content-end">
-          <button 
-            class="btn btn-secondary mr-2" 
-            (click)="cancelQuiz()"
-            [disabled]="isSubmitting">
+          <button class="btn btn-secondary mr-2" (click)="cancelQuiz()" [disabled]="isSubmitting">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button 
-            class="btn btn-primary btn-lg" 
-            (click)="saveQuiz()"
-            [disabled]="isSubmitting || questions.length === 0">
+          <button class="btn btn-primary btn-lg" (click)="saveQuiz()"
+            [disabled]="isSubmitting || questions.length === 0 || isLoading">
             <i class="fas fa-save"></i> {{ isSubmitting ? 'Saving...' : 'Update Quiz' }}
           </button>
+          <alpha-tronex-modal
+            [show]="showCancelModal"
+            [title]="'Cancel Quiz?'"
+            [type]="'warning'"
+            [content]="'Are you sure you want to cancel? All unsaved changes will be lost.'"
+            [scrollToTopOnHide]="true"
+            (confirm)="onCancelModalConfirm()"
+            (close)="onCancelModalDismiss()">
+            <div modal-actions>
+              <button type="button" class="btn btn-secondary" (click)="onCancelModalDismiss()">No, Keep Editing</button>
+              <button type="button" class="btn btn-danger ml-2 mr-3" (click)="onCancelModalConfirm()">Yes, Cancel Quiz</button>
+            </div>
+          </alpha-tronex-modal>
         </div>
       </div>
     </div>

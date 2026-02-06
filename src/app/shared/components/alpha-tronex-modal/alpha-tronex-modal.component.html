@@ -1,0 +1,24 @@
+<div *ngIf="show" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.4);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content pb-3">
+      <div class="modal-header" [ngClass]="{
+        'header-info': type === 'info',
+        'header-warning': type === 'warning',
+        'header-danger': type === 'danger',
+        'header-success': type === 'success'
+      }">
+        <h5 class="modal-title">{{ title }}</h5>
+        <button *ngIf="!disableClose" type="button" class="btn-close" aria-label="Close" (click)="onClose()"></button>
+      </div>
+      <div class="modal-body">
+        <ng-container *ngIf="content; else customContent">{{ content }}</ng-container>
+        <ng-template #customContent>
+          <ng-content></ng-content>
+        </ng-template>
+      </div>
+      <div class="modal-footer">
+        <ng-content select="[modal-actions]"></ng-content>
+      </div>
+    </div>
+  </div>
+</div>

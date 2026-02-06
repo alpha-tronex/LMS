@@ -1,6 +1,15 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+  ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
-import { LoginService } from '../services/login-service';
+import { LoginService } from '@core/services/login-service';
 
 @Component({
     selector: 'app-header',
@@ -8,21 +17,43 @@ import { LoginService } from '../services/login-service';
     styleUrls: ['./header.component.css'],
     standalone: false
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription: any;
 
-  constructor(private router: Router, private loginService: LoginService) { }
+  quizSubmenuOpen = false;
 
-  ngOnInit() {
-    // subscribe to this.loginService.loggedInStudent.uname
-    // this.subscription = this.loginService.loggedInStudent.subscribe((student => {
-    //   this.username = student.uname;
-    // });
-    // this.loggedIn = this.loginService.loggedInStudent.
+  @ViewChild('adminDropdownWrapper')
+  private adminDropdownWrapper?: ElementRef<HTMLElement>;
+
+  private removeAdminDropdownHideListener?: () => void;
+
+  // Modal state for shared alpha-tronex popup
+  showPopup = false;
+  popupTitle = 'Under Construction';
+  popupMessage = '';
+
+  constructor(
+    private router: Router,
+    private loginService: LoginService,
+    private renderer: Renderer2
+  ) { }
+
+  ngOnInit() {}
+
+  ngAfterViewInit(): void {
+    const wrapper = this.adminDropdownWrapper?.nativeElement;
+    if (!wrapper) {
+      return;
+    }
+
+    // If Bootstrap's dropdown JS is present, it will emit hide.bs.dropdown on close.
+    // This prevents the submenu staying open between opens.
+    this.removeAdminDropdownHideListener = this.renderer.listen(wrapper, 'hide.bs.dropdown', () => {
+      this.quizSubmenuOpen = false;
+    });
   }
 
   getUsername(): string {
-    // Check if user is logged in using localStorage
     if (localStorage.getItem('currentUser')) {
       return this.loginService.userName;
     }
@@ -30,7 +61,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   isAdmin(): boolean {
-    // Check if user is admin
     if (localStorage.getItem('currentUser')) {
       return this.loginService.isAdmin();
     }
@@ -38,28 +68,74 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   collapseNavbar(): void {
+    this.quizSubmenuOpen = false;
     const navbarToggler = document.querySelector('.navbar-toggler') as HTMLElement;
     const navbarCollapse = document.getElementById('navbarResponsive');
-    
     if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-      // Simulate clicking the toggle button to use Bootstrap's built-in collapse animation
       if (navbarToggler) {
         navbarToggler.click();
       }
     }
   }
 
+  toggleQuizSubmenu(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.quizSubmenuOpen = !this.quizSubmenuOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.quizSubmenuOpen) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      this.quizSubmenuOpen = false;
+      return;
+    }
+
+    // Keep the submenu open if the click is inside it.
+    if (target.closest('.dropdown-submenu')) {
+      return;
+    }
+
+    this.quizSubmenuOpen = false;
+  }
+
   logOff() {
-    //this.loginService.loggedInStudentChange.next(null);
     this.collapseNavbar();
     this.loginService.logout();
-    // take to home page
     this.router.navigate(['home']);
   }
 
   ngOnDestroy(): void {
+    if (this.removeAdminDropdownHideListener) {
+      this.removeAdminDropdownHideListener();
+      this.removeAdminDropdownHideListener = undefined;
+    }
     // if (this.subscription) {
     //   this.subscription.unsubscribe();
     // }
   }
+
+  // Show the shared alpha-tronex popup with a custom message
+  showUnderConstruction(event: Event, feature: string) {
+    event.preventDefault();
+    this.popupMessage = `${feature} is under construction.`;
+    this.showPopup = true;
+  }
+
+  // Hide the shared alpha-tronex popup
+  closePopup() {
+    this.showPopup = false;
+    this.popupMessage = '';
+  }
+
+  // Custom links for the dropdown menu
+  customLinks = [
+    { name: 'Lesson Management', icon: 'fas fa-book', url: '#' },
+    { name: 'Enrollment Management', icon: 'fas fa-user-check', url: '#' }
+  ];
 }

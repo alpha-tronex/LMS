@@ -1,0 +1,17 @@
+
+.modal-header.header-info {
+  background-color: #0dcaf0;
+  color: #fff;
+}
+.modal-header.header-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+.modal-header.header-danger {
+  background-color: #dc3545;
+  color: #fff;
+}
+.modal-header.header-success {
+  background-color: #198754;
+  color: #fff;
+}

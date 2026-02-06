@@ -1,0 +1,199 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+    
+    <h2 class="mb-4">Create Quiz</h2>
+    
+    <div class="card text-dark">
+      <div class="card-body text-start">
+        <!-- Success/Error Messages -->
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show">
+          <i class="fas fa-check-circle"></i> {{ successMessage }}
+          <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+          <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+        </div>
+
+        <!-- Quiz Title -->
+        <div class="mb-4">
+          <label for="quizTitle" class="form-label fw-bold">
+            <i class="fas fa-heading"></i> Quiz Title *
+          </label>
+          <input 
+            type="text" 
+            class="form-control form-control-lg" 
+            id="quizTitle"
+            #quizTitleInput
+            [(ngModel)]="quizTitle"
+            placeholder="Enter quiz title..."
+            [disabled]="isSubmitting">
+        </div>
+
+        <!-- Questions List -->
+        <div *ngIf="questions.length > 0" class="mb-4">
+          <h5 class="mb-3">
+            <i class="fas fa-list"></i> Added Questions ({{ questions.length }})
+          </h5>
+          <div class="accordion" id="questionsAccordion">
+            <div class="card mb-2" *ngFor="let question of questions; let i = index">
+              <div class="card-header" [id]="'heading' + i">
+                <h2 class="mb-0">
+                  <button class="btn btn-link btn-block text-left" type="button" 
+                          data-toggle="collapse" 
+                          [attr.data-target]="'#question' + i"
+                          [attr.aria-expanded]="false"
+                          [attr.aria-controls]="'question' + i">
+                    <strong>Question {{ i + 1 }}:</strong>&nbsp;{{ question.questionText }}
+                  </button>
+                </h2>
+              </div>
+              <div [id]="'question' + i" class="collapse" 
+                   [attr.aria-labelledby]="'heading' + i"
+                   data-parent="#questionsAccordion">
+                <div class="card-body">
+                  <ul class="list-group mb-3">
+                    <li *ngFor="let answer of question.answers; let j = index" 
+                        class="list-group-item d-flex justify-content-between align-items-center"
+                        [ngClass]="{'list-group-item-success': answer.isCorrect}">
+                      {{ answer.text }}
+                      <span *ngIf="answer.isCorrect" class="badge bg-success">
+                        <i class="fas fa-check"></i> Correct
+                      </span>
+                    </li>
+                  </ul>
+                  <div class="btn-group">
+                    <button class="btn btn-sm btn-warning" (click)="editQuestion(i)">
+                      <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-danger" (click)="removeQuestion(i)">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Question Form -->
+        <div class="card bg-light">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="fas fa-question-circle"></i> 
+              {{ questions.length > 0 ? 'Add Another Question' : 'Add First Question' }}
+            </h5>
+          </div>
+          <div class="card-body">
+            <!-- Question Text -->
+            <div class="mb-3">
+              <label for="questionText" class="form-label fw-bold">Question Text *</label>
+              <textarea 
+                class="form-control" 
+                id="questionText"
+                rows="3"
+                [(ngModel)]="currentQuestion.questionText"
+                placeholder="Enter your question..."
+                [disabled]="isSubmitting"></textarea>
+            </div>
+
+            <!-- Question Type -->
+            <div class="mb-3">
+              <label for="questionType" class="form-label fw-bold">Question Type</label>
+              <select 
+                class="form-select" 
+                id="questionType"
+                [(ngModel)]="currentQuestion.questionType"
+                (ngModelChange)="onQuestionTypeChange()"
+                [disabled]="isSubmitting">
+                <option *ngFor="let type of questionTypes" [value]="type">{{ type }}</option>
+              </select>
+              <p class="form-text mt-2">
+                <i class="fas fa-info-circle"></i> Instructions: {{ currentQuestion.instructions }}
+              </p>
+            </div>
+
+            <!-- Answers -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">
+                <i class="fas fa-list-ul"></i> Answer Options *
+              </label>
+              
+              <div *ngFor="let answer of currentQuestion.answers; let i = index" class="input-group mb-2">
+                <div class="input-group-prepend">
+                <div class="input-group-text">
+                  <input 
+                    class="form-check-input mt-0" 
+                    type="checkbox"
+                    [(ngModel)]="answer.isCorrect"
+                    [disabled]="isSubmitting"
+                    title="Mark as correct answer">
+                </div>
+                </div>
+                <input 
+                  type="text" 
+                  class="form-control"
+                  #answerInput
+                  [(ngModel)]="answer.text"
+                  placeholder="Answer option {{ i + 1 }}..."
+                  [disabled]="isSubmitting">
+                  <div class="input-group-append">
+                <button 
+                  class="btn btn-outline-danger" 
+                  type="button"
+                  (click)="removeAnswer(i)"
+                  [disabled]="currentQuestion.answers.length <= 1 || isSubmitting"
+                  title="Remove this answer">
+                  <i class="fas fa-times"></i>
+                </button>
+                  </div>
+              </div>
+
+              <button 
+                class="btn btn-sm btn-outline-primary" 
+                (click)="addAnswer()"
+                [disabled]="isSubmitting">
+                <i class="fas fa-plus"></i> Add Another Answer
+              </button>
+              
+              <p class="form-text mt-2">
+                <i class="fas fa-info-circle"></i> Check the box next to correct answer(s)
+              </p>
+            </div>
+
+            <!-- Add Question Button -->
+            <div class="d-grid">
+              <button 
+                class="btn btn-success btn-lg mr-2" 
+                (click)="addQuestion()"
+                [disabled]="isSubmitting">
+                <i class="fas fa-plus-circle"></i> Add Question
+              </button>
+              <small class="text-muted mt-2">
+                <i class="fas fa-info-circle"></i> Click to save this question and start a new one
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-4 d-flex gap-2 justify-content-end">
+          <button 
+            class="btn btn-secondary mr-2" 
+            (click)="cancelQuiz()"
+            [disabled]="isSubmitting">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button 
+            class="btn btn-primary btn-lg" 
+            (click)="saveQuiz()"
+            [disabled]="isSubmitting || questions.length === 0">
+            <i class="fas fa-save"></i> {{ isSubmitting ? 'Saving...' : 'Save Quiz' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -22,7 +22,8 @@ export class AdminBreadcrumbComponent implements OnInit {
     'user-details': 'User Details',
     'create-quiz': 'Create Quiz',
     'upload-quiz': 'Upload Quiz',
-    'quiz-management': 'Quiz Management'
+    'quiz-management': 'Quiz Management',
+    'edit-quiz': 'Edit Quiz'
   };
 
   constructor(private router: Router) { }
@@ -47,17 +48,24 @@ export class AdminBreadcrumbComponent implements OnInit {
     ];
 
     let currentPath = '/admin';
-    segments.forEach(segment => {
-      // Remove query parameters if any
-      const cleanSegment = segment.split('?')[0];
-      currentPath += `/${cleanSegment}`;
-      
-      // Get label from routeLabels or use segment as fallback
-      const label = this.routeLabels[cleanSegment] || this.formatSegment(cleanSegment);
-      
+    segments.forEach((segment) => {
+      // Remove query/hash/matrix parameters if any
+      const cleanSegment = segment.split(/[?#;]/)[0];
+      let label = this.routeLabels[cleanSegment] || this.formatSegment(cleanSegment);
+      let url = currentPath + `/${cleanSegment}`;
+
+      // Special case: parameterized route base isn't navigable; clicking should go back to the list view.
+      if (cleanSegment === 'edit-quiz') {
+        url = '/admin/quiz-management';
+      } else if (cleanSegment === 'user-details') {
+        url = '/admin/user-management';
+      } else {
+        currentPath = url;
+      }
+
       this.breadcrumbs.push({
         label: label,
-        url: currentPath
+        url: url
       });
     });
   }

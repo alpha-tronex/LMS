@@ -179,36 +179,29 @@
 </section>
 
 <!-- Confirmation Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header" [ngClass]="confirmAction === 'delete' ? 'bg-danger text-white' : (confirmAction === null ? 'bg-warning text-dark' : 'bg-primary text-white')">
-        <h5 class="modal-title" id="confirmModalLabel">
-          <i class="fas" [ngClass]="confirmAction === 'delete' ? 'fa-exclamation-triangle' : (confirmAction === null ? 'fa-info-circle' : 'fa-user-shield')"></i>
-          {{ confirmTitle }}
-        </h5>
-        <button type="button" class="btn-close" [ngClass]="confirmAction === null ? '' : 'btn-close-white'" (click)="closeConfirmModal()" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p class="mb-0">{{ confirmMessage }}</p>
-        <div *ngIf="confirmAction === 'delete'" class="alert alert-warning mt-3 mb-0">
-          <i class="fas fa-exclamation-circle"></i>&nbsp;
-          <strong>Warning:</strong> This action cannot be undone.
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button *ngIf="confirmAction !== null" type="button" class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
-        <button *ngIf="confirmAction !== null" type="button" class="btn" [ngClass]="getConfirmButtonClass()" (click)="confirmActionExecute()">
-          <i class="fas" [ngClass]="confirmAction === 'delete' ? 'fa-trash' : 'fa-check'"></i>
-          {{ getConfirmButtonText() }}
-        </button>
-        <button *ngIf="confirmAction === null" type="button" class="btn btn-primary" (click)="closeConfirmModal()">
-          <i class="fas fa-check"></i> OK
-        </button>
-      </div>
-    </div>
+<alpha-tronex-modal
+  [show]="showConfirmModal"
+  [title]="confirmTitle"
+  [type]="confirmAction === 'delete' ? 'danger' : (confirmAction === null ? 'warning' : 'info')"
+  [content]="confirmMessage + (confirmAction === 'delete' ? ' This action cannot be undone.' : '')"
+  [scrollToTopOnHide]="true"
+  (close)="closeConfirmModal()"
+  (confirm)="confirmActionExecute()">
+  <div modal-actions>
+    <ng-container *ngIf="confirmAction !== null; else infoOnly">
+      <button type="button" class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+      <button type="button" class="btn ml-2 mr-2" [ngClass]="getConfirmButtonClass()" (click)="confirmActionExecute()">
+        <i class="fas" [ngClass]="confirmAction === 'delete' ? 'fa-trash' : 'fa-check'"></i>
+        {{ getConfirmButtonText() }}
+      </button>
+    </ng-container>
+    <ng-template #infoOnly>
+      <button type="button" class="btn btn-primary mr-2" (click)="closeConfirmModal()">
+        <i class="fas fa-check"></i> OK
+      </button>
+    </ng-template>
   </div>
-</div>
+</alpha-tronex-modal>
 
 <!-- Quiz Review Modal -->
 <div class="modal fade" id="quizReviewModal" tabindex="-1" aria-labelledby="quizReviewModalLabel" aria-hidden="true">

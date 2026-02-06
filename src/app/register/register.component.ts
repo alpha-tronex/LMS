@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { User } from '../models/users';
-import { LoginService } from '../services/login-service';
-import { ValidationService } from '../services/validation.service';
+import { User } from '@models/users';
+import { LoginService } from '@core/services/login-service';
+import { ValidationService } from '@shared/services/validation.service';
 
 @Component({
     selector: 'app-register',
@@ -46,7 +46,9 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
         zipCode: '',
         country: ''
       },
-      quizzes: []
+      quizzes: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
   }
 

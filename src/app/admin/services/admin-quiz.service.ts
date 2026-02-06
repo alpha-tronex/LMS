@@ -2,45 +2,46 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminQuizService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private logger: LoggerService) { }
 
   getAvailableQuizzes(): Observable<any[]> {
     return this.http.get<any[]>('/api/quizzes').pipe(
-      catchError(this.handleError)
+      catchError((error) => this.handleError(error))
     );
   }
 
   uploadQuiz(quizData: any): Observable<any> {
     return this.http.post('/api/quiz/upload', quizData).pipe(
-      tap(() => console.log('Quiz uploaded successfully')),
-      catchError(this.handleError)
+      tap(() => this.logger.info('Quiz uploaded successfully')),
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllUsersQuizData(): Observable<any> {
     return this.http.delete('/api/admin/quizzes/all-users-data').pipe(
-      tap(() => console.log('All users quiz data deleted')),
-      catchError(this.handleError)
+      tap(() => this.logger.info('All users quiz data deleted')),
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteQuizFile(quizId: string): Observable<any> {
     return this.http.delete(`/api/admin/quiz-file/${quizId}`).pipe(
-      tap(() => console.log('Quiz file deleted:', quizId)),
-      catchError(this.handleError)
+      tap(() => this.logger.info('Quiz file deleted', { quizId })),
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllQuizFiles(): Observable<any> {
     return this.http.delete('/api/admin/quiz-files/all').pipe(
-      tap(() => console.log('All quiz files deleted')),
-      catchError(this.handleError)
+      tap(() => this.logger.info('All quiz files deleted')),
+      catchError((error) => this.handleError(error))
     );
   }
 
@@ -55,7 +56,7 @@ export class AdminQuizService {
       errorMessage = error.error?.error || error.error?.message || error.message || 'Server error';
     }
     
-    console.error('Admin quiz service error:', errorMessage);
+    this.logger.error('Admin quiz service error', errorMessage);
     return throwError(() => errorMessage);
   }
 }

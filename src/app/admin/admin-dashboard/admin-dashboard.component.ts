@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AdminUserService } from '../../services/admin-user.service';
-import { AdminQuizService } from '../../services/admin-quiz.service';
+import { AdminUserService } from '@admin/services/admin-user.service';
+import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -18,7 +19,8 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(
     private adminUserService: AdminUserService,
-    private adminQuizService: AdminQuizService
+    private adminQuizService: AdminQuizService,
+    private logger: LoggerService
   ) { }
 
   ngOnInit() {
@@ -38,7 +40,7 @@ export class AdminDashboardComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading dashboard stats:', error);
+        this.logger.error('Error loading dashboard stats', error);
         this.loading = false;
       }
     });
@@ -49,7 +51,7 @@ export class AdminDashboardComponent implements OnInit {
         this.totalQuizzes = quizzes.length;
       },
       error: (error) => {
-        console.error('Error loading quizzes:', error);
+        this.logger.error('Error loading quizzes', error);
       }
     });
   }

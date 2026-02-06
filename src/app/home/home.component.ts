@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 // import { BehaviorSubject, Observable } from 'rxjs';
-import { LoginService } from '../services/login-service';
-import { QuestionsService } from '../services/questions-service';
+import { LoginService } from '@core/services/login-service';
+import { QuestionsService } from '@core/services/questions-service';
 import { Router } from '@angular/router';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
     selector: 'app-home',
@@ -25,7 +26,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   recentQuizzes: any[] = [];
   loadingStats: boolean = false;
 
-  constructor(private loginService: LoginService, private questionsService: QuestionsService, private router: Router) { }
+  constructor(
+    private loginService: LoginService,
+    private questionsService: QuestionsService,
+    private router: Router,
+    private logger: LoggerService
+  ) { }
 
   ngOnInit() {
     if (!this.loginService.userName) {
@@ -44,7 +50,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Error loading quizzes:', error);
+        this.logger.error('Error loading quizzes', error);
       }
     });
   }
@@ -82,7 +88,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.loadingStats = false;
       },
       error: (error) => {
-        console.error('Error loading user stats:', error);
+        this.logger.error('Error loading user stats', error);
         this.loadingStats = false;
       }
     });
@@ -92,7 +98,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     try {
       this.router.navigate(['/questions'], { queryParams: { id: quizId } });
     } catch (error) {
-      console.error('Error starting quiz:', error);
+      this.logger.error('Error starting quiz', error);
     }
   }
 

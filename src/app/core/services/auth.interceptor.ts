@@ -4,13 +4,15 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { IdleTimeoutService } from './idle-timeout.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   
   constructor(
     private router: Router,
-    private idleTimeoutService: IdleTimeoutService
+    private idleTimeoutService: IdleTimeoutService,
+    private logger: LoggerService
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -23,7 +25,7 @@ export class AuthInterceptor implements HttpInterceptor {
         const user = JSON.parse(currentUser);
         token = user.token;
       } catch (e) {
-        console.error('Error parsing user from localStorage:', e);
+        this.logger.error('Error parsing user from localStorage', e);
       }
     }
 
@@ -47,7 +49,7 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         // If 401 Unauthorized, token is invalid/expired - redirect to login
         if (error.status === 401) {
-          console.log('Unauthorized - redirecting to login');
+          this.logger.warn('Unauthorized - redirecting to login');
           localStorage.removeItem('currentUser');
           this.router.navigate(['/login']);
         }

@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdminQuizService } from '../../../services/admin-quiz.service';
-import { QuestionType } from '../../../models/quiz';
+import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { QuestionType, QuestionTypeLabels } from '@models/quiz';
 
 interface Answer {
   text: string;
@@ -11,7 +11,7 @@ interface Answer {
 interface Question {
   questionText: string;
   answers: Answer[];
-  questionType: QuestionType;
+  questionType: QuestionType | '';
   instructions: string;
 }
 
@@ -25,21 +25,23 @@ export class CreateQuizComponent implements OnInit, AfterViewInit {
   quizTitle: string = '';
   questions: Question[] = [];
   
-  // Expose QuestionType enum to template
+  // Expose QuestionType enum and labels to template
   QuestionType = QuestionType;
+  QuestionTypeLabels = QuestionTypeLabels;
   questionTypes = Object.values(QuestionType);
   
   // Current question being edited
   currentQuestion: Question = {
     questionText: '',
     answers: [{ text: '', isCorrect: false }],
-    questionType: QuestionType.MultipleChoice,
-    instructions: this.getInstructions(QuestionType.MultipleChoice)
+    questionType: '',
+    instructions: ''
   };
 
   successMessage: string = '';
   errorMessage: string = '';
   isSubmitting: boolean = false;
+  showCancelModal = false;
 
   constructor(
     private adminQuizService: AdminQuizService,
@@ -62,7 +64,11 @@ getInstructions(questionType: QuestionType): string {
   }
 
   onQuestionTypeChange() {
-    this.currentQuestion.instructions = this.getInstructions(this.currentQuestion.questionType);
+    if (this.currentQuestion.questionType) {
+      this.currentQuestion.instructions = this.getInstructions(this.currentQuestion.questionType as QuestionType);
+    } else {
+      this.currentQuestion.instructions = '';
+    }
   }
 
   
@@ -142,8 +148,8 @@ getInstructions(questionType: QuestionType): string {
     this.currentQuestion = {
       questionText: '',
       answers: [{ text: '', isCorrect: false }],
-      questionType: QuestionType.MultipleChoice,
-      instructions: this.getInstructions(QuestionType.MultipleChoice)
+      questionType: '',
+      instructions: ''
     };
   }
 
@@ -188,7 +194,7 @@ getInstructions(questionType: QuestionType): string {
 
     // Save quiz
     this.adminQuizService.uploadQuiz(quizData).subscribe({
-      next: (response) => {
+      next: (_response) => {
         this.successMessage = 'Quiz created successfully!';
         setTimeout(() => {
           this.router.navigate(['/admin/quizzes']);
@@ -202,8 +208,13 @@ getInstructions(questionType: QuestionType): string {
   }
 
   cancelQuiz() {
-    if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-      this.router.navigate(['/admin/quizzes']);
-    }
+    this.showCancelModal = true;
+  }
+  onCancelModalConfirm() {
+    this.showCancelModal = false;
+    this.router.navigate(['/admin']);
+  }
+  onCancelModalDismiss() {
+    this.showCancelModal = false;
   }
 }

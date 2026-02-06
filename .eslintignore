@@ -1,0 +1,13 @@
+# Build outputs
+/dist
+/coverage
+
+# Dependencies
+/node_modules
+
+# Tooling outputs
+/.angular
+
+# Non-Angular code (handled separately)
+/server
+/scripts

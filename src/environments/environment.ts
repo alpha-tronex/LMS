@@ -5,6 +5,7 @@
 
 export const environment = {
   production: false,
+  logLevel: 'debug',
   idleTimeoutMinutes: 30, // Idle timeout in minutes
   idleWarningMinutes: 2   // Warning time before logout
 };

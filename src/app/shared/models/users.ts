@@ -34,4 +34,6 @@ export class User {
     type: string;
     quizzes?: Quiz[];
     token?: string; // JWT token for authentication
+    createdAt: Date;
+    updatedAt: Date;
 }

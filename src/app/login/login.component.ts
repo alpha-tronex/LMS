@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Admin, User } from '../models/users';
+import { User } from '@models/users';
 import { Router } from '@angular/router';
-import { LoginService } from '../services/login-service';
-import { ValidationService } from '../services/validation.service';
+import { LoginService } from '@core/services/login-service';
+import { ValidationService } from '@shared/services/validation.service';
 
 @Component({
     selector: 'app-login',
@@ -35,7 +35,9 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       lname: '',
       phone: '',
       address: null,
-      quizzes: []
+      quizzes: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     // Check for logout reason (e.g., inactivity timeout)

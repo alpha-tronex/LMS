@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminQuizService } from '../../../services/admin-quiz.service';
-import { QuestionsService } from '../../../services/questions-service';
-import { QuestionType } from '../../../models/quiz';
+import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { QuestionsService } from '@core/services/questions-service';
+import { QuestionType, QuestionTypeLabels } from '@models/quiz';
 
 interface Answer {
   text: string;
@@ -12,7 +12,7 @@ interface Answer {
 interface Question {
   questionText: string;
   answers: Answer[];
-  questionType: QuestionType;
+  questionType: QuestionType | '';
   instructions: string;
 }
 
@@ -27,22 +27,27 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   quizTitle: string = '';
   questions: Question[] = [];
   
-  // Expose QuestionType enum to template
+  // Expose QuestionType enum and labels to template
   QuestionType = QuestionType;
+  QuestionTypeLabels = QuestionTypeLabels;
   questionTypes = Object.values(QuestionType);
   
   // Current question being edited
   currentQuestion: Question = {
     questionText: '',
     answers: [{ text: '', isCorrect: false }],
-    questionType: QuestionType.MultipleChoice,
-    instructions: this.getInstructions(QuestionType.MultipleChoice)
+    questionType: '',
+    instructions: ''
   };
+  editingIndex: number | null = null;
 
   successMessage: string = '';
   errorMessage: string = '';
   isSubmitting: boolean = false;
   isLoading: boolean = true;
+  showCancelModal = false;
+  showDeleteModal = false;
+  pendingDeleteIndex: number | null = null;
 
   @ViewChildren('answerInput') answerInputs!: QueryList<ElementRef>;
   @ViewChild('quizTitleInput') quizTitleInput!: ElementRef;
@@ -108,7 +113,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
           }
         });
       },
-      error: (error) => {
+      error: (_error) => {
         this.errorMessage = 'Error loading quiz';
         this.isLoading = false;
       }
@@ -116,6 +121,9 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   }
 
   getInstructions(questionType: QuestionType): string {
+    if (!questionType || !this.questionTypes.includes(questionType as QuestionType)) {
+      return '';
+    }
     switch (questionType) {
       case QuestionType.TrueFalse:
         return 'Select the correct answer (True or False)';
@@ -129,7 +137,11 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   }
 
   onQuestionTypeChange() {
-    this.currentQuestion.instructions = this.getInstructions(this.currentQuestion.questionType);
+    if (this.currentQuestion.questionType && this.questionTypes.includes(this.currentQuestion.questionType as QuestionType)) {
+      this.currentQuestion.instructions = this.getInstructions(this.currentQuestion.questionType as QuestionType);
+    } else {
+      this.currentQuestion.instructions = '';
+    }
   }
 
   addAnswer() {
@@ -171,29 +183,85 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Add question to list
-    this.questions.push({ ...this.currentQuestion });
-    
+    if (this.editingIndex !== null) {
+      // Update the question in place
+      this.questions[this.editingIndex] = { ...this.currentQuestion };
+      this.successMessage = `Question ${this.editingIndex + 1} updated!`;
+      this.editingIndex = null;
+    } else {
+      // Add question to list
+      this.questions.push({ ...this.currentQuestion });
+      this.successMessage = `Question ${this.questions.length} saved! Form cleared for next question.`;
+    }
+
     this.errorMessage = '';
-    this.successMessage = `Question ${this.questions.length} saved! Form cleared for next question.`;
     setTimeout(() => this.successMessage = '', 3000);
-    
+
     // Clear the form immediately for the next question
     this.currentQuestion = {
       questionText: '',
       answers: [{ text: '', isCorrect: false }],
-      questionType: QuestionType.MultipleChoice,
-      instructions: this.getInstructions(QuestionType.MultipleChoice)
+      questionType: '',
+      instructions: ''
     };
   }
 
+  openDeleteQuestionModal(index: number) {
+    this.pendingDeleteIndex = index;
+    this.showDeleteModal = true;
+    this.cdr.detectChanges();
+  }
+
+  onDeleteModalConfirm() {
+    if (this.pendingDeleteIndex === null) {
+      this.showDeleteModal = false;
+      return;
+    }
+
+    this.removeQuestion(this.pendingDeleteIndex);
+    this.pendingDeleteIndex = null;
+    this.showDeleteModal = false;
+  }
+
+  onDeleteModalDismiss() {
+    this.pendingDeleteIndex = null;
+    this.showDeleteModal = false;
+  }
+
+  get deleteModalContent(): string {
+    if (this.pendingDeleteIndex === null) {
+      return '';
+    }
+    const question = this.questions[this.pendingDeleteIndex];
+    const questionText = question?.questionText ? `"${question.questionText}"` : 'this question';
+    return `Are you sure you want to delete ${questionText}? This cannot be undone.`;
+  }
+
   removeQuestion(index: number) {
+    // Keep edit-in-place state consistent when questions shift
+    if (this.editingIndex !== null) {
+      if (this.editingIndex === index) {
+        this.editingIndex = null;
+        this.currentQuestion = {
+          questionText: '',
+          answers: [{ text: '', isCorrect: false }],
+          questionType: '',
+          instructions: ''
+        };
+      } else if (this.editingIndex > index) {
+        this.editingIndex = this.editingIndex - 1;
+      }
+    }
     this.questions.splice(index, 1);
   }
 
   editQuestion(index: number) {
     this.currentQuestion = { ...this.questions[index] };
-    this.questions.splice(index, 1);
+    this.editingIndex = index;
+    // If questionType is missing or invalid, set to ''
+    if (!this.currentQuestion.questionType || !this.questionTypes.includes(this.currentQuestion.questionType as QuestionType)) {
+      this.currentQuestion.questionType = '';
+    }
   }
 
   saveQuiz() {
@@ -229,7 +297,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
 
     // Update quiz
     this.adminQuizService.uploadQuiz(quizData).subscribe({
-      next: (response) => {
+      next: (_response) => {
         this.successMessage = 'Quiz updated successfully!';
         setTimeout(() => {
           this.router.navigate(['/admin/quiz-management']);
@@ -243,8 +311,14 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   }
 
   cancelQuiz() {
-    if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-      this.router.navigate(['/admin/quiz-management']);
-    }
+    this.showCancelModal = true;
+    this.cdr.detectChanges();
+  }
+  onCancelModalConfirm() {
+    this.showCancelModal = false;
+    this.router.navigate(['/admin/quiz-management']);
+  }
+  onCancelModalDismiss() {
+    this.showCancelModal = false;
   }
 }

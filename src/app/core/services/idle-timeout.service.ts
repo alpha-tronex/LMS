@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginService } from './login-service';
-import { environment } from '../../environments/environment';
+import { environment } from '@env/environment';
 import { Subject } from 'rxjs';
+import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -38,7 +39,8 @@ export class IdleTimeoutService {
 
   constructor(
     private router: Router,
-    private loginService: LoginService
+    private loginService: LoginService,
+    private logger: LoggerService
   ) {}
 
   /**
@@ -64,7 +66,7 @@ export class IdleTimeoutService {
       this.checkIdleStatus();
     }, this.CHECK_INTERVAL);
 
-    console.log('Idle timeout monitoring started');
+    this.logger.info('Idle timeout monitoring started');
   }
 
   /**
@@ -100,7 +102,7 @@ export class IdleTimeoutService {
 
     this.warningShownAt = 0;
     this.warningShown = false;
-    console.log('Idle timeout monitoring stopped');
+    this.logger.info('Idle timeout monitoring stopped');
   }
 
   /**
@@ -187,18 +189,18 @@ export class IdleTimeoutService {
       
       if (timeSinceWarning >= this.WARNING_TIME) {
         // Too late - warning period expired, proceed with logout
-        console.log('Warning period expired - logging out despite OK click');
+        this.logger.warn('Warning period expired - logging out despite OK click');
         this.logout();
       } else {
         // Still within warning window - allow user to stay logged in
         this.warningShown = false;
         this.warningShownAt = 0;
         this.lastActivity = Date.now();
-        console.log('User chose to stay logged in within warning window - timer reset');
+        this.logger.info('User chose to stay logged in within warning window - timer reset');
       }
     } else {
       // User chose to log out
-      console.log('User chose to log out');
+      this.logger.info('User chose to log out');
       this.logout();
     }
   }
@@ -221,7 +223,7 @@ export class IdleTimeoutService {
    * Logout the user due to inactivity
    */
   private logout(): void {
-    console.log('Logging out user due to inactivity');
+    this.logger.warn('Logging out user due to inactivity');
     this.stopWatching();
     this.loginService.logout();
     

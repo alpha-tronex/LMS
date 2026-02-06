@@ -1,18 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, Subject, throwError } from 'rxjs';
-import { catchError, retry, tap } from 'rxjs/operators';
-import { User } from '../models/users';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { User } from '@models/users';
 
 @Injectable()
 export class LoginService {
   //loggedInStudentChange: Subject<User> = new Subject<User>();
-  welcomePhrase: string = 'Welcome to ISRA learning. Please login or register to start using LMS!';
+  welcomePhrase: string = 'Welcome to ISRA learning. Please login or register to start taking quizzes!';
   user: User;
   http: HttpClient;
   loggedIn: boolean = false;
 
-  constructor(http?: HttpClient) {
+  constructor(http: HttpClient) {
     this.http = http;
     /*
     this.loggedInStudentChange.subscribe((student) => {
@@ -98,7 +98,7 @@ export class LoginService {
   logout(): void {
     this.user = null;
     this.loggedIn = false;
-    this.welcomePhrase = 'You have been logged off. Please log back in to continue using LMS.';
+    this.welcomePhrase = 'You have been logged off. Please log back in to continue taking quizzes.';
     // Clear user from localStorage
     localStorage.removeItem('currentUser');
   }

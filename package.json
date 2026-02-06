@@ -1,5 +1,5 @@
 {
-  "name": "LMS",
+  "name": "quizzes",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
@@ -10,6 +10,7 @@
     "build:prod": "ng build --configuration production",
     "test": "ng test",
     "lint": "ng lint",
+    "typecheck": "tsc -p src/tsconfig.app.json --noEmit && tsc -p src/tsconfig.spec.json --noEmit",
     "e2e": "ng e2e",
     "server": "node server/server.js"
   },
@@ -26,7 +27,7 @@
     "@angular/platform-browser": "^20.3.14",
     "@angular/platform-browser-dynamic": "^20.3.14",
     "@angular/router": "^20.3.14",
-    "bcrypt": "^5.0.0",
+    "bcrypt": "^6.0.0",
     "core-js": "^3.6.5",
     "dotenv": "^8.2.0",
     "https": "^1.0.0",
@@ -37,8 +38,15 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
+    "@angular-eslint/builder": "^20.7.0",
+    "@angular-eslint/eslint-plugin": "^20.7.0",
+    "@angular-eslint/eslint-plugin-template": "^20.7.0",
+    "@angular-eslint/template-parser": "^20.7.0",
     "@angular/language-service": "^20.3.14",
     "@types/jasmine": "~5.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
     "jasmine-core": "~5.5.0",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",

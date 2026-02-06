@@ -2,31 +2,32 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class QuizUploadService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private logger: LoggerService) { }
 
   uploadQuiz(quizData: any): Observable<any> {
     return this.http.post('/api/quiz/upload', quizData).pipe(
-      tap(response => console.log('Quiz uploaded:', response)),
-      catchError(this.handleError)
+      tap(response => this.logger.info('Quiz uploaded', response)),
+      catchError((error) => this.handleError(error))
     );
   }
 
   getQuizList(): Observable<any[]> {
     return this.http.get<any[]>('/api/quiz/list').pipe(
-      catchError(this.handleError)
+      catchError((error) => this.handleError(error))
     );
   }
 
   deleteQuiz(quizId: number): Observable<any> {
     return this.http.delete(`/api/quiz/delete/${quizId}`).pipe(
-      tap(() => console.log('Quiz deleted:', quizId)),
-      catchError(this.handleError)
+      tap(() => this.logger.info('Quiz deleted', { quizId })),
+      catchError((error) => this.handleError(error))
     );
   }
 
@@ -41,7 +42,7 @@ export class QuizUploadService {
       errorMessage = error.error?.error || error.error?.message || error.message || 'Server error';
     }
     
-    console.error('Quiz upload service error:', errorMessage);
+    this.logger.error('Quiz upload service error', errorMessage);
     return throwError(() => errorMessage);
   }
 }
