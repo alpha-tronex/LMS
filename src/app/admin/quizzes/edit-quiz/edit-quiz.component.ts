@@ -52,6 +52,8 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   @ViewChildren('answerInput') answerInputs!: QueryList<ElementRef>;
   @ViewChild('quizTitleInput') quizTitleInput!: ElementRef;
 
+  private focusAnswerInputOnNextChange = false;
+
   constructor(
     private adminQuizService: AdminQuizService,
     private questionsService: QuestionsService,
@@ -60,22 +62,42 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef
   ) { }
 
+  private scrollToTop() {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+
+    // Fallbacks for older browser behaviors
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }
+
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.quizId = +params['id']; // Convert string to number
+      this.scrollToTop();
       this.loadQuiz();
     });
   }
 
   ngAfterViewInit() {
+    this.scrollToTop();
     // Focus quiz title input on load
     if (this.quizTitleInput) {
       setTimeout(() => {
         this.quizTitleInput.nativeElement.focus();
       });
     }
-    // Remove initial focusLastAnswerInput call here
+
+    // Only focus the last answer input when an action (like Add Answer)
+    // intentionally triggers it; don't do it on initial render/load.
     this.answerInputs.changes.subscribe(() => {
+      if (!this.focusAnswerInputOnNextChange) {
+        return;
+      }
+      this.focusAnswerInputOnNextChange = false;
       this.focusLastAnswerInput();
     });
   }
@@ -107,6 +129,9 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
         }));
         this.isLoading = false;
         this.cdr.detectChanges();
+
+        this.scrollToTop();
+
         setTimeout(() => {
           if (this.quizTitleInput) {
             this.quizTitleInput.nativeElement.focus();
@@ -145,6 +170,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   }
 
   addAnswer() {
+    this.focusAnswerInputOnNextChange = true;
     this.currentQuestion.answers.push({ text: '', isCorrect: false });
     // focus will be handled by ViewChildren changes
   }

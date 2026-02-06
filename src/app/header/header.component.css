@@ -3,6 +3,20 @@
   overflow: hidden;
 }
 
+/* Slightly smaller nav typography so long labels fit */
+#mainNav .navbar-nav .nav-link {
+  font-size: 0.95rem;
+}
+
+#mainNav .dropdown-menu {
+  min-width: 12rem;
+}
+
+#mainNav .dropdown-menu .dropdown-item {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
 #navbarResponsive.collapse,
 #navbarResponsive.collapsing {
   transition: height .5s ease !important;
@@ -33,6 +47,14 @@
 
 /* Mobile/tablet: keep submenu within viewport by rendering inline */
 @media (max-width: 991.98px) {
+  #mainNav .navbar-nav .nav-link {
+    font-size: 0.9rem;
+  }
+
+  #mainNav .dropdown-menu .dropdown-item {
+    white-space: normal;
+  }
+
   .dropdown-submenu > .dropdown-menu {
     position: static;
     top: auto;
