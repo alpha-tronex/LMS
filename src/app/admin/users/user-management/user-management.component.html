@@ -40,7 +40,7 @@
               <div class="card-body text-center">
                 <i class="fas fa-clipboard-check fa-3x mb-2"></i>
                 <h3 class="mb-0">{{ totalQuizzesTaken }}</h3>
-                <p class="mb-0">Quizzes Taken</p>
+                <p class="mb-0">Assessments Taken</p>
               </div>
             </div>
           </div>
@@ -127,14 +127,14 @@
                   <strong>User ID:</strong> <small class="text-muted">{{ selectedUser.id }}</small>
                 </div>
                 
-                <!-- Quizzes Section -->
+                <!-- Assessments Section -->
                 <div class="mt-4" *ngIf="selectedUser.quizzes && selectedUser.quizzes.length > 0">
-                  <h6 class="mb-3">Quizzes Taken ({{ selectedUser.quizzes.length }})</h6>
+                  <h6 class="mb-3">Assessments Taken ({{ selectedUser.quizzes.length }})</h6>
                   <div class="table-responsive">
                     <table class="table table-sm table-striped">
                       <thead>
                         <tr>
-                          <th>Quiz</th>
+                          <th>Assessment</th>
                           <th>Date</th>
                           <th>Score</th>
                           <th>Time</th>
@@ -155,7 +155,7 @@
                             <button 
                               class="btn btn-sm btn-info" 
                               (click)="reviewQuiz(quiz)"
-                              title="Review quiz details">
+                              title="Review assessment details">
                               Review
                             </button>
                           </td>
@@ -166,7 +166,7 @@
                 </div>
                 
                 <div class="mt-3" *ngIf="!selectedUser.quizzes || selectedUser.quizzes.length === 0">
-                  <p class="text-muted"><em>No quizzes taken yet.</em></p>
+                  <p class="text-muted"><em>No assessments taken yet.</em></p>
                 </div>
               </div>
             </div>
@@ -203,16 +203,16 @@
   </div>
 </alpha-tronex-modal>
 
-<!-- Quiz Review Modal -->
+<!-- Assessment Review Modal -->
 <div class="modal fade" id="quizReviewModal" tabindex="-1" aria-labelledby="quizReviewModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="quizReviewModalLabel">Quiz Review: {{ reviewedQuiz?.title }}</h5>
+        <h5 class="modal-title" id="quizReviewModalLabel">Assessment Review: {{ reviewedQuiz?.title }}</h5>
         <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
       </div>
       <div class="modal-body" *ngIf="reviewedQuiz">
-        <!-- Quiz Summary -->
+        <!-- Assessment Summary -->
         <div class="card mb-3 bg-light">
           <div class="card-body">
             <h6 class="card-subtitle mb-3 text-muted">Summary</h6>

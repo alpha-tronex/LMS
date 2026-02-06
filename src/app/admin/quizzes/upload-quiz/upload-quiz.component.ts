@@ -54,7 +54,7 @@ export class UploadQuizComponent implements OnInit {
           const validationErrors = this.validateQuizStructure(quizData);
 
           if (validationErrors.length > 0) {
-            this.errorMessage = 'Quiz validation failed:\n' + validationErrors.join('\n');
+            this.errorMessage = 'Assessment validation failed:\n' + validationErrors.join('\n');
             this.fileContent = null;
           } else {
             this.fileContent = quizData;
@@ -147,7 +147,7 @@ export class UploadQuizComponent implements OnInit {
           const validationErrors = this.validateQuizStructure(quizData);
 
           if (validationErrors.length > 0) {
-            this.errorMessage = 'Quiz validation failed:\n\n' + validationErrors.join('\n');
+            this.errorMessage = 'Assessment validation failed:\n\n' + validationErrors.join('\n');
             this.fileContent = null;
           } else {
             this.fileContent = quizData;
@@ -256,11 +256,11 @@ export class UploadQuizComponent implements OnInit {
     });
 
     if (!quiz.title) {
-      throw new Error('Quiz must have a title');
+      throw new Error('Assessment must have a title');
     }
 
     if (quiz.questions.length === 0) {
-      throw new Error('Quiz must have at least one question');
+      throw new Error('Assessment must have at least one question');
     }
 
     return quiz;
@@ -292,16 +292,16 @@ export class UploadQuizComponent implements OnInit {
 
     // Validate required fields (ID will be auto-assigned on server)
     if (!quiz.title) {
-      errors.push('• Quiz must have a title field');
+      errors.push('• Assessment must have a title field');
     }
 
     if (!quiz.questions || !Array.isArray(quiz.questions)) {
-      errors.push('• Quiz must have a questions array');
+      errors.push('• Assessment must have a questions array');
       return errors;
     }
 
     if (quiz.questions.length === 0) {
-      errors.push('• Quiz must have at least one question');
+      errors.push('• Assessment must have at least one question');
       return errors;
     }
 
@@ -349,7 +349,7 @@ export class UploadQuizComponent implements OnInit {
 
     this.quizUploadService.uploadQuiz(this.fileContent).subscribe({
       next: () => {
-        this.successMessage = `Quiz "${this.fileContent.title}" uploaded successfully!`;
+        this.successMessage = `Assessment "${this.fileContent.title}" uploaded successfully!`;
         this.uploading = false;
 
         // Clear after 3 seconds
@@ -359,7 +359,7 @@ export class UploadQuizComponent implements OnInit {
         }, 3000);
       },
       error: (error) => {
-        this.errorMessage = error || 'Failed to upload quiz. Please try again.';
+        this.errorMessage = error || 'Failed to upload assessment. Please try again.';
         this.uploading = false;
       }
     });

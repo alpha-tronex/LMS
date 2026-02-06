@@ -114,7 +114,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
         });
       },
       error: (_error) => {
-        this.errorMessage = 'Error loading quiz';
+        this.errorMessage = 'Error loading assessment';
         this.isLoading = false;
       }
     });
@@ -267,7 +267,7 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
   saveQuiz() {
     // Validate quiz
     if (!this.quizTitle.trim()) {
-      this.errorMessage = 'Please enter a quiz title';
+      this.errorMessage = 'Please enter an assessment title';
       return;
     }
 
@@ -298,13 +298,13 @@ export class EditQuizComponent implements OnInit, AfterViewInit {
     // Update quiz
     this.adminQuizService.uploadQuiz(quizData).subscribe({
       next: (_response) => {
-        this.successMessage = 'Quiz updated successfully!';
+        this.successMessage = 'Assessment updated successfully!';
         setTimeout(() => {
           this.router.navigate(['/admin/quiz-management']);
         }, 2000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Error updating quiz';
+        this.errorMessage = error.error?.message || 'Error updating assessment';
         this.isSubmitting = false;
       }
     });

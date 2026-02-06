@@ -38,7 +38,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       //this.loginService.loggedInStudentChange.next(null);
     }
 
-    // Load available quizzes
+    // Load available assessments
     this.questionsService.getAvailableQuizzes().subscribe({
       next: (data) => {
         this.quizzes = data;
@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        this.logger.error('Error loading quizzes', error);
+        this.logger.error('Error loading assessments', error);
       }
     });
   }
@@ -73,7 +73,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.averageScore = Math.round(totalScore / quizzes.length);
         }
         
-        // Get recent quizzes (last 3)
+        // Get recent assessments (last 3)
         this.recentQuizzes = quizzes
           .sort((a: any, b: any) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
           .slice(0, 3)
@@ -98,7 +98,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     try {
       this.router.navigate(['/questions'], { queryParams: { id: quizId } });
     } catch (error) {
-      this.logger.error('Error starting quiz', error);
+      this.logger.error('Error starting assessment', error);
     }
   }
 

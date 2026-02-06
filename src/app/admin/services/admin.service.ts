@@ -9,7 +9,7 @@ import { LoggerService } from '@core/services/logger.service';
  * @deprecated This service has been split into AdminUserService and AdminQuizService.
  * Please use those services instead:
  * - AdminUserService for user management operations
- * - AdminQuizService for quiz management operations
+ * - AdminQuizService for assessment management operations
  * This service is kept for backwards compatibility but will be removed in a future version.
  */
 @Injectable({
@@ -52,24 +52,24 @@ export class AdminService {
     );
   }
 
-  // Quiz Management Methods
+  // Assessment Management Methods
   deleteUserQuizData(userId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/quizzes`).pipe(
-      tap(() => this.logger.info('User quiz data deleted', { userId })),
+      tap(() => this.logger.info('User assessment data deleted', { userId })),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteSpecificUserQuiz(userId: string, quizId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/quiz/${quizId}`).pipe(
-      tap(() => this.logger.info('Specific quiz deleted from user', { userId, quizId })),
+      tap(() => this.logger.info('Specific assessment deleted from user', { userId, quizId })),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllUsersQuizData(): Observable<any> {
     return this.http.delete('/api/admin/quizzes/all-users-data').pipe(
-      tap(() => this.logger.info('All users quiz data deleted')),
+      tap(() => this.logger.info('All users assessment data deleted')),
       catchError((error) => this.handleError(error))
     );
   }
@@ -82,14 +82,14 @@ export class AdminService {
 
   deleteQuizFile(quizId: string): Observable<any> {
     return this.http.delete(`/api/admin/quiz-file/${quizId}`).pipe(
-      tap(() => this.logger.info('Quiz file deleted', { quizId })),
+      tap(() => this.logger.info('Assessment file deleted', { quizId })),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllQuizFiles(): Observable<any> {
     return this.http.delete('/api/admin/quiz-files/all').pipe(
-      tap(() => this.logger.info('All quiz files deleted')),
+      tap(() => this.logger.info('All assessment files deleted')),
       catchError((error) => this.handleError(error))
     );
   }

@@ -2,7 +2,7 @@
   <div class="container">
     <app-admin-breadcrumb></app-admin-breadcrumb>
     
-    <h2 class="mb-4">Quiz Data Management</h2>
+    <h2 class="mb-4">Assessment Data Management</h2>
     
     <div class="card text-dark">
       <div class="card-body">
@@ -11,53 +11,53 @@
         </div>
 
         <div class="row text-start">
-          <!-- Section 1: Edit Quiz File -->
+          <!-- Section 1: Edit Assessment File -->
           <div class="col-md-6 mb-4">
             <div class="card h-100">
               <div class="card-header bg-secondary text-white">
                 <h5 class="mb-0">
-                  <i class="fas fa-edit"></i> Edit Quiz File
+                  <i class="fas fa-edit"></i> Edit Assessment File
                 </h5>
               </div>
               <div class="card-body">
-                <p class="text-muted">Select and edit an existing quiz file</p>
+                <p class="text-muted">Select and edit an existing assessment file</p>
                 
                 <div class="mb-3">
-                  <label for="editQuizSelect" class="form-label"><strong>Select Quiz:</strong></label>
+                  <label for="editQuizSelect" class="form-label"><strong>Select Assessment:</strong></label>
                   <select 
                     id="editQuizSelect" 
                     class="form-select" 
                     [(ngModel)]="selectedEditQuizId"
                     [disabled]="quizzes.length === 0">
-                    <option value="">-- Choose a quiz --</option>
+                    <option value="">-- Choose an assessment --</option>
                     <option *ngFor="let quiz of quizzes" [value]="quiz.id">
                       {{ quiz.title }} (ID: {{ quiz.id }})
                     </option>
                   </select>
-                  <small class="text-muted" *ngIf="quizzes.length === 0">No quiz files found</small>
-                  <small class="text-muted" *ngIf="quizzes.length > 0">{{ quizzes.length }} quiz file(s) available</small>
+                  <small class="text-muted" *ngIf="quizzes.length === 0">No assessment files found</small>
+                  <small class="text-muted" *ngIf="quizzes.length > 0">{{ quizzes.length }} assessment file(s) available</small>
                 </div>
 
                 <button 
                   class="btn btn-secondary w-100" 
                   [disabled]="!selectedEditQuizId"
                   [routerLink]="['/admin/edit-quiz', selectedEditQuizId]">
-                  <i class="fas fa-edit"></i> Edit Selected Quiz
+                  <i class="fas fa-edit"></i> Edit Selected Assessment
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Section 2: Delete User Quiz Data -->
+          <!-- Section 2: Delete User Assessment Data -->
           <div class="col-md-6 mb-4">
             <div class="card h-100">
               <div class="card-header bg-warning text-dark">
                 <h5 class="mb-0">
-                  <i class="fas fa-user-minus"></i> Delete User Quiz Data
+                  <i class="fas fa-user-minus"></i> Delete User Assessment Data
                 </h5>
               </div>
               <div class="card-body">
-                <p class="text-muted">Remove all quiz history for a specific user</p>
+                <p class="text-muted">Remove all assessment history for a specific user</p>
                 
                 <div class="mb-3">
                   <label for="userSelect" class="form-label"><strong>Select User:</strong></label>
@@ -70,7 +70,7 @@
                     <option *ngFor="let user of users" [value]="user.id">
                       {{ getUserDisplayName(user) }}
                       <span *ngIf="user.quizzes && user.quizzes.length > 0">
-                        ({{ user.quizzes.length }} quiz{{ user.quizzes.length !== 1 ? 'zes' : '' }})
+                        ({{ user.quizzes.length }} assessment{{ user.quizzes.length !== 1 ? 's' : '' }})
                       </span>
                     </option>
                   </select>
@@ -80,48 +80,48 @@
                   class="btn btn-warning w-100" 
                   [disabled]="!selectedUserId || loading"
                   (click)="deleteUserQuizData()">
-                  <i class="fas fa-trash"></i> Delete User's Quiz Data
+                  <i class="fas fa-trash"></i> Delete User's Assessment Data
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Section 2: Delete all quiz data from all users -->
+          <!-- Section 2: Delete all assessment data from all users -->
           <div class="col-md-6 mb-4">
             <div class="card h-100">
               <div class="card-header bg-danger text-white">
                 <h5 class="mb-0">
-                  <i class="fas fa-users-slash"></i> Delete All User Quiz Data
+                  <i class="fas fa-users-slash"></i> Delete All User Assessment Data
                 </h5>
               </div>
               <div class="card-body">
-                <p class="text-muted">Remove all quiz history from all users in the database</p>
+                <p class="text-muted">Remove all assessment history from all users in the database</p>
                 
                 <div class="alert alert-danger mb-3">
                   <i class="fas fa-exclamation-triangle"></i>
-                  <strong>Warning:</strong> This will delete ALL quiz data from ALL users. This action cannot be undone!
+                  <strong>Warning:</strong> This will delete ALL assessment data from ALL users. This action cannot be undone!
                 </div>
 
                 <button 
                   class="btn btn-danger w-100" 
                   [disabled]="loading"
                   (click)="deleteAllUsersQuizData()">
-                  <i class="fas fa-bomb"></i> Delete All Users' Quiz Data
+                  <i class="fas fa-bomb"></i> Delete All Users' Assessment Data
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Section 3: Delete specific quiz from specific user -->
+          <!-- Section 3: Delete specific assessment from specific user -->
           <div class="col-md-6 mb-4">
             <div class="card h-100">
               <div class="card-header bg-warning text-dark">
                 <h5 class="mb-0">
-                  <i class="fas fa-user-times"></i> Delete Specific Quiz from User
+                  <i class="fas fa-user-times"></i> Delete Specific Assessment from User
                 </h5>
               </div>
               <div class="card-body">
-                <p class="text-muted">Remove a specific quiz entry from a user's history</p>
+                <p class="text-muted">Remove a specific assessment entry from a user's history</p>
                 
                 <div class="mb-3">
                   <label for="userSelectSpecific" class="form-label"><strong>Select User:</strong></label>
@@ -135,96 +135,96 @@
                     <option *ngFor="let user of users" [value]="user.id">
                       {{ getUserDisplayName(user) }}
                       <span *ngIf="user.quizzes && user.quizzes.length > 0">
-                        ({{ user.quizzes.length }} quiz{{ user.quizzes.length !== 1 ? 'zes' : '' }})
+                        ({{ user.quizzes.length }} assessment{{ user.quizzes.length !== 1 ? 's' : '' }})
                       </span>
                     </option>
                   </select>
                 </div>
 
                 <div class="mb-3" *ngIf="selectedUserIdForSpecificQuiz">
-                  <label for="userQuizSelect" class="form-label"><strong>Select Quiz:</strong></label>
+                  <label for="userQuizSelect" class="form-label"><strong>Select Assessment:</strong></label>
                   <select 
                     id="userQuizSelect" 
                     class="form-select" 
                     [(ngModel)]="selectedUserQuizId"
                     [disabled]="userQuizzes.length === 0">
-                    <option value="">-- Choose a quiz --</option>
+                    <option value="">-- Choose an assessment --</option>
                     <option *ngFor="let quiz of userQuizzes" [value]="quiz._id">
                       {{ quiz.title }} - {{ formatQuizDate(quiz.completedAt) }} (Score: {{ quiz.score }}/{{ quiz.totalQuestions }})
                     </option>
                   </select>
-                  <small class="text-muted" *ngIf="userQuizzes.length === 0">No quizzes found for this user</small>
-                  <small class="text-muted" *ngIf="userQuizzes.length > 0">{{ userQuizzes.length }} quiz entry(ies) found</small>
+                  <small class="text-muted" *ngIf="userQuizzes.length === 0">No assessments found for this user</small>
+                  <small class="text-muted" *ngIf="userQuizzes.length > 0">{{ userQuizzes.length }} assessment entry(ies) found</small>
                 </div>
 
                 <button 
                   class="btn btn-warning w-100" 
                   [disabled]="!selectedUserIdForSpecificQuiz || !selectedUserQuizId || loading"
                   (click)="deleteSpecificUserQuiz()">
-                  <i class="fas fa-trash-alt"></i> Delete Selected Quiz Entry
+                  <i class="fas fa-trash-alt"></i> Delete Selected Assessment Entry
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Section 4: Delete a specific quiz file -->
+          <!-- Section 4: Delete a specific assessment file -->
           <div class="col-md-6 mb-4">
             <div class="card h-100">
               <div class="card-header bg-info text-white">
                 <h5 class="mb-0">
-                  <i class="fas fa-file-excel"></i> Delete Quiz File
+                  <i class="fas fa-file-excel"></i> Delete Assessment File
                 </h5>
               </div>
               <div class="card-body">
-                <p class="text-muted">Remove a specific quiz file from the server</p>
+                <p class="text-muted">Remove a specific assessment file from the server</p>
                 
                 <div class="mb-3">
-                  <label for="quizSelect" class="form-label"><strong>Select Quiz:</strong></label>
+                  <label for="quizSelect" class="form-label"><strong>Select Assessment:</strong></label>
                   <select 
                     id="quizSelect" 
                     class="form-select" 
                     [(ngModel)]="selectedQuizId"
                     [disabled]="quizzes.length === 0">
-                    <option value="">-- Choose a quiz --</option>
+                    <option value="">-- Choose an assessment --</option>
                     <option *ngFor="let quiz of quizzes" [value]="quiz.id">
                       {{ quiz.title }} (ID: {{ quiz.id }})
                     </option>
                   </select>
-                  <small class="text-muted" *ngIf="quizzes.length === 0">No quiz files found</small>
-                  <small class="text-muted" *ngIf="quizzes.length > 0">{{ quizzes.length }} quiz file(s) available</small>
+                  <small class="text-muted" *ngIf="quizzes.length === 0">No assessment files found</small>
+                  <small class="text-muted" *ngIf="quizzes.length > 0">{{ quizzes.length }} assessment file(s) available</small>
                 </div>
 
                 <button 
                   class="btn btn-info w-100" 
                   [disabled]="!selectedQuizId || loading"
                   (click)="deleteQuizFile()">
-                  <i class="fas fa-trash-alt"></i> Delete Quiz File
+                  <i class="fas fa-trash-alt"></i> Delete Assessment File
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Section 5: Delete all quiz files -->
+          <!-- Section 5: Delete all assessment files -->
           <div class="col-md-6 mb-4">
             <div class="card h-100">
               <div class="card-header bg-danger text-white">
                 <h5 class="mb-0">
-                  <i class="fas fa-folder-minus"></i> Delete All Quiz Files
+                  <i class="fas fa-folder-minus"></i> Delete All Assessment Files
                 </h5>
               </div>
               <div class="card-body">
-                <p class="text-muted">Remove all quiz files from the server</p>
+                <p class="text-muted">Remove all assessment files from the server</p>
                 
                 <div class="alert alert-danger mb-3">
                   <i class="fas fa-exclamation-triangle"></i>
-                  <strong>Warning:</strong> This will delete ALL quiz files. Users will not be able to take any quizzes until new ones are uploaded!
+                  <strong>Warning:</strong> This will delete ALL assessment files. Users will not be able to take any assessments until new ones are uploaded!
                 </div>
 
                 <button 
                   class="btn btn-danger w-100" 
                   [disabled]="loading"
                   (click)="deleteAllQuizFiles()">
-                  <i class="fas fa-fire"></i> Delete All Quiz Files
+                  <i class="fas fa-fire"></i> Delete All Assessment Files
                 </button>
               </div>
             </div>

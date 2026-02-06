@@ -32,11 +32,11 @@ export class QuestionsComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    // Get quiz ID from route params
+    // Get assessment ID from route params
     const quizId = this.route.snapshot.queryParams['id'];
     const id = quizId ? parseInt(quizId, 10) : undefined;
     
-    // Start timer when quiz loads
+    // Start timer when assessment loads
     this.startTime = Date.now();
     
     this.questionsService.getQuiz(id).subscribe({
@@ -114,7 +114,7 @@ export class QuestionsComponent implements OnInit {
       // Calculate elapsed time in seconds
       this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
       this.submitted = true;
-      this.logger.debug('Quiz submitted', this.quiz);
+      this.logger.debug('Assessment submitted', this.quiz);
       this.logger.debug('Time taken (seconds)', this.elapsedTime);
     }
   }
@@ -160,7 +160,7 @@ export class QuestionsComponent implements OnInit {
       }
     });
 
-    // Prepare quiz data for saving
+    // Prepare assessment data for saving
     const quizData = {
       id: this.quiz.id,
       title: this.quiz.title,
@@ -181,12 +181,12 @@ export class QuestionsComponent implements OnInit {
     // Save to database
     this.questionsService.saveQuiz(this.getUsername(), quizData).subscribe({
       next: (response) => {
-        this.logger.info('Quiz saved successfully', response);
+        this.logger.info('Assessment saved successfully', response);
         // Redirect to history page
         this.router.navigate(['/history']);
       },
       error: (error) => {
-        this.logger.error('Error saving quiz', error);
+        this.logger.error('Error saving assessment', error);
         // Still redirect even if save fails
         this.router.navigate(['/history']);
       }

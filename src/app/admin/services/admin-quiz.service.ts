@@ -19,28 +19,28 @@ export class AdminQuizService {
 
   uploadQuiz(quizData: any): Observable<any> {
     return this.http.post('/api/quiz/upload', quizData).pipe(
-      tap(() => this.logger.info('Quiz uploaded successfully')),
+      tap(() => this.logger.info('Assessment uploaded successfully')),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllUsersQuizData(): Observable<any> {
     return this.http.delete('/api/admin/quizzes/all-users-data').pipe(
-      tap(() => this.logger.info('All users quiz data deleted')),
+      tap(() => this.logger.info('All users assessment data deleted')),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteQuizFile(quizId: string): Observable<any> {
     return this.http.delete(`/api/admin/quiz-file/${quizId}`).pipe(
-      tap(() => this.logger.info('Quiz file deleted', { quizId })),
+      tap(() => this.logger.info('Assessment file deleted', { quizId })),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllQuizFiles(): Observable<any> {
     return this.http.delete('/api/admin/quiz-files/all').pipe(
-      tap(() => this.logger.info('All quiz files deleted')),
+      tap(() => this.logger.info('All assessment files deleted')),
       catchError((error) => this.handleError(error))
     );
   }
@@ -56,7 +56,7 @@ export class AdminQuizService {
       errorMessage = error.error?.error || error.error?.message || error.message || 'Server error';
     }
     
-    this.logger.error('Admin quiz service error', errorMessage);
+    this.logger.error('Admin assessment service error', errorMessage);
     return throwError(() => errorMessage);
   }
 }

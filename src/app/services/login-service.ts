@@ -7,7 +7,7 @@ import { User } from '@models/users';
 @Injectable()
 export class LoginService {
   //loggedInStudentChange: Subject<User> = new Subject<User>();
-  welcomePhrase: string = 'Welcome to ISRA learning. Please login or register to start taking quizzes!';
+  welcomePhrase: string = 'Welcome to LMS. Please log in or register to get started!';
   user: User;
   http: HttpClient;
   loggedIn: boolean = false;
@@ -98,7 +98,7 @@ export class LoginService {
   logout(): void {
     this.user = null;
     this.loggedIn = false;
-    this.welcomePhrase = 'You have been logged off. Please log back in to continue taking quizzes.';
+    this.welcomePhrase = 'You have been logged off. Please log back in to continue learning.';
     // Clear user from localStorage
     localStorage.removeItem('currentUser');
   }

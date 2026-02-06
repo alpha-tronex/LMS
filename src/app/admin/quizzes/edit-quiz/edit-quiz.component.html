@@ -2,14 +2,14 @@
   <div class="container">
     <app-admin-breadcrumb></app-admin-breadcrumb>
 
-    <h2 class="mb-4">Edit Quiz</h2>
+    <h2 class="mb-4">Edit Assessment</h2>
 
     <!-- Loading Spinner -->
     <div *ngIf="isLoading" class="text-center py-5">
       <div class="spinner-border text-white" role="status">
         <span class="sr-only">Loading...</span>
       </div>
-      <p class="mt-3">Loading quiz...</p>
+        <p class="mt-3">Loading assessment...</p>
     </div>
 
     <div *ngIf="!isLoading" class="card text-dark">
@@ -29,13 +29,13 @@
           </button>
         </div>
 
-        <!-- Quiz Title -->
+        <!-- Assessment Title -->
         <div class="mb-4">
           <label for="quizTitle" class="form-label font-weight-bold text-center w-100">
-            <i class="fas fa-heading"></i> Quiz Title *
+            <i class="fas fa-heading"></i> Assessment Title *
           </label>
           <input type="text" class="form-control form-control-lg" id="quizTitle" #quizTitleInput [(ngModel)]="quizTitle"
-            placeholder="Enter quiz title..." [disabled]="isSubmitting">
+            placeholder="Enter assessment title..." [disabled]="isSubmitting">
         </div>
 
         <!-- Questions List -->
@@ -167,11 +167,11 @@
           </button>
           <button class="btn btn-primary btn-lg" (click)="saveQuiz()"
             [disabled]="isSubmitting || questions.length === 0 || isLoading">
-            <i class="fas fa-save"></i> {{ isSubmitting ? 'Saving...' : 'Update Quiz' }}
+            <i class="fas fa-save"></i> {{ isSubmitting ? 'Saving...' : 'Update Assessment' }}
           </button>
           <alpha-tronex-modal
             [show]="showCancelModal"
-            [title]="'Cancel Quiz?'"
+            [title]="'Cancel Assessment?'"
             [type]="'warning'"
             [content]="'Are you sure you want to cancel? All unsaved changes will be lost.'"
             [scrollToTopOnHide]="true"
@@ -179,7 +179,7 @@
             (close)="onCancelModalDismiss()">
             <div modal-actions>
               <button type="button" class="btn btn-secondary" (click)="onCancelModalDismiss()">No, Keep Editing</button>
-              <button type="button" class="btn btn-danger ml-2 mr-3" (click)="onCancelModalConfirm()">Yes, Cancel Quiz</button>
+              <button type="button" class="btn btn-danger ml-2 mr-3" (click)="onCancelModalConfirm()">Yes, Cancel Assessment</button>
             </div>
           </alpha-tronex-modal>
         </div>

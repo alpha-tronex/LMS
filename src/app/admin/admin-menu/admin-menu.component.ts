@@ -24,22 +24,22 @@ export class AdminMenuComponent {
       color: 'primary'
     },
     {
-      title: 'Create Quiz',
-      description: 'Create a new quiz from scratch',
+      title: 'Create Assessment',
+      description: 'Create a new assessment from scratch',
       icon: 'fas fa-plus-circle',
       route: '/admin/create-quiz',
       color: 'success'
     },
     {
-      title: 'Upload Quiz',
-      description: 'Upload a quiz from a JSON file',
+      title: 'Upload Assessment',
+      description: 'Upload an assessment from a JSON file',
       icon: 'fas fa-upload',
       route: '/admin/upload-quiz',
       color: 'info'
     },
     {
-      title: 'Quiz Management',
-      description: 'Edit quizzes and manage quiz data',
+      title: 'Assessment Management',
+      description: 'Edit assessments and manage assessment data',
       icon: 'fas fa-cogs',
       route: '/admin/quiz-management',
       color: 'warning'

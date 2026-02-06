@@ -20,10 +20,10 @@ export class AdminBreadcrumbComponent implements OnInit {
     'admin': 'Admin',
     'user-management': 'User Management',
     'user-details': 'User Details',
-    'create-quiz': 'Create Quiz',
-    'upload-quiz': 'Upload Quiz',
-    'quiz-management': 'Quiz Management',
-    'edit-quiz': 'Edit Quiz'
+    'create-quiz': 'Create Assessment',
+    'upload-quiz': 'Upload Assessment',
+    'quiz-management': 'Assessment Management',
+    'edit-quiz': 'Edit Assessment'
   };
 
   constructor(private router: Router) { }

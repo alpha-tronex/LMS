@@ -1,8 +1,8 @@
 <section class="masthead bg-primary text-white text-center">
-  <!-- Quiz Questions View -->
+  <!-- Assessment Questions View -->
   <div class="container" *ngIf="curQuestion && !submitted">
   <app-breadcrumb></app-breadcrumb>
-    <h2 class="mb-2">Quiz</h2>
+    <h2 class="mb-2">Assessment</h2>
     <h2 class="mb-4">{{ quiz.title }}</h2>
     
     <div class="card text-dark">
@@ -67,9 +67,9 @@
     </div>
   </div>
   
-  <!-- Quiz Results View -->
+  <!-- Assessment Results View -->
   <div class="container" *ngIf="submitted">
-    <h2 class="mb-4">Quiz Results</h2>
+    <h2 class="mb-4">Assessment Results</h2>
     <h3 class="mb-5">{{ quiz.title }}</h3>
     
     <div class="card text-dark mb-4" *ngFor="let question of quiz.questions; let i = index">
@@ -108,7 +108,7 @@
     
     <div class="row mt-4">
       <div class="col-sm-6">
-        <button class="btn btn-secondary w-100" style=" margin-bottom: 5px;" (click)="retakeQuiz()" [disabled]="resultsAccepted">Retake Quiz</button>
+        <button class="btn btn-secondary w-100" style=" margin-bottom: 5px;" (click)="retakeQuiz()" [disabled]="resultsAccepted">Retake Assessment</button>
       </div>
       <div class="col-sm-6">
         <button class="btn btn-secondary w-100" (click)="acceptResults()" [disabled]="resultsAccepted">Accept Results</button>

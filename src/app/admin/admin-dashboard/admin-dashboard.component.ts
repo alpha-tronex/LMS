@@ -45,13 +45,13 @@ export class AdminDashboardComponent implements OnInit {
       }
     });
 
-    // Load quizzes
+    // Load assessments
     this.adminQuizService.getAvailableQuizzes().subscribe({
       next: (quizzes) => {
         this.totalQuizzes = quizzes.length;
       },
       error: (error) => {
-        this.logger.error('Error loading quizzes', error);
+        this.logger.error('Error loading assessments', error);
       }
     });
   }

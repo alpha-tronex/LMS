@@ -47,14 +47,14 @@ export class AdminUserService {
 
   deleteUserQuizData(userId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/quizzes`).pipe(
-      tap(() => this.logger.info('User quiz data deleted', { userId })),
+      tap(() => this.logger.info('User assessment data deleted', { userId })),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteSpecificUserQuiz(userId: string, quizId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/quiz/${quizId}`).pipe(
-      tap(() => this.logger.info('Specific quiz deleted from user', { userId, quizId })),
+      tap(() => this.logger.info('Specific assessment deleted from user', { userId, quizId })),
       catchError((error) => this.handleError(error))
     );
   }

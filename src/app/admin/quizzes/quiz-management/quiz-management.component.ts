@@ -56,20 +56,20 @@ export class QuizManagementComponent implements OnInit {
   }
 
   loadQuizFiles(): void {
-    // This will load available quiz files from the server
-    // We'll need to add an endpoint to list quiz files
+    // This will load available assessment files from the server
+    // We'll need to add an endpoint to list assessment files
     this.adminQuizService.getAvailableQuizzes().subscribe({
       next: (data) => {
         this.quizzes = data;
       },
       error: (error) => {
-        this.logger.error('Error loading quiz files', error);
-        this.showMessage('Failed to load quiz files', 'error');
+        this.logger.error('Error loading assessment files', error);
+        this.showMessage('Failed to load assessment files', 'error');
       }
     });
   }
 
-  // Section 1: Delete all quiz data from a specific user
+  // Section 1: Delete all assessment data from a specific user
   deleteUserQuizData(): void {
     if (!this.selectedUserId) {
       this.showMessage('Please select a user', 'error');
@@ -78,8 +78,8 @@ export class QuizManagementComponent implements OnInit {
 
     const user = this.users.find(u => u.id === this.selectedUserId);
     this.confirmAction = 'deleteUserQuiz';
-    this.confirmTitle = 'Delete User Quiz Data';
-    this.confirmMessage = `Are you sure you want to delete all quiz data for user "${user?.uname}"? This action cannot be undone.`;
+    this.confirmTitle = 'Delete User Assessment Data';
+    this.confirmMessage = `Are you sure you want to delete all assessment data for user "${user?.uname}"? This action cannot be undone.`;
     this.showConfirmModal = true;
   }
 
@@ -87,24 +87,24 @@ export class QuizManagementComponent implements OnInit {
     this.loading = true;
     this.adminUserService.deleteUserQuizData(this.selectedUserId).subscribe({
       next: () => {
-        this.showMessage('User quiz data deleted successfully', 'success');
+        this.showMessage('User assessment data deleted successfully', 'success');
         this.loadUsers();
         this.selectedUserId = '';
         this.loading = false;
       },
       error: (error) => {
-        this.logger.error('Error deleting user quiz data', error);
-        this.showMessage('Failed to delete user quiz data: ' + error.message, 'error');
+        this.logger.error('Error deleting user assessment data', error);
+        this.showMessage('Failed to delete user assessment data: ' + error.message, 'error');
         this.loading = false;
       }
     });
   }
 
-  // Section 2: Delete all quiz data from all users
+  // Section 2: Delete all assessment data from all users
   deleteAllUsersQuizData(): void {
     this.confirmAction = 'deleteAllUserQuizzes';
-    this.confirmTitle = 'Delete All Quiz Data';
-    this.confirmMessage = 'Are you sure you want to delete ALL quiz data from ALL users? This action cannot be undone.';
+    this.confirmTitle = 'Delete All Assessment Data';
+    this.confirmMessage = 'Are you sure you want to delete ALL assessment data from ALL users? This action cannot be undone.';
     this.showConfirmModal = true;
   }
 
@@ -121,10 +121,10 @@ export class QuizManagementComponent implements OnInit {
     }
   }
 
-  // Section 3: Delete specific quiz from specific user
+  // Section 3: Delete specific assessment from specific user
   deleteSpecificUserQuiz(): void {
     if (!this.selectedUserIdForSpecificQuiz || !this.selectedUserQuizId) {
-      this.showMessage('Please select both user and quiz', 'error');
+      this.showMessage('Please select both user and assessment', 'error');
       return;
     }
 
@@ -132,8 +132,8 @@ export class QuizManagementComponent implements OnInit {
     const quiz = this.userQuizzes.find(q => q._id === this.selectedUserQuizId);
     
     this.confirmAction = 'deleteSpecificUserQuiz';
-    this.confirmTitle = 'Delete Specific Quiz Entry';
-    this.confirmMessage = `Are you sure you want to delete the quiz "${quiz?.title}" from user "${user?.uname}"? This action cannot be undone.`;
+    this.confirmTitle = 'Delete Specific Assessment Entry';
+    this.confirmMessage = `Are you sure you want to delete the assessment "${quiz?.title}" from user "${user?.uname}"? This action cannot be undone.`;
     this.showConfirmModal = true;
   }
 
@@ -141,7 +141,7 @@ export class QuizManagementComponent implements OnInit {
     this.loading = true;
     this.adminUserService.deleteSpecificUserQuiz(this.selectedUserIdForSpecificQuiz, this.selectedUserQuizId).subscribe({
       next: () => {
-        this.showMessage('Quiz entry deleted successfully', 'success');
+        this.showMessage('Assessment entry deleted successfully', 'success');
         this.loadUsers();
         this.selectedUserIdForSpecificQuiz = '';
         this.selectedUserQuizId = '';
@@ -149,8 +149,8 @@ export class QuizManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        this.logger.error('Error deleting specific quiz', error);
-        this.showMessage('Failed to delete quiz entry: ' + error.message, 'error');
+        this.logger.error('Error deleting specific assessment', error);
+        this.showMessage('Failed to delete assessment entry: ' + error.message, 'error');
         this.loading = false;
       }
     });
@@ -160,39 +160,39 @@ export class QuizManagementComponent implements OnInit {
     this.loading = true;
     this.adminQuizService.deleteAllUsersQuizData().subscribe({
       next: () => {
-        this.showMessage('All user quiz data deleted successfully', 'success');
+        this.showMessage('All user assessment data deleted successfully', 'success');
         this.loadUsers();
         this.loading = false;
       },
       error: (error) => {
-        this.logger.error('Error deleting all user quiz data', error);
-        this.showMessage('Failed to delete all user quiz data: ' + error.message, 'error');
+        this.logger.error('Error deleting all user assessment data', error);
+        this.showMessage('Failed to delete all user assessment data: ' + error.message, 'error');
         this.loading = false;
       }
     });
   }
 
-  // Section 3: Delete a specific quiz file
+  // Section 3: Delete a specific assessment file
   deleteQuizFile(): void {
     if (!this.selectedQuizId) {
-      this.showMessage('Please select a quiz', 'error');
+      this.showMessage('Please select an assessment', 'error');
       return;
     }
 
     const quiz = this.quizzes.find(q => q.id === parseInt(this.selectedQuizId));
     this.confirmAction = 'deleteQuizFile';
-    this.confirmTitle = 'Delete Quiz File';
-    this.confirmMessage = `Are you sure you want to delete the quiz file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this quiz.`;
+    this.confirmTitle = 'Delete Assessment File';
+    this.confirmMessage = `Are you sure you want to delete the assessment file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this assessment.`;
     this.showConfirmModal = true;
   }
 
-  // Delete quiz file from list (with quiz ID directly)
+  // Delete assessment file from list (with ID directly)
   deleteQuizFileFromList(quizId: number): void {
     const quiz = this.quizzes.find(q => q.id === quizId);
     this.selectedQuizId = quizId.toString();
     this.confirmAction = 'deleteQuizFile';
-    this.confirmTitle = 'Delete Quiz File';
-    this.confirmMessage = `Are you sure you want to delete the quiz file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this quiz.`;
+    this.confirmTitle = 'Delete Assessment File';
+    this.confirmMessage = `Are you sure you want to delete the assessment file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this assessment.`;
     this.showConfirmModal = true;
   }
 
@@ -200,24 +200,24 @@ export class QuizManagementComponent implements OnInit {
     this.loading = true;
     this.adminQuizService.deleteQuizFile(this.selectedQuizId).subscribe({
       next: () => {
-        this.showMessage('Quiz file deleted successfully', 'success');
+        this.showMessage('Assessment file deleted successfully', 'success');
         this.loadQuizFiles();
         this.selectedQuizId = '';
         this.loading = false;
       },
       error: (error) => {
-        this.logger.error('Error deleting quiz file', error);
-        this.showMessage('Failed to delete quiz file: ' + error.message, 'error');
+        this.logger.error('Error deleting assessment file', error);
+        this.showMessage('Failed to delete assessment file: ' + error.message, 'error');
         this.loading = false;
       }
     });
   }
 
-  // Section 4: Delete all quiz files
+  // Section 4: Delete all assessment files
   deleteAllQuizFiles(): void {
     this.confirmAction = 'deleteAllQuizFiles';
-    this.confirmTitle = 'Delete All Quiz Files';
-    this.confirmMessage = 'Are you sure you want to delete ALL quiz files? This action cannot be undone and users will no longer be able to take any quizzes.';
+    this.confirmTitle = 'Delete All Assessment Files';
+    this.confirmMessage = 'Are you sure you want to delete ALL assessment files? This action cannot be undone and users will no longer be able to take any assessments.';
     this.showConfirmModal = true;
   }
 
@@ -225,13 +225,13 @@ export class QuizManagementComponent implements OnInit {
     this.loading = true;
     this.adminQuizService.deleteAllQuizFiles().subscribe({
       next: () => {
-        this.showMessage('All quiz files deleted successfully', 'success');
+        this.showMessage('All assessment files deleted successfully', 'success');
         this.loadQuizFiles();
         this.loading = false;
       },
       error: (error) => {
-        this.logger.error('Error deleting all quiz files', error);
-        this.showMessage('Failed to delete all quiz files: ' + error.message, 'error');
+        this.logger.error('Error deleting all assessment files', error);
+        this.showMessage('Failed to delete all assessment files: ' + error.message, 'error');
         this.loading = false;
       }
     });

@@ -165,7 +165,7 @@ getInstructions(questionType: QuestionType): string {
   saveQuiz() {
     // Validate quiz
     if (!this.quizTitle.trim()) {
-      this.errorMessage = 'Please enter a quiz title';
+      this.errorMessage = 'Please enter an assessment title';
       return;
     }
 
@@ -195,13 +195,13 @@ getInstructions(questionType: QuestionType): string {
     // Save quiz
     this.adminQuizService.uploadQuiz(quizData).subscribe({
       next: (_response) => {
-        this.successMessage = 'Quiz created successfully!';
+        this.successMessage = 'Assessment created successfully!';
         setTimeout(() => {
           this.router.navigate(['/admin/quizzes']);
         }, 2000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Error creating quiz';
+        this.errorMessage = error.error?.message || 'Error creating assessment';
         this.isSubmitting = false;
       }
     });

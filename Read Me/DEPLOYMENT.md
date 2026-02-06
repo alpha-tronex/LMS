@@ -1,7 +1,7 @@
-# Quiz Master - Deployment Guide
+# LMS - Deployment Guide
 
 ## Overview
-This is a full-stack quiz application with Angular frontend and Node.js/Express backend with MongoDB.
+This is a full-stack LMS application with an Angular frontend and Node.js/Express backend with MongoDB.
 
 ## Prerequisites
 - Node.js (v18 or higher)
@@ -13,7 +13,7 @@ This is a full-stack quiz application with Angular frontend and Node.js/Express 
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd quizzes
+   cd LMS
    ```
 
 2. **Install dependencies**

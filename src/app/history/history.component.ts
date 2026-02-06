@@ -32,7 +32,7 @@ export class HistoryComponent implements OnInit {
         this.loading = false;
       }
     } else {
-      this.error = 'Please login to view your quiz history';
+      this.error = 'Please login to view your assessment history';
       this.loading = false;
     }
   }
@@ -44,8 +44,8 @@ export class HistoryComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        this.logger.error('Error loading quiz history', error);
-        this.error = 'Failed to load quiz history';
+        this.logger.error('Error loading assessment history', error);
+        this.error = 'Failed to load assessment history';
         this.loading = false;
       }
     });

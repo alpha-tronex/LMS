@@ -2,15 +2,15 @@
   <div class="container">
     <app-admin-breadcrumb></app-admin-breadcrumb>
     
-    <h2 class="mb-4">Upload Quiz</h2>
+    <h2 class="mb-4">Upload Assessment</h2>
     
     <div class="card text-dark">
       <div class="card-body text-left">
-        <h5 class="card-title mb-3">Upload Quiz File</h5>
+        <h5 class="card-title mb-3">Upload Assessment File</h5>
         
         <!-- File Upload Section -->
         <div class="form-group mb-3">
-          <label for="fileInput" class="font-weight-bold">Select Quiz File:</label>
+          <label for="fileInput" class="font-weight-bold">Select Assessment File:</label>
           <div class="custom-file">
             <input 
               type="file" 
@@ -20,7 +20,7 @@
               (change)="onFileSelected($event)">
             <label class="custom-file-label" for="fileInput">{{ selectedFileName || 'Choose file...' }}</label>
           </div>
-          <small class="form-text text-muted">Please select a text (.txt) or rich text (.rtf) file containing quiz data in the specified format.</small>
+          <small class="form-text text-muted">Please select a text (.txt) or rich text (.rtf) file containing assessment data in the specified format.</small>
         </div>
 
         <!-- Drag and Drop Area -->
@@ -67,7 +67,7 @@
             [disabled]="!fileContent || uploading"
             (click)="uploadQuiz()">
             <span *ngIf="uploading" class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
-            {{ uploading ? 'Uploading...' : 'Upload Quiz' }}
+            {{ uploading ? 'Uploading...' : 'Upload Assessment' }}
           </button>
           <button 
             *ngIf="fileContent" 

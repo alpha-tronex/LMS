@@ -1,12 +1,12 @@
 <section class="masthead bg-primary text-white text-center">
   <div class="container">
     <app-breadcrumb></app-breadcrumb>
-    <h2 class="mb-4">Quiz History</h2>
+    <h2 class="mb-4">Assessment History</h2>
     
     <div class="card text-dark">
       <div class="card-body">
         <div *ngIf="loading" class="text-center py-4">
-          <p>Loading quiz history...</p>
+          <p>Loading assessment history...</p>
         </div>
 
         <div *ngIf="error" class="alert alert-danger">
@@ -14,14 +14,14 @@
         </div>
 
         <div *ngIf="!loading && !error && quizzes.length === 0" class="alert alert-info">
-          You haven't taken any quizzes yet.
+          You haven't taken any assessments yet.
         </div>
 
         <div *ngIf="!loading && !error && quizzes.length > 0" class="table-responsive">
           <table class="table table-striped table-hover">
             <thead class="table-light">
               <tr>
-                <th>Quiz Title</th>
+                <th>Assessment Title</th>
                 <th>Date Completed</th>
                 <th>Score</th>
                 <th>Total Questions</th>

@@ -13,7 +13,7 @@ export class QuizUploadService {
 
   uploadQuiz(quizData: any): Observable<any> {
     return this.http.post('/api/quiz/upload', quizData).pipe(
-      tap(response => this.logger.info('Quiz uploaded', response)),
+      tap(response => this.logger.info('Assessment uploaded', response)),
       catchError((error) => this.handleError(error))
     );
   }
@@ -26,7 +26,7 @@ export class QuizUploadService {
 
   deleteQuiz(quizId: number): Observable<any> {
     return this.http.delete(`/api/quiz/delete/${quizId}`).pipe(
-      tap(() => this.logger.info('Quiz deleted', { quizId })),
+      tap(() => this.logger.info('Assessment deleted', { quizId })),
       catchError((error) => this.handleError(error))
     );
   }
@@ -42,7 +42,7 @@ export class QuizUploadService {
       errorMessage = error.error?.error || error.error?.message || error.message || 'Server error';
     }
     
-    this.logger.error('Quiz upload service error', errorMessage);
+    this.logger.error('Assessment upload service error', errorMessage);
     return throwError(() => errorMessage);
   }
 }
