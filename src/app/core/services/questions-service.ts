@@ -15,8 +15,8 @@ export class QuestionsService {
     this.http = http;
   }
 
-  getQuiz(quizId?: number): Observable<Quiz> {
-    const url = quizId !== undefined ? `/api/quiz?id=${quizId}` : '/api/quiz';
+  getQuiz(assessmentId?: number): Observable<Quiz> {
+    const url = assessmentId !== undefined ? `/api/quiz?id=${assessmentId}` : '/api/quiz';
     return this.http.get<Quiz>(url).pipe(
       retry(3),
       catchError((error) => {
@@ -36,8 +36,8 @@ export class QuestionsService {
     );
   }
 
-  saveQuiz(username: string, quizData: any): Observable<any> {
-    return this.http.post<any>('/api/quiz', { username, quizData }).pipe(
+  saveQuiz(username: string, assessmentData: any): Observable<any> {
+    return this.http.post<any>('/api/quiz', { username, quizData: assessmentData }).pipe(
       retry(1),
       catchError((error) => {
         this.logger.error('Error in saveQuiz', error);
