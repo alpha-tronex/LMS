@@ -4,12 +4,12 @@ import { AdminQuizService } from '@admin/services/admin-quiz.service';
 import { LoggerService } from '@core/services/logger.service';
 
 @Component({
-    selector: 'app-quiz-management',
+    selector: 'app-assessment-management',
   templateUrl: './assessment-management.component.html',
   styleUrls: ['./assessment-management.component.css'],
     standalone: false
 })
-export class QuizManagementComponent implements OnInit {
+export class AssessmentManagementComponent implements OnInit {
   users: any[] = [];
   selectedUserId: string = '';
   quizzes: any[] = [];

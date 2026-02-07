@@ -3,12 +3,12 @@ import { QuizUploadService } from '@admin/services/quiz-upload.service';
 import { QuestionType } from '@models/quiz';
 
 @Component({
-    selector: 'app-upload-quiz',
+  selector: 'app-upload-assessment',
     templateUrl: './upload-assessment.component.html',
     styleUrls: ['./upload-assessment.component.css'],
     standalone: false
 })
-export class UploadQuizComponent implements OnInit {
+export class UploadAssessmentComponent implements OnInit {
   selectedFile: File | null = null;
   selectedFileName: string = '';
   fileContent: any = null;

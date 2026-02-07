@@ -17,12 +17,12 @@ interface Question {
 }
 
 @Component({
-    selector: 'app-edit-quiz',
+    selector: 'app-edit-assessment',
   templateUrl: './edit-assessment.component.html',
   styleUrls: ['./edit-assessment.component.css'],
     standalone: false
 })
-export class EditQuizComponent implements OnInit, AfterViewInit {
+export class EditAssessmentComponent implements OnInit, AfterViewInit {
   quizId: number = 0;
   quizTitle: string = '';
   questions: Question[] = [];

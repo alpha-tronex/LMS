@@ -16,12 +16,12 @@ interface Question {
 }
 
 @Component({
-    selector: 'app-create-quiz',
+  selector: 'app-create-assessment',
     templateUrl: './create-assessment.component.html',
     styleUrls: ['./create-assessment.component.css'],
     standalone: false
 })
-export class CreateQuizComponent implements OnInit, AfterViewInit {
+export class CreateAssessmentComponent implements OnInit, AfterViewInit {
   quizTitle: string = '';
   questions: Question[] = [];
   
