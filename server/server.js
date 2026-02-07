@@ -4,9 +4,9 @@ const https = require("https");
 const bodyParser = require("body-parser");
 const fs = require('fs');
 const authRoutes = require(`${__dirname}/routes/authRoutes.js`);
-const quizRoutes = require(`${__dirname}/routes/quizRoutes.js`);
+const assessmentRoutes = require(`${__dirname}/routes/assessmentRoutes.js`);
 const adminUserRoutes = require(`${__dirname}/routes/adminUserRoutes.js`);
-const adminQuizRoutes = require(`${__dirname}/routes/adminQuizRoutes.js`);
+const adminAssessmentRoutes = require(`${__dirname}/routes/adminAssessmentRoutes.js`);
 const utilRoutes = require(`${__dirname}/routes/utilRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
@@ -88,12 +88,12 @@ mongoose.connect(mongoURI);
 // Setup authentication routes
 authRoutes(app, User);
 
-// Setup quiz routes (student-facing)
-quizRoutes(app, User);
+// Setup assessment routes (student-facing)
+assessmentRoutes(app, User);
 
 // Setup admin routes
 adminUserRoutes(app, User);
-adminQuizRoutes(app);
+adminAssessmentRoutes(app);
 
 // Setup utility routes
 utilRoutes(app);

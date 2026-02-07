@@ -10,6 +10,12 @@ This release includes a breaking rename of backend API endpoints and the persist
 - User history field renamed from `user.quizzes` to `user.assessments`
 - Submission payload key renamed from `quizData` to `assessmentData`
 
+### Assessment definition storage (server JSON files)
+
+Assessment definition JSON files are now stored under `server/assessments/` and use the naming pattern `assessment_<id>.json`.
+
+For backwards compatibility during rollout, the backend will still fall back to reading from the legacy `server/quizzes/quiz_<id>.json` paths if the new files are not present.
+
 ### Migration (required if you have existing data)
 
 Run the one-time migration against the MongoDB instance that still has `user.quizzes`:

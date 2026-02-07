@@ -32,6 +32,21 @@
       "correct": [
         1
       ]
+    },
+    {
+      "questionNum": 2,
+      "questionType": "SingleAnswer",
+      "instructions": "Select the correct answer",
+      "question": "In which month do Muslims fast from sunrise to sunset?",
+      "answers": [
+        "Rajab",
+        "Sha'aban",
+        "Ramadan",
+        "Muharam"
+      ],
+      "correct": [
+        3
+      ]
     }
   ]
 }
