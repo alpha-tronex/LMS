@@ -17,8 +17,8 @@ export class AdminQuizService {
     );
   }
 
-  uploadQuiz(quizData: any): Observable<any> {
-    return this.http.post('/api/quiz/upload', quizData).pipe(
+  uploadQuiz(assessmentData: any): Observable<any> {
+    return this.http.post('/api/quiz/upload', assessmentData).pipe(
       tap(() => this.logger.info('Assessment uploaded successfully')),
       catchError((error) => this.handleError(error))
     );
@@ -31,9 +31,9 @@ export class AdminQuizService {
     );
   }
 
-  deleteQuizFile(quizId: string): Observable<any> {
-    return this.http.delete(`/api/admin/quiz-file/${quizId}`).pipe(
-      tap(() => this.logger.info('Assessment file deleted', { quizId })),
+  deleteQuizFile(assessmentFileId: string): Observable<any> {
+    return this.http.delete(`/api/admin/quiz-file/${assessmentFileId}`).pipe(
+      tap(() => this.logger.info('Assessment file deleted', { quizId: assessmentFileId })),
       catchError((error) => this.handleError(error))
     );
   }

@@ -52,9 +52,9 @@ export class AdminUserService {
     );
   }
 
-  deleteSpecificUserQuiz(userId: string, quizId: string): Observable<any> {
-    return this.http.delete(`/api/admin/user/${userId}/quiz/${quizId}`).pipe(
-      tap(() => this.logger.info('Specific assessment deleted from user', { userId, quizId })),
+  deleteSpecificUserQuiz(userId: string, assessmentId: string): Observable<any> {
+    return this.http.delete(`/api/admin/user/${userId}/quiz/${assessmentId}`).pipe(
+      tap(() => this.logger.info('Specific assessment deleted from user', { userId, quizId: assessmentId })),
       catchError((error) => this.handleError(error))
     );
   }
