@@ -22,7 +22,7 @@ interface Question {
     standalone: false
 })
 export class CreateAssessmentComponent implements OnInit, AfterViewInit {
-  quizTitle: string = '';
+  assessmentTitle: string = '';
   questions: Question[] = [];
   
   // Expose QuestionType enum and labels to template
@@ -73,13 +73,13 @@ getInstructions(questionType: QuestionType): string {
 
   
   @ViewChildren('answerInput') answerInputs!: QueryList<ElementRef>;
-  @ViewChild('quizTitleInput') quizTitleInput!: ElementRef;
+  @ViewChild('assessmentTitleInput') assessmentTitleInput!: ElementRef;
 
   ngAfterViewInit() {
     // Focus quiz title input on load
-    if (this.quizTitleInput) {
+    if (this.assessmentTitleInput) {
       setTimeout(() => {
-        this.quizTitleInput.nativeElement.focus();
+        this.assessmentTitleInput.nativeElement.focus();
       });
     }
     this.answerInputs.changes.subscribe(() => {
@@ -164,7 +164,7 @@ getInstructions(questionType: QuestionType): string {
 
   saveQuiz() {
     // Validate quiz
-    if (!this.quizTitle.trim()) {
+    if (!this.assessmentTitle.trim()) {
       this.errorMessage = 'Please enter an assessment title';
       return;
     }
@@ -179,7 +179,7 @@ getInstructions(questionType: QuestionType): string {
 
     // Format quiz data for backend
     const quizData = {
-      title: this.quizTitle,
+      title: this.assessmentTitle,
       questions: this.questions.map((q, index) => ({
         questionNum: index,
         questionType: q.questionType,
@@ -197,7 +197,7 @@ getInstructions(questionType: QuestionType): string {
       next: (_response) => {
         this.successMessage = 'Assessment created successfully!';
         setTimeout(() => {
-          this.router.navigate(['/admin/quizzes']);
+          this.router.navigate(['/admin/assessment-management']);
         }, 2000);
       },
       error: (error) => {

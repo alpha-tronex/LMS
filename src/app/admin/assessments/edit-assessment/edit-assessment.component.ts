@@ -23,8 +23,8 @@ interface Question {
     standalone: false
 })
 export class EditAssessmentComponent implements OnInit, AfterViewInit {
-  quizId: number = 0;
-  quizTitle: string = '';
+  assessmentId: number = 0;
+  assessmentTitle: string = '';
   questions: Question[] = [];
   
   // Expose QuestionType enum and labels to template
@@ -50,7 +50,7 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
   pendingDeleteIndex: number | null = null;
 
   @ViewChildren('answerInput') answerInputs!: QueryList<ElementRef>;
-  @ViewChild('quizTitleInput') quizTitleInput!: ElementRef;
+  @ViewChild('assessmentTitleInput') assessmentTitleInput!: ElementRef;
 
   private focusAnswerInputOnNextChange = false;
 
@@ -76,7 +76,7 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      this.quizId = +params['id']; // Convert string to number
+      this.assessmentId = +params['id']; // Convert string to number
       this.scrollToTop();
       this.loadQuiz();
     });
@@ -85,9 +85,9 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.scrollToTop();
     // Focus quiz title input on load
-    if (this.quizTitleInput) {
+    if (this.assessmentTitleInput) {
       setTimeout(() => {
-        this.quizTitleInput.nativeElement.focus();
+        this.assessmentTitleInput.nativeElement.focus();
       });
     }
 
@@ -115,9 +115,9 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
 
   loadQuiz() {
     this.isLoading = true;
-    this.questionsService.getQuiz(this.quizId).subscribe({
+    this.questionsService.getQuiz(this.assessmentId).subscribe({
       next: (quiz) => {
-        this.quizTitle = quiz.title;
+        this.assessmentTitle = quiz.title;
         this.questions = quiz.questions.map((q: any) => ({
           questionText: q.question,
           answers: q.answers.map((answer: string, index: number) => ({
@@ -133,8 +133,8 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
         this.scrollToTop();
 
         setTimeout(() => {
-          if (this.quizTitleInput) {
-            this.quizTitleInput.nativeElement.focus();
+          if (this.assessmentTitleInput) {
+            this.assessmentTitleInput.nativeElement.focus();
           }
         });
       },
@@ -292,7 +292,7 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
 
   saveQuiz() {
     // Validate quiz
-    if (!this.quizTitle.trim()) {
+    if (!this.assessmentTitle.trim()) {
       this.errorMessage = 'Please enter an assessment title';
       return;
     }
@@ -307,8 +307,8 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
 
     // Format quiz data for backend
     const quizData = {
-      id: this.quizId,
-      title: this.quizTitle,
+      id: this.assessmentId,
+      title: this.assessmentTitle,
       questions: this.questions.map((q, index) => ({
         questionNum: index,
         questionType: q.questionType,

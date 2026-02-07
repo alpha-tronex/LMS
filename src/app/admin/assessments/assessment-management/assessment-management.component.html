@@ -27,21 +27,21 @@
                   <select 
                     id="editQuizSelect" 
                     class="form-select" 
-                    [(ngModel)]="selectedEditQuizId"
-                    [disabled]="quizzes.length === 0">
+                    [(ngModel)]="selectedEditAssessmentFileId"
+                    [disabled]="assessmentFiles.length === 0">
                     <option value="">-- Choose an assessment --</option>
-                    <option *ngFor="let quiz of quizzes" [value]="quiz.id">
+                    <option *ngFor="let quiz of assessmentFiles" [value]="quiz.id">
                       {{ quiz.title }} (ID: {{ quiz.id }})
                     </option>
                   </select>
-                  <small class="text-muted" *ngIf="quizzes.length === 0">No assessment files found</small>
-                  <small class="text-muted" *ngIf="quizzes.length > 0">{{ quizzes.length }} assessment file(s) available</small>
+                  <small class="text-muted" *ngIf="assessmentFiles.length === 0">No assessment files found</small>
+                  <small class="text-muted" *ngIf="assessmentFiles.length > 0">{{ assessmentFiles.length }} assessment file(s) available</small>
                 </div>
 
                 <button 
                   class="btn btn-secondary w-100" 
-                  [disabled]="!selectedEditQuizId"
-                  [routerLink]="['/admin/edit-quiz', selectedEditQuizId]">
+                  [disabled]="!selectedEditAssessmentFileId"
+                  [routerLink]="['/admin/edit-assessment', selectedEditAssessmentFileId]">
                   <i class="fas fa-edit"></i> Edit Selected Assessment
                 </button>
               </div>
@@ -128,7 +128,7 @@
                   <select 
                     id="userSelectSpecific" 
                     class="form-select" 
-                    [(ngModel)]="selectedUserIdForSpecificQuiz"
+                    [(ngModel)]="selectedUserIdForSpecificAssessment"
                     (change)="onUserSelectForSpecificQuiz()"
                     [disabled]="users.length === 0">
                     <option value="">-- Choose a user --</option>
@@ -141,25 +141,25 @@
                   </select>
                 </div>
 
-                <div class="mb-3" *ngIf="selectedUserIdForSpecificQuiz">
+                <div class="mb-3" *ngIf="selectedUserIdForSpecificAssessment">
                   <label for="userQuizSelect" class="form-label"><strong>Select Assessment:</strong></label>
                   <select 
                     id="userQuizSelect" 
                     class="form-select" 
-                    [(ngModel)]="selectedUserQuizId"
-                    [disabled]="userQuizzes.length === 0">
+                    [(ngModel)]="selectedUserAssessmentId"
+                    [disabled]="userAssessments.length === 0">
                     <option value="">-- Choose an assessment --</option>
-                    <option *ngFor="let quiz of userQuizzes" [value]="quiz._id">
+                    <option *ngFor="let quiz of userAssessments" [value]="quiz._id">
                       {{ quiz.title }} - {{ formatQuizDate(quiz.completedAt) }} (Score: {{ quiz.score }}/{{ quiz.totalQuestions }})
                     </option>
                   </select>
-                  <small class="text-muted" *ngIf="userQuizzes.length === 0">No assessments found for this user</small>
-                  <small class="text-muted" *ngIf="userQuizzes.length > 0">{{ userQuizzes.length }} assessment entry(ies) found</small>
+                  <small class="text-muted" *ngIf="userAssessments.length === 0">No assessments found for this user</small>
+                  <small class="text-muted" *ngIf="userAssessments.length > 0">{{ userAssessments.length }} assessment entry(ies) found</small>
                 </div>
 
                 <button 
                   class="btn btn-warning w-100" 
-                  [disabled]="!selectedUserIdForSpecificQuiz || !selectedUserQuizId || loading"
+                  [disabled]="!selectedUserIdForSpecificAssessment || !selectedUserAssessmentId || loading"
                   (click)="deleteSpecificUserQuiz()">
                   <i class="fas fa-trash-alt"></i> Delete Selected Assessment Entry
                 </button>
@@ -183,20 +183,20 @@
                   <select 
                     id="quizSelect" 
                     class="form-select" 
-                    [(ngModel)]="selectedQuizId"
-                    [disabled]="quizzes.length === 0">
+                    [(ngModel)]="selectedAssessmentFileId"
+                    [disabled]="assessmentFiles.length === 0">
                     <option value="">-- Choose an assessment --</option>
-                    <option *ngFor="let quiz of quizzes" [value]="quiz.id">
+                    <option *ngFor="let quiz of assessmentFiles" [value]="quiz.id">
                       {{ quiz.title }} (ID: {{ quiz.id }})
                     </option>
                   </select>
-                  <small class="text-muted" *ngIf="quizzes.length === 0">No assessment files found</small>
-                  <small class="text-muted" *ngIf="quizzes.length > 0">{{ quizzes.length }} assessment file(s) available</small>
+                  <small class="text-muted" *ngIf="assessmentFiles.length === 0">No assessment files found</small>
+                  <small class="text-muted" *ngIf="assessmentFiles.length > 0">{{ assessmentFiles.length }} assessment file(s) available</small>
                 </div>
 
                 <button 
                   class="btn btn-info w-100" 
-                  [disabled]="!selectedQuizId || loading"
+                  [disabled]="!selectedAssessmentFileId || loading"
                   (click)="deleteQuizFile()">
                   <i class="fas fa-trash-alt"></i> Delete Assessment File
                 </button>
