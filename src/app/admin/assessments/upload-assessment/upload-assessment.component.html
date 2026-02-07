@@ -65,7 +65,7 @@
           <button 
             class="btn btn-primary btn-lg" 
             [disabled]="!fileContent || uploading"
-            (click)="uploadQuiz()">
+            (click)="uploadAssessment()">
             <span *ngIf="uploading" class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
             {{ uploading ? 'Uploading...' : 'Upload Assessment' }}
           </button>

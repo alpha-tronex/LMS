@@ -50,14 +50,14 @@ export class UploadAssessmentComponent implements OnInit {
             content = this.stripRtfFormatting(content);
           }
 
-          const quizData = this.parseQuizContent(content);
-          const validationErrors = this.validateQuizStructure(quizData);
+          const assessmentData = this.parseAssessmentContent(content);
+          const validationErrors = this.validateAssessmentStructure(assessmentData);
 
           if (validationErrors.length > 0) {
             this.errorMessage = 'Assessment validation failed:\n' + validationErrors.join('\n');
             this.fileContent = null;
           } else {
-            this.fileContent = quizData;
+            this.fileContent = assessmentData;
           }
         } catch (error: any) {
           this.errorMessage = error.message || 'Error parsing file. Please check the format.';
@@ -143,14 +143,14 @@ export class UploadAssessmentComponent implements OnInit {
             content = this.stripRtfFormatting(content);
           }
 
-          const quizData = this.parseQuizContent(content);
-          const validationErrors = this.validateQuizStructure(quizData);
+          const assessmentData = this.parseAssessmentContent(content);
+          const validationErrors = this.validateAssessmentStructure(assessmentData);
 
           if (validationErrors.length > 0) {
             this.errorMessage = 'Assessment validation failed:\n\n' + validationErrors.join('\n');
             this.fileContent = null;
           } else {
-            this.fileContent = quizData;
+            this.fileContent = assessmentData;
           }
         } catch (error: any) {
           this.errorMessage = error.message || 'Error parsing file. Please check the format.';
@@ -161,19 +161,19 @@ export class UploadAssessmentComponent implements OnInit {
     }
   }
 
-  parseQuizContent(content: string): any {
+  parseAssessmentContent(content: string): any {
     const lines = content
       .split('\n')
       .map(line => line.trim())
       .filter(line => line.length > 0);
 
-    const quiz: any = { questions: [] };
+    const assessment: any = { questions: [] };
     let currentQuestion: any = null;
 
     const pushCurrentQuestion = () => {
       if (!currentQuestion) return;
       this.setDefaultInstructions(currentQuestion);
-      quiz.questions.push(currentQuestion);
+      assessment.questions.push(currentQuestion);
       currentQuestion = null;
     };
 
@@ -195,7 +195,7 @@ export class UploadAssessmentComponent implements OnInit {
       value = this.processEscapeSequences(value);
 
       if (key === 'title') {
-        quiz.title = value;
+        assessment.title = value;
         continue;
       }
 
@@ -251,19 +251,19 @@ export class UploadAssessmentComponent implements OnInit {
     pushCurrentQuestion();
 
     // Assign questionNum automatically in sequence (1..N)
-    quiz.questions.forEach((q: any, idx: number) => {
+    assessment.questions.forEach((q: any, idx: number) => {
       q.questionNum = idx + 1;
     });
 
-    if (!quiz.title) {
+    if (!assessment.title) {
       throw new Error('Assessment must have a title');
     }
 
-    if (quiz.questions.length === 0) {
+    if (assessment.questions.length === 0) {
       throw new Error('Assessment must have at least one question');
     }
 
-    return quiz;
+    return assessment;
   }
 
   setDefaultInstructions(question: any): void {
@@ -287,25 +287,25 @@ export class UploadAssessmentComponent implements OnInit {
       .replace(/\u0000/g, '\\');
   }
 
-  validateQuizStructure(quiz: any): string[] {
+  validateAssessmentStructure(assessment: any): string[] {
     const errors: string[] = [];
 
     // Validate required fields (ID will be auto-assigned on server)
-    if (!quiz.title) {
+    if (!assessment.title) {
       errors.push('• Assessment must have a title field');
     }
 
-    if (!quiz.questions || !Array.isArray(quiz.questions)) {
+    if (!assessment.questions || !Array.isArray(assessment.questions)) {
       errors.push('• Assessment must have a questions array');
       return errors;
     }
 
-    if (quiz.questions.length === 0) {
+    if (assessment.questions.length === 0) {
       errors.push('• Assessment must have at least one question');
       return errors;
     }
 
-    quiz.questions.forEach((q: any, index: number) => {
+    assessment.questions.forEach((q: any, index: number) => {
       const questionNum = index + 1;
 
       if (!q.question) {
@@ -337,7 +337,7 @@ export class UploadAssessmentComponent implements OnInit {
     return errors;
   }
 
-  uploadQuiz(): void {
+  uploadAssessment(): void {
     if (!this.fileContent) {
       this.errorMessage = 'No file selected';
       return;
