@@ -10,7 +10,7 @@ import { LoggerService } from '@core/services/logger.service';
     standalone: false
 })
 export class HistoryComponent implements OnInit {
-  quizzes: any[] = [];
+  assessments: any[] = [];
   username: string = '';
   loading: boolean = true;
   error: string = '';
@@ -26,7 +26,7 @@ export class HistoryComponent implements OnInit {
     if (localStorage.getItem('currentUser')) {
       this.username = this.loginService.userName;
       if (this.username) {
-        this.loadQuizHistory();
+        this.loadAssessmentHistory();
       } else {
         this.error = 'Unable to retrieve user information';
         this.loading = false;
@@ -37,10 +37,10 @@ export class HistoryComponent implements OnInit {
     }
   }
 
-  loadQuizHistory() {
+  loadAssessmentHistory() {
     this.questionsService.getQuizHistory(this.username).subscribe({
       next: (data) => {
-        this.quizzes = data.quizzes || [];
+        this.assessments = data.quizzes || [];
         this.loading = false;
       },
       error: (error) => {

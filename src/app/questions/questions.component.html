@@ -3,7 +3,7 @@
   <div class="container" *ngIf="curQuestion && !submitted">
   <app-breadcrumb></app-breadcrumb>
     <h2 class="mb-2">Assessment</h2>
-    <h2 class="mb-4">{{ quiz.title }}</h2>
+    <h2 class="mb-4">{{ assessment.title }}</h2>
     
     <div class="card text-dark">
       <div class="card-body">
@@ -58,7 +58,7 @@
               </div>
               <div class="col-sm-4">
                 <button class="btn btn-secondary w-100" (click)="goNext()"
-                  style="max-width: 99%;" [disabled]="this.quiz.questions.length === (this.curQuestion.questionNum + 1)">Next</button>
+                  style="max-width: 99%;" [disabled]="this.assessment.questions.length === (this.curQuestion.questionNum + 1)">Next</button>
               </div>
             </div>
           </div>
@@ -70,9 +70,9 @@
   <!-- Assessment Results View -->
   <div class="container" *ngIf="submitted">
     <h2 class="mb-4">Assessment Results</h2>
-    <h3 class="mb-5">{{ quiz.title }}</h3>
+    <h3 class="mb-5">{{ assessment.title }}</h3>
     
-    <div class="card text-dark mb-4" *ngFor="let question of quiz.questions; let i = index">
+    <div class="card text-dark mb-4" *ngFor="let question of assessment.questions; let i = index">
       <div class="card-body">
         <div class="text-start">
           <h5 class="mb-4 text-left"><strong>Question {{i + 1}}:</strong> {{question.question}}</h5>
@@ -108,7 +108,7 @@
     
     <div class="row mt-4">
       <div class="col-sm-6">
-        <button class="btn btn-secondary w-100" style=" margin-bottom: 5px;" (click)="retakeQuiz()" [disabled]="resultsAccepted">Retake Assessment</button>
+        <button class="btn btn-secondary w-100" style=" margin-bottom: 5px;" (click)="retakeAssessment()" [disabled]="resultsAccepted">Retake Assessment</button>
       </div>
       <div class="col-sm-6">
         <button class="btn btn-secondary w-100" (click)="acceptResults()" [disabled]="resultsAccepted">Accept Results</button>

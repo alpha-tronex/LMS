@@ -16,7 +16,7 @@ export class QuestionsComponent implements OnInit {
   onechoice: boolean;
   truefalse: boolean;
   questionType: string;
-  quiz: Quiz;
+  assessment: Quiz;
   curQuestion: Question;
   allAnswered: boolean = false;
   submitted: boolean = false;
@@ -33,17 +33,17 @@ export class QuestionsComponent implements OnInit {
 
   ngOnInit() {
     // Get assessment ID from route params
-    const quizId = this.route.snapshot.queryParams['id'];
-    const id = quizId ? parseInt(quizId, 10) : undefined;
+    const assessmentIdParam = this.route.snapshot.queryParams['id'];
+    const id = assessmentIdParam ? parseInt(assessmentIdParam, 10) : undefined;
     
     // Start timer when assessment loads
     this.startTime = Date.now();
     
     this.questionsService.getQuiz(id).subscribe({
       next: (data: Quiz) => {
-        this.quiz = data as Quiz;
-        if (this.quiz && this.quiz.questions.length > 0) {
-          this.curQuestion = this.quiz.questions[0];
+        this.assessment = data as Quiz;
+        if (this.assessment && this.assessment.questions.length > 0) {
+          this.curQuestion = this.assessment.questions[0];
           this.setQuestionType();
         }
       },
@@ -54,14 +54,14 @@ export class QuestionsComponent implements OnInit {
 
   goPrevious() {
     if (this.curQuestion.questionNum > 0) {
-      this.curQuestion = this.quiz.questions[this.curQuestion.questionNum - 1];
+      this.curQuestion = this.assessment.questions[this.curQuestion.questionNum - 1];
       this.setQuestionType();
     }
   }
 
   goNext() {
-    if (this.quiz.questions.length > this.curQuestion.questionNum) {
-      this.curQuestion = this.quiz.questions[this.curQuestion.questionNum + 1];
+    if (this.assessment.questions.length > this.curQuestion.questionNum) {
+      this.curQuestion = this.assessment.questions[this.curQuestion.questionNum + 1];
       this.setQuestionType();
     }
   }
@@ -99,12 +99,12 @@ export class QuestionsComponent implements OnInit {
   }
 
   checkAllAnswered() {
-    if (!this.quiz || !this.quiz.questions || this.quiz.questions.length === 0) {
+    if (!this.assessment || !this.assessment.questions || this.assessment.questions.length === 0) {
       this.allAnswered = false;
       return;
     }
     
-    this.allAnswered = this.quiz.questions.every(question => 
+    this.allAnswered = this.assessment.questions.every(question => 
       question.selection && question.selection.length > 0
     );
   }
@@ -114,15 +114,15 @@ export class QuestionsComponent implements OnInit {
       // Calculate elapsed time in seconds
       this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
       this.submitted = true;
-      this.logger.debug('Assessment submitted', this.quiz);
+      this.logger.debug('Assessment submitted', this.assessment);
       this.logger.debug('Time taken (seconds)', this.elapsedTime);
     }
   }
 
-  retakeQuiz() {
+  retakeAssessment() {
     // Reset all selections
-    if (this.quiz && this.quiz.questions) {
-      this.quiz.questions.forEach(question => {
+    if (this.assessment && this.assessment.questions) {
+      this.assessment.questions.forEach(question => {
         question.selection = [];
       });
     }
@@ -134,8 +134,8 @@ export class QuestionsComponent implements OnInit {
     this.startTime = Date.now();
     this.elapsedTime = 0;
     // Go back to first question
-    if (this.quiz && this.quiz.questions.length > 0) {
-      this.curQuestion = this.quiz.questions[0];
+    if (this.assessment && this.assessment.questions.length > 0) {
+      this.curQuestion = this.assessment.questions[0];
       this.setQuestionType();
     }
   }
@@ -154,18 +154,18 @@ export class QuestionsComponent implements OnInit {
     this.logger.info('Results accepted');
     // Calculate score
     let score = 0;
-    this.quiz.questions.forEach(question => {
+    this.assessment.questions.forEach(question => {
       if (this.isQuestionCorrect(question)) {
         score++;
       }
     });
 
     // Prepare assessment data for saving
-    const quizData = {
-      id: this.quiz.id,
-      title: this.quiz.title,
+    const assessmentData = {
+      id: this.assessment.id,
+      title: this.assessment.title,
       completedAt: new Date(),
-      questions: this.quiz.questions.map(q => ({
+      questions: this.assessment.questions.map(q => ({
         questionNum: q.questionNum,
         question: q.question,
         answers: q.answers,
@@ -174,12 +174,12 @@ export class QuestionsComponent implements OnInit {
         isCorrect: this.isQuestionCorrect(q)
       })),
       score: score,
-      totalQuestions: this.quiz.questions.length,
+      totalQuestions: this.assessment.questions.length,
       duration: this.elapsedTime
     };
 
     // Save to database
-    this.questionsService.saveQuiz(this.getUsername(), quizData).subscribe({
+    this.questionsService.saveQuiz(this.getUsername(), assessmentData).subscribe({
       next: (response) => {
         this.logger.info('Assessment saved successfully', response);
         // Redirect to history page

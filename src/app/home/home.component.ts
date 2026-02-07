@@ -14,16 +14,16 @@ import { LoggerService } from '@core/services/logger.service';
 export class HomeComponent implements OnInit, OnDestroy {
   subscription: any;
   studentLoggedIn: any;
-  quizzes: any[] = [];
-  selectedQuizId: number | null = null;
-  selectedQuizTitle: string = '';
+  availableAssessments: any[] = [];
+  selectedAssessmentId: number | null = null;
+  selectedAssessmentTitle: string = '';
   inputWidth: string = '300px';
   
   // Dashboard stats
-  totalQuizzes: number = 0;
-  completedQuizzes: number = 0;
+  totalAssessments: number = 0;
+  completedAssessments: number = 0;
   averageScore: number = 0;
-  recentQuizzes: any[] = [];
+  recentAssessments: any[] = [];
   loadingStats: boolean = false;
 
   constructor(
@@ -41,8 +41,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Load available assessments
     this.questionsService.getAvailableQuizzes().subscribe({
       next: (data) => {
-        this.quizzes = data;
-        this.totalQuizzes = data.length;
+        this.availableAssessments = data;
+        this.totalAssessments = data.length;
         
         // Load user stats if logged in
         if (this.getUsername()) {
@@ -61,28 +61,28 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     this.questionsService.getQuizHistory(username).subscribe({
       next: (data) => {
-        const quizzes = data.quizzes || [];
-        this.completedQuizzes = quizzes.length;
+        const assessments = data.quizzes || [];
+        this.completedAssessments = assessments.length;
         
         // Calculate average score
-        if (quizzes.length > 0) {
-          const totalScore = quizzes.reduce((sum: number, quiz: any) => {
-            const percentage = (quiz.score / quiz.totalQuestions) * 100;
+        if (assessments.length > 0) {
+          const totalScore = assessments.reduce((sum: number, assessment: any) => {
+            const percentage = (assessment.score / assessment.totalQuestions) * 100;
             return sum + percentage;
           }, 0);
-          this.averageScore = Math.round(totalScore / quizzes.length);
+          this.averageScore = Math.round(totalScore / assessments.length);
         }
         
         // Get recent assessments (last 3)
-        this.recentQuizzes = quizzes
+        this.recentAssessments = assessments
           .sort((a: any, b: any) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
           .slice(0, 3)
-          .map((quiz: any) => ({
-            title: quiz.title,
-            score: quiz.score,
-            totalQuestions: quiz.totalQuestions,
-            percentage: Math.round((quiz.score / quiz.totalQuestions) * 100),
-            completedAt: new Date(quiz.completedAt)
+          .map((assessment: any) => ({
+            title: assessment.title,
+            score: assessment.score,
+            totalQuestions: assessment.totalQuestions,
+            percentage: Math.round((assessment.score / assessment.totalQuestions) * 100),
+            completedAt: new Date(assessment.completedAt)
           }));
         
         this.loadingStats = false;
@@ -94,32 +94,32 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  startQuiz(quizId: number) {
+  startAssessment(assessmentId: number) {
     try {
-      this.router.navigate(['/questions'], { queryParams: { id: quizId } });
+      this.router.navigate(['/questions'], { queryParams: { id: assessmentId } });
     } catch (error) {
       this.logger.error('Error starting assessment', error);
     }
   }
 
-  onQuizSelect() {
+  onAssessmentSelect() {
     // Optional: Could add logic here when selection changes
   }
 
-  onQuizInput() {
-    // Find quiz by title as user types
-    const quiz = this.quizzes.find(q => q.title === this.selectedQuizTitle);
-    if (quiz) {
-      this.selectedQuizId = quiz.id;
+  onAssessmentInput() {
+    // Find assessment by title as user types
+    const assessment = this.availableAssessments.find((a) => a.title === this.selectedAssessmentTitle);
+    if (assessment) {
+      this.selectedAssessmentId = assessment.id;
     } else {
-      this.selectedQuizId = null;
+      this.selectedAssessmentId = null;
     }
     // Calculate width based on text length
     this.calculateInputWidth();
   }
 
   calculateInputWidth() {
-    if (!this.selectedQuizTitle) {
+    if (!this.selectedAssessmentTitle) {
       this.inputWidth = '300px';
       return;
     }
@@ -130,17 +130,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     const minWidth = 300;
     const maxWidth = 800;
     
-    const calculatedWidth = Math.max(minWidth, Math.min(maxWidth, this.selectedQuizTitle.length * charWidth + padding));
+    const calculatedWidth = Math.max(minWidth, Math.min(maxWidth, this.selectedAssessmentTitle.length * charWidth + padding));
     this.inputWidth = calculatedWidth + 'px';
   }
 
-  isValidQuizSelected(): boolean {
-    return this.selectedQuizId !== null;
+  isValidAssessmentSelected(): boolean {
+    return this.selectedAssessmentId !== null;
   }
 
-  startSelectedQuiz() {
-    if (this.selectedQuizId !== null) {
-      this.startQuiz(this.selectedQuizId);
+  startSelectedAssessment() {
+    if (this.selectedAssessmentId !== null) {
+      this.startAssessment(this.selectedAssessmentId);
     }
   }
 

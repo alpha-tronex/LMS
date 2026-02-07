@@ -13,11 +13,11 @@
           {{ error }}
         </div>
 
-        <div *ngIf="!loading && !error && quizzes.length === 0" class="alert alert-info">
+        <div *ngIf="!loading && !error && assessments.length === 0" class="alert alert-info">
           You haven't taken any assessments yet.
         </div>
 
-        <div *ngIf="!loading && !error && quizzes.length > 0" class="table-responsive">
+        <div *ngIf="!loading && !error && assessments.length > 0" class="table-responsive">
           <table class="table table-striped table-hover">
             <thead class="table-light">
               <tr>
@@ -30,13 +30,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let quiz of quizzes">
-                <td>{{ quiz.title }}</td>
-                <td>{{ formatDate(quiz.completedAt) }}</td>
-                <td>{{ quiz.score }}</td>
-                <td>{{ quiz.totalQuestions }}</td>
-                <td>{{ ((quiz.score / quiz.totalQuestions) * 100).toFixed(1) }}%</td>
-                <td>{{ formatDuration(quiz.duration) }}</td>
+              <tr *ngFor="let assessment of assessments">
+                <td>{{ assessment.title }}</td>
+                <td>{{ formatDate(assessment.completedAt) }}</td>
+                <td>{{ assessment.score }}</td>
+                <td>{{ assessment.totalQuestions }}</td>
+                <td>{{ ((assessment.score / assessment.totalQuestions) * 100).toFixed(1) }}%</td>
+                <td>{{ formatDuration(assessment.duration) }}</td>
               </tr>
             </tbody>
           </table>
