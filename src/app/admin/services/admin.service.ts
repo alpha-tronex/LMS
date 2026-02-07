@@ -6,10 +6,10 @@ import { User } from '@models/users';
 import { LoggerService } from '@core/services/logger.service';
 
 /**
- * @deprecated This service has been split into AdminUserService and AdminQuizService.
+ * @deprecated This service has been split into AdminUserService and AdminAssessmentService.
  * Please use those services instead:
  * - AdminUserService for user management operations
- * - AdminQuizService for assessment management operations
+ * - AdminAssessmentService for assessment management operations
  * This service is kept for backwards compatibility but will be removed in a future version.
  */
 @Injectable({
@@ -53,41 +53,41 @@ export class AdminService {
   }
 
   // Assessment Management Methods
-  deleteUserQuizData(userId: string): Observable<any> {
+  deleteUserAssessmentData(userId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/assessments`).pipe(
       tap(() => this.logger.info('User assessment data deleted', { userId })),
       catchError((error) => this.handleError(error))
     );
   }
 
-  deleteSpecificUserQuiz(userId: string, assessmentId: string): Observable<any> {
+  deleteSpecificUserAssessment(userId: string, assessmentId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/assessment/${assessmentId}`).pipe(
-      tap(() => this.logger.info('Specific assessment deleted from user', { userId, quizId: assessmentId })),
+      tap(() => this.logger.info('Specific assessment deleted from user', { userId, assessmentId })),
       catchError((error) => this.handleError(error))
     );
   }
 
-  deleteAllUsersQuizData(): Observable<any> {
+  deleteAllUsersAssessmentData(): Observable<any> {
     return this.http.delete('/api/admin/assessments/all-users-data').pipe(
       tap(() => this.logger.info('All users assessment data deleted')),
       catchError((error) => this.handleError(error))
     );
   }
 
-  getAvailableQuizzes(): Observable<any[]> {
+  getAvailableAssessments(): Observable<any[]> {
     return this.http.get<any[]>('/api/assessments').pipe(
       catchError((error) => this.handleError(error))
     );
   }
 
-  deleteQuizFile(assessmentFileId: string): Observable<any> {
+  deleteAssessmentFile(assessmentFileId: string): Observable<any> {
     return this.http.delete(`/api/admin/assessment-file/${assessmentFileId}`).pipe(
-      tap(() => this.logger.info('Assessment file deleted', { quizId: assessmentFileId })),
+      tap(() => this.logger.info('Assessment file deleted', { assessmentId: assessmentFileId })),
       catchError((error) => this.handleError(error))
     );
   }
 
-  deleteAllQuizFiles(): Observable<any> {
+  deleteAllAssessmentFiles(): Observable<any> {
     return this.http.delete('/api/admin/assessment-files/all').pipe(
       tap(() => this.logger.info('All assessment files deleted')),
       catchError((error) => this.handleError(error))

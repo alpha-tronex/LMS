@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminUserService } from '@admin/services/admin-user.service';
-import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { AdminAssessmentService } from '@admin/services/admin-assessment.service';
 import { LoggerService } from '@core/services/logger.service';
 
 @Component({
@@ -19,7 +19,7 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(
     private adminUserService: AdminUserService,
-    private adminQuizService: AdminQuizService,
+    private adminAssessmentService: AdminAssessmentService,
     private logger: LoggerService
   ) { }
 
@@ -46,7 +46,7 @@ export class AdminDashboardComponent implements OnInit {
     });
 
     // Load assessments
-    this.adminQuizService.getAvailableQuizzes().subscribe({
+    this.adminAssessmentService.getAvailableAssessments().subscribe({
       next: (quizzes) => {
         this.totalQuizzes = quizzes.length;
       },

@@ -77,7 +77,9 @@ const userSchema = new mongoose.Schema ({
 });
 
 // Define the User model
-const User = mongoose.model("User", userSchema);
+// NOTE: LMS intentionally uses a separate MongoDB collection from the legacy app.
+// This avoids sharing the same `users` collection with the old "quizzes" production deployment.
+const User = mongoose.model("LmsUser", userSchema, "lms_users");
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";

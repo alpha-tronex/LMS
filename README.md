@@ -2,6 +2,27 @@
 
 Full-stack LMS application (Angular frontend + Node/Express backend). This codebase started as the earlier “quizzes” project and has been rebranded to “LMS”.
 
+## Release notes (breaking change: Quiz → Assessment)
+
+This release includes a breaking rename of backend API endpoints and the persisted MongoDB user history field.
+
+- API endpoints renamed from `/api/quiz*` to `/api/assessment*` (legacy quiz endpoints were removed)
+- User history field renamed from `user.quizzes` to `user.assessments`
+- Submission payload key renamed from `quizData` to `assessmentData`
+
+### Migration (required if you have existing data)
+
+Run the one-time migration against the MongoDB instance that still has `user.quizzes`:
+
+- `npm --prefix server run migrate:assessments`
+
+Deploy the backend and frontend together (mixing old/new clients will fail due to the removed legacy endpoints).
+
+### Data isolation note
+
+LMS is configured to use a separate MongoDB collection (`lms_users`) so it does not share the legacy app’s `users` collection.
+For stronger isolation, point LMS at a separate database via `MONGODB_URI`.
+
 ## Development server
 
 Run `npm run dev` for the Angular dev server (proxying API calls). Navigate to `http://localhost:4200/`.

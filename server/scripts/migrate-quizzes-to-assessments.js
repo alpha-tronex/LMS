@@ -4,8 +4,10 @@ const mongoose = require('mongoose');
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/userDB';
 
 // Use a permissive schema so we can read legacy fields (quizzes)
-const userAnySchema = new mongoose.Schema({}, { strict: false, collection: 'users' });
-const User = mongoose.model('User', userAnySchema);
+// IMPORTANT: LMS uses a separate collection (`lms_users`).
+// This migration intentionally targets LMS data only.
+const userAnySchema = new mongoose.Schema({}, { strict: false, collection: 'lms_users' });
+const User = mongoose.model('LmsUser', userAnySchema);
 
 async function migrate() {
   await mongoose.connect(mongoURI);

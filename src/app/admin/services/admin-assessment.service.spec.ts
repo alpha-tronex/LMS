@@ -1,15 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { AdminQuizService } from './admin-quiz.service';
+import { AdminAssessmentService } from './admin-assessment.service';
 
-describe('AdminQuizService', () => {
-  let service: AdminQuizService;
+describe('AdminAssessmentService', () => {
+  let service: AdminAssessmentService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule]
     });
-    service = TestBed.inject(AdminQuizService);
+    service = TestBed.inject(AdminAssessmentService);
   });
 
   it('should be created', () => {

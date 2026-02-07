@@ -79,7 +79,7 @@
                 <button 
                   class="btn btn-warning w-100" 
                   [disabled]="!selectedUserId || loading"
-                  (click)="deleteUserQuizData()">
+                  (click)="deleteUserAssessmentData()">
                   <i class="fas fa-trash"></i> Delete User's Assessment Data
                 </button>
               </div>
@@ -105,7 +105,7 @@
                 <button 
                   class="btn btn-danger w-100" 
                   [disabled]="loading"
-                  (click)="deleteAllUsersQuizData()">
+                  (click)="deleteAllUsersAssessmentData()">
                   <i class="fas fa-bomb"></i> Delete All Users' Assessment Data
                 </button>
               </div>
@@ -129,7 +129,7 @@
                     id="userSelectSpecific" 
                     class="form-select" 
                     [(ngModel)]="selectedUserIdForSpecificAssessment"
-                    (change)="onUserSelectForSpecificQuiz()"
+                    (change)="onUserSelectForSpecificAssessment()"
                     [disabled]="users.length === 0">
                     <option value="">-- Choose a user --</option>
                     <option *ngFor="let user of users" [value]="user.id">
@@ -150,7 +150,7 @@
                     [disabled]="userAssessments.length === 0">
                     <option value="">-- Choose an assessment --</option>
                     <option *ngFor="let quiz of userAssessments" [value]="quiz._id">
-                      {{ quiz.title }} - {{ formatQuizDate(quiz.completedAt) }} (Score: {{ quiz.score }}/{{ quiz.totalQuestions }})
+                      {{ quiz.title }} - {{ formatAssessmentDate(quiz.completedAt) }} (Score: {{ quiz.score }}/{{ quiz.totalQuestions }})
                     </option>
                   </select>
                   <small class="text-muted" *ngIf="userAssessments.length === 0">No assessments found for this user</small>
@@ -160,7 +160,7 @@
                 <button 
                   class="btn btn-warning w-100" 
                   [disabled]="!selectedUserIdForSpecificAssessment || !selectedUserAssessmentId || loading"
-                  (click)="deleteSpecificUserQuiz()">
+                  (click)="deleteSpecificUserAssessment()">
                   <i class="fas fa-trash-alt"></i> Delete Selected Assessment Entry
                 </button>
               </div>
@@ -197,7 +197,7 @@
                 <button 
                   class="btn btn-info w-100" 
                   [disabled]="!selectedAssessmentFileId || loading"
-                  (click)="deleteQuizFile()">
+                  (click)="deleteAssessmentFile()">
                   <i class="fas fa-trash-alt"></i> Delete Assessment File
                 </button>
               </div>
@@ -223,7 +223,7 @@
                 <button 
                   class="btn btn-danger w-100" 
                   [disabled]="loading"
-                  (click)="deleteAllQuizFiles()">
+                  (click)="deleteAllAssessmentFiles()">
                   <i class="fas fa-fire"></i> Delete All Assessment Files
                 </button>
               </div>

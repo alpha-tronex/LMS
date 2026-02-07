@@ -162,10 +162,10 @@
 
         <!-- Action Buttons -->
         <div class="mt-4 d-flex justify-content-end">
-          <button class="btn btn-secondary mr-2" (click)="cancelQuiz()" [disabled]="isSubmitting">
+          <button class="btn btn-secondary mr-2" (click)="cancelAssessment()" [disabled]="isSubmitting">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button class="btn btn-primary btn-lg" (click)="saveQuiz()"
+          <button class="btn btn-primary btn-lg" (click)="saveAssessment()"
             [disabled]="isSubmitting || questions.length === 0 || isLoading">
             <i class="fas fa-save"></i> {{ isSubmitting ? 'Saving...' : 'Update Assessment' }}
           </button>

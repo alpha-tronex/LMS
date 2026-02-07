@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { QuizUploadService } from '@admin/services/quiz-upload.service';
+import { AssessmentUploadService } from '@admin/services/assessment-upload.service';
 import { QuestionType } from '@models/quiz';
 
 @Component({
@@ -17,7 +17,7 @@ export class UploadAssessmentComponent implements OnInit {
   uploading: boolean = false;
   isDragOver: boolean = false;
 
-  constructor(private quizUploadService: QuizUploadService) { }
+  constructor(private assessmentUploadService: AssessmentUploadService) { }
 
   ngOnInit() {
   }
@@ -347,7 +347,7 @@ export class UploadAssessmentComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.quizUploadService.uploadQuiz(this.fileContent).subscribe({
+    this.assessmentUploadService.uploadAssessment(this.fileContent).subscribe({
       next: () => {
         this.successMessage = `Assessment "${this.fileContent.title}" uploaded successfully!`;
         this.uploading = false;

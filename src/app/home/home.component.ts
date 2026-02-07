@@ -39,7 +39,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     // Load available assessments
-    this.questionsService.getAvailableQuizzes().subscribe({
+    this.questionsService.getAvailableAssessments().subscribe({
       next: (data) => {
         this.availableAssessments = data;
         this.totalAssessments = data.length;
@@ -59,7 +59,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadingStats = true;
     const username = this.getUsername();
     
-    this.questionsService.getQuizHistory(username).subscribe({
+    this.questionsService.getAssessmentHistory(username).subscribe({
       next: (data) => {
         const assessments = data.assessments || [];
         this.completedAssessments = assessments.length;

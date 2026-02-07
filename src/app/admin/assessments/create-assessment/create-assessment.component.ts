@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { AdminAssessmentService } from '@admin/services/admin-assessment.service';
 import { QuestionType, QuestionTypeLabels } from '@models/quiz';
 
 interface Answer {
@@ -44,7 +44,7 @@ export class CreateAssessmentComponent implements OnInit, AfterViewInit {
   showCancelModal = false;
 
   constructor(
-    private adminQuizService: AdminQuizService,
+    private adminAssessmentService: AdminAssessmentService,
     private router: Router
   ) { }
 
@@ -162,8 +162,8 @@ getInstructions(questionType: QuestionType): string {
     this.questions.splice(index, 1);
   }
 
-  saveQuiz() {
-    // Validate quiz
+  saveAssessment() {
+    // Validate assessment
     if (!this.assessmentTitle.trim()) {
       this.errorMessage = 'Please enter an assessment title';
       return;
@@ -177,7 +177,7 @@ getInstructions(questionType: QuestionType): string {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    // Format quiz data for backend
+    // Format assessment data for backend
     const quizData = {
       title: this.assessmentTitle,
       questions: this.questions.map((q, index) => ({
@@ -192,8 +192,8 @@ getInstructions(questionType: QuestionType): string {
       }))
     };
 
-    // Save quiz
-    this.adminQuizService.uploadQuiz(quizData).subscribe({
+    // Save assessment
+    this.adminAssessmentService.uploadAssessment(quizData).subscribe({
       next: (_response) => {
         this.successMessage = 'Assessment created successfully!';
         setTimeout(() => {
@@ -207,7 +207,7 @@ getInstructions(questionType: QuestionType): string {
     });
   }
 
-  cancelQuiz() {
+  cancelAssessment() {
     this.showCancelModal = true;
   }
   onCancelModalConfirm() {

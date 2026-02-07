@@ -38,7 +38,7 @@ export class HistoryComponent implements OnInit {
   }
 
   loadAssessmentHistory() {
-    this.questionsService.getQuizHistory(this.username).subscribe({
+    this.questionsService.getAssessmentHistory(this.username).subscribe({
       next: (data) => {
         this.assessments = data.assessments || [];
         this.loading = false;

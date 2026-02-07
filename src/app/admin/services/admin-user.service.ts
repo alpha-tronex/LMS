@@ -45,16 +45,16 @@ export class AdminUserService {
     );
   }
 
-  deleteUserQuizData(userId: string): Observable<any> {
+  deleteUserAssessmentData(userId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/assessments`).pipe(
       tap(() => this.logger.info('User assessment data deleted', { userId })),
       catchError((error) => this.handleError(error))
     );
   }
 
-  deleteSpecificUserQuiz(userId: string, assessmentId: string): Observable<any> {
+  deleteSpecificUserAssessment(userId: string, assessmentId: string): Observable<any> {
     return this.http.delete(`/api/admin/user/${userId}/assessment/${assessmentId}`).pipe(
-      tap(() => this.logger.info('Specific assessment deleted from user', { userId, quizId: assessmentId })),
+      tap(() => this.logger.info('Specific assessment deleted from user', { userId, assessmentId })),
       catchError((error) => this.handleError(error))
     );
   }

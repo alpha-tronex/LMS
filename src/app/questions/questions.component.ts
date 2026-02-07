@@ -39,7 +39,7 @@ export class QuestionsComponent implements OnInit {
     // Start timer when assessment loads
     this.startTime = Date.now();
     
-    this.questionsService.getQuiz(id).subscribe({
+    this.questionsService.getAssessment(id).subscribe({
       next: (data: Quiz) => {
         this.assessment = data as Quiz;
         if (this.assessment && this.assessment.questions.length > 0) {
@@ -179,7 +179,7 @@ export class QuestionsComponent implements OnInit {
     };
 
     // Save to database
-    this.questionsService.saveQuiz(this.getUsername(), assessmentData).subscribe({
+    this.questionsService.saveAssessment(this.getUsername(), assessmentData).subscribe({
       next: (response) => {
         this.logger.info('Assessment saved successfully', response);
         // Redirect to history page

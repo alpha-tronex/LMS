@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { AdminAssessmentService } from '@admin/services/admin-assessment.service';
 import { QuestionsService } from '@core/services/questions-service';
 import { QuestionType, QuestionTypeLabels } from '@models/quiz';
 
@@ -55,7 +55,7 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
   private focusAnswerInputOnNextChange = false;
 
   constructor(
-    private adminQuizService: AdminQuizService,
+    private adminAssessmentService: AdminAssessmentService,
     private questionsService: QuestionsService,
     private route: ActivatedRoute,
     private router: Router,
@@ -115,7 +115,7 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
 
   loadQuiz() {
     this.isLoading = true;
-    this.questionsService.getQuiz(this.assessmentId).subscribe({
+    this.questionsService.getAssessment(this.assessmentId).subscribe({
       next: (quiz) => {
         this.assessmentTitle = quiz.title;
         this.questions = quiz.questions.map((q: any) => ({
@@ -290,8 +290,8 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
     }
   }
 
-  saveQuiz() {
-    // Validate quiz
+  saveAssessment() {
+    // Validate assessment
     if (!this.assessmentTitle.trim()) {
       this.errorMessage = 'Please enter an assessment title';
       return;
@@ -305,7 +305,7 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    // Format quiz data for backend
+    // Format assessment data for backend
     const quizData = {
       id: this.assessmentId,
       title: this.assessmentTitle,
@@ -321,8 +321,8 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
       }))
     };
 
-    // Update quiz
-    this.adminQuizService.uploadQuiz(quizData).subscribe({
+    // Update assessment
+    this.adminAssessmentService.uploadAssessment(quizData).subscribe({
       next: (_response) => {
         this.successMessage = 'Assessment updated successfully!';
         setTimeout(() => {
@@ -336,7 +336,7 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
     });
   }
 
-  cancelQuiz() {
+  cancelAssessment() {
     this.showCancelModal = true;
     this.cdr.detectChanges();
   }

@@ -15,42 +15,42 @@ export class QuestionsService {
     this.http = http;
   }
 
-  getQuiz(assessmentId?: number): Observable<Quiz> {
+  getAssessment(assessmentId?: number): Observable<Quiz> {
     const url = assessmentId !== undefined ? `/api/assessment?id=${assessmentId}` : '/api/assessment';
     return this.http.get<Quiz>(url).pipe(
       retry(3),
       catchError((error) => {
-        this.logger.error('Error in getQuiz', error);
+        this.logger.error('Error in getAssessment', error);
         return this.handleError(error);
       })
     );
   }
 
-  getAvailableQuizzes(): Observable<any[]> {
+  getAvailableAssessments(): Observable<any[]> {
     return this.http.get<any[]>('/api/assessments').pipe(
       retry(1),
       catchError((error) => {
-        this.logger.error('Error in getAvailableQuizzes', error);
+        this.logger.error('Error in getAvailableAssessments', error);
         return this.handleError(error);
       })
     );
   }
 
-  saveQuiz(username: string, assessmentData: any): Observable<any> {
+  saveAssessment(username: string, assessmentData: any): Observable<any> {
     return this.http.post<any>('/api/assessment', { username, assessmentData }).pipe(
       retry(1),
       catchError((error) => {
-        this.logger.error('Error in saveQuiz', error);
+        this.logger.error('Error in saveAssessment', error);
         return this.handleError(error);
       })
     );
   }
 
-  getQuizHistory(username: string): Observable<any> {
+  getAssessmentHistory(username: string): Observable<any> {
     return this.http.get<any>(`/api/assessment/history/${username}`).pipe(
       retry(1),
       catchError((error) => {
-        this.logger.error('Error in getQuizHistory', error);
+        this.logger.error('Error in getAssessmentHistory', error);
         return this.handleError(error);
       })
     );

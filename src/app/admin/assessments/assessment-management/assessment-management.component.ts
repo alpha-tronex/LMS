@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminUserService } from '@admin/services/admin-user.service';
-import { AdminQuizService } from '@admin/services/admin-quiz.service';
+import { AdminAssessmentService } from '@admin/services/admin-assessment.service';
 import { LoggerService } from '@core/services/logger.service';
 
 @Component({
@@ -19,14 +19,20 @@ export class AssessmentManagementComponent implements OnInit {
   message: string = '';
   messageType: 'success' | 'error' | '' = '';
 
-  // Properties for specific quiz deletion from user
+  // Properties for specific assessment deletion from user
   selectedUserIdForSpecificAssessment: string = '';
   selectedUserAssessmentId: string = '';
   userAssessments: any[] = [];
 
   // Confirmation modal properties
   private confirmModalInstance: any = null;
-  confirmAction: 'deleteUserQuiz' | 'deleteAllUserQuizzes' | 'deleteSpecificUserQuiz' | 'deleteQuizFile' | 'deleteAllQuizFiles' | null = null;
+  confirmAction:
+    | 'deleteUserAssessment'
+    | 'deleteAllUserAssessments'
+    | 'deleteSpecificUserAssessment'
+    | 'deleteAssessmentFile'
+    | 'deleteAllAssessmentFiles'
+    | null = null;
   confirmTitle: string = '';
   confirmMessage: string = '';
 
@@ -34,13 +40,13 @@ export class AssessmentManagementComponent implements OnInit {
 
   constructor(
     private adminUserService: AdminUserService,
-    private adminQuizService: AdminQuizService,
+    private adminAssessmentService: AdminAssessmentService,
     private logger: LoggerService
   ) { }
 
   ngOnInit() {
     this.loadUsers();
-    this.loadQuizFiles();
+    this.loadAssessmentFiles();
   }
 
   loadUsers(): void {
@@ -55,10 +61,10 @@ export class AssessmentManagementComponent implements OnInit {
     });
   }
 
-  loadQuizFiles(): void {
+  loadAssessmentFiles(): void {
     // This will load available assessment files from the server
     // We'll need to add an endpoint to list assessment files
-    this.adminQuizService.getAvailableQuizzes().subscribe({
+    this.adminAssessmentService.getAvailableAssessments().subscribe({
       next: (data) => {
         this.assessmentFiles = data;
       },
@@ -70,22 +76,22 @@ export class AssessmentManagementComponent implements OnInit {
   }
 
   // Section 1: Delete all assessment data from a specific user
-  deleteUserQuizData(): void {
+  deleteUserAssessmentData(): void {
     if (!this.selectedUserId) {
       this.showMessage('Please select a user', 'error');
       return;
     }
 
     const user = this.users.find(u => u.id === this.selectedUserId);
-    this.confirmAction = 'deleteUserQuiz';
+    this.confirmAction = 'deleteUserAssessment';
     this.confirmTitle = 'Delete User Assessment Data';
     this.confirmMessage = `Are you sure you want to delete all assessment data for user "${user?.uname}"? This action cannot be undone.`;
     this.showConfirmModal = true;
   }
 
-  private executeDeleteUserQuizData(): void {
+  private executeDeleteUserAssessmentData(): void {
     this.loading = true;
-    this.adminUserService.deleteUserQuizData(this.selectedUserId).subscribe({
+    this.adminUserService.deleteUserAssessmentData(this.selectedUserId).subscribe({
       next: () => {
         this.showMessage('User assessment data deleted successfully', 'success');
         this.loadUsers();
@@ -101,15 +107,15 @@ export class AssessmentManagementComponent implements OnInit {
   }
 
   // Section 2: Delete all assessment data from all users
-  deleteAllUsersQuizData(): void {
-    this.confirmAction = 'deleteAllUserQuizzes';
+  deleteAllUsersAssessmentData(): void {
+    this.confirmAction = 'deleteAllUserAssessments';
     this.confirmTitle = 'Delete All Assessment Data';
     this.confirmMessage = 'Are you sure you want to delete ALL assessment data from ALL users? This action cannot be undone.';
     this.showConfirmModal = true;
   }
 
-  // Handle user selection for specific quiz deletion
-  onUserSelectForSpecificQuiz(): void {
+  // Handle user selection for specific assessment deletion
+  onUserSelectForSpecificAssessment(): void {
     this.selectedUserAssessmentId = '';
     this.userAssessments = [];
     
@@ -122,7 +128,7 @@ export class AssessmentManagementComponent implements OnInit {
   }
 
   // Section 3: Delete specific assessment from specific user
-  deleteSpecificUserQuiz(): void {
+  deleteSpecificUserAssessment(): void {
     if (!this.selectedUserIdForSpecificAssessment || !this.selectedUserAssessmentId) {
       this.showMessage('Please select both user and assessment', 'error');
       return;
@@ -131,15 +137,15 @@ export class AssessmentManagementComponent implements OnInit {
     const user = this.users.find(u => u.id === this.selectedUserIdForSpecificAssessment);
     const quiz = this.userAssessments.find(q => q._id === this.selectedUserAssessmentId);
     
-    this.confirmAction = 'deleteSpecificUserQuiz';
+    this.confirmAction = 'deleteSpecificUserAssessment';
     this.confirmTitle = 'Delete Specific Assessment Entry';
     this.confirmMessage = `Are you sure you want to delete the assessment "${quiz?.title}" from user "${user?.uname}"? This action cannot be undone.`;
     this.showConfirmModal = true;
   }
 
-  private executeDeleteSpecificUserQuiz(): void {
+  private executeDeleteSpecificUserAssessment(): void {
     this.loading = true;
-    this.adminUserService.deleteSpecificUserQuiz(this.selectedUserIdForSpecificAssessment, this.selectedUserAssessmentId).subscribe({
+    this.adminUserService.deleteSpecificUserAssessment(this.selectedUserIdForSpecificAssessment, this.selectedUserAssessmentId).subscribe({
       next: () => {
         this.showMessage('Assessment entry deleted successfully', 'success');
         this.loadUsers();
@@ -156,9 +162,9 @@ export class AssessmentManagementComponent implements OnInit {
     });
   }
 
-  private executeDeleteAllUsersQuizData(): void {
+  private executeDeleteAllUsersAssessmentData(): void {
     this.loading = true;
-    this.adminQuizService.deleteAllUsersQuizData().subscribe({
+    this.adminAssessmentService.deleteAllUsersAssessmentData().subscribe({
       next: () => {
         this.showMessage('All user assessment data deleted successfully', 'success');
         this.loadUsers();
@@ -173,35 +179,35 @@ export class AssessmentManagementComponent implements OnInit {
   }
 
   // Section 3: Delete a specific assessment file
-  deleteQuizFile(): void {
+  deleteAssessmentFile(): void {
     if (!this.selectedAssessmentFileId) {
       this.showMessage('Please select an assessment', 'error');
       return;
     }
 
     const quiz = this.assessmentFiles.find(q => q.id === parseInt(this.selectedAssessmentFileId));
-    this.confirmAction = 'deleteQuizFile';
+    this.confirmAction = 'deleteAssessmentFile';
     this.confirmTitle = 'Delete Assessment File';
     this.confirmMessage = `Are you sure you want to delete the assessment file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this assessment.`;
     this.showConfirmModal = true;
   }
 
   // Delete assessment file from list (with ID directly)
-  deleteQuizFileFromList(quizId: number): void {
-    const quiz = this.assessmentFiles.find(q => q.id === quizId);
-    this.selectedAssessmentFileId = quizId.toString();
-    this.confirmAction = 'deleteQuizFile';
+  deleteAssessmentFileFromList(assessmentId: number): void {
+    const quiz = this.assessmentFiles.find(q => q.id === assessmentId);
+    this.selectedAssessmentFileId = assessmentId.toString();
+    this.confirmAction = 'deleteAssessmentFile';
     this.confirmTitle = 'Delete Assessment File';
     this.confirmMessage = `Are you sure you want to delete the assessment file "${quiz?.title}"? This action cannot be undone and users will no longer be able to take this assessment.`;
     this.showConfirmModal = true;
   }
 
-  private executeDeleteQuizFile(): void {
+  private executeDeleteAssessmentFile(): void {
     this.loading = true;
-    this.adminQuizService.deleteQuizFile(this.selectedAssessmentFileId).subscribe({
+    this.adminAssessmentService.deleteAssessmentFile(this.selectedAssessmentFileId).subscribe({
       next: () => {
         this.showMessage('Assessment file deleted successfully', 'success');
-        this.loadQuizFiles();
+        this.loadAssessmentFiles();
         this.selectedAssessmentFileId = '';
         this.loading = false;
       },
@@ -214,19 +220,19 @@ export class AssessmentManagementComponent implements OnInit {
   }
 
   // Section 4: Delete all assessment files
-  deleteAllQuizFiles(): void {
-    this.confirmAction = 'deleteAllQuizFiles';
+  deleteAllAssessmentFiles(): void {
+    this.confirmAction = 'deleteAllAssessmentFiles';
     this.confirmTitle = 'Delete All Assessment Files';
     this.confirmMessage = 'Are you sure you want to delete ALL assessment files? This action cannot be undone and users will no longer be able to take any assessments.';
     this.showConfirmModal = true;
   }
 
-  private executeDeleteAllQuizFiles(): void {
+  private executeDeleteAllAssessmentFiles(): void {
     this.loading = true;
-    this.adminQuizService.deleteAllQuizFiles().subscribe({
+    this.adminAssessmentService.deleteAllAssessmentFiles().subscribe({
       next: () => {
         this.showMessage('All assessment files deleted successfully', 'success');
-        this.loadQuizFiles();
+        this.loadAssessmentFiles();
         this.loading = false;
       },
       error: (error) => {
@@ -261,26 +267,26 @@ export class AssessmentManagementComponent implements OnInit {
 
   confirmActionExecute(): void {
     switch (this.confirmAction) {
-      case 'deleteUserQuiz':
-        this.executeDeleteUserQuizData();
+      case 'deleteUserAssessment':
+        this.executeDeleteUserAssessmentData();
         break;
-      case 'deleteAllUserQuizzes':
-        this.executeDeleteAllUsersQuizData();
+      case 'deleteAllUserAssessments':
+        this.executeDeleteAllUsersAssessmentData();
         break;
-      case 'deleteSpecificUserQuiz':
-        this.executeDeleteSpecificUserQuiz();
+      case 'deleteSpecificUserAssessment':
+        this.executeDeleteSpecificUserAssessment();
         break;
-      case 'deleteQuizFile':
-        this.executeDeleteQuizFile();
+      case 'deleteAssessmentFile':
+        this.executeDeleteAssessmentFile();
         break;
-      case 'deleteAllQuizFiles':
-        this.executeDeleteAllQuizFiles();
+      case 'deleteAllAssessmentFiles':
+        this.executeDeleteAllAssessmentFiles();
         break;
     }
     this.closeConfirmModal();
   }
 
-  formatQuizDate(date: any): string {
+  formatAssessmentDate(date: any): string {
     if (!date) return 'N/A';
     const d = new Date(date);
     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
