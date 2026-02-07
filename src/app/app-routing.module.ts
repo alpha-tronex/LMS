@@ -6,11 +6,17 @@ import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { AccountComponent } from './account/account.component';
 import { HistoryComponent } from './history/history.component';
+import { CourseCatalogComponent } from './courses/course-catalog/course-catalog.component';
+import { MyCoursesComponent } from './courses/my-courses/my-courses.component';
+import { CourseDetailComponent } from './courses/course-detail/course-detail.component';
 
 
 const routes: Routes = [
   { path: '', component: HomeComponent }, // Default route
   { path: 'questions', component: QuestionsComponent },
+  { path: 'courses', component: CourseCatalogComponent },
+  { path: 'my-courses', component: MyCoursesComponent },
+  { path: 'courses/:id', component: CourseDetailComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'account', component: AccountComponent },

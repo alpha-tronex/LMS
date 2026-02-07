@@ -103,13 +103,13 @@ export class ValidationService {
   }
 
   /**
-   * Validate user type
+   * Validate user role
    */
-  validateUserType(type: string): ValidationResult {
-    const validTypes = ['student', 'admin'];
-    
-    if (!type || !validTypes.includes(type)) {
-      return { valid: false, error: 'Type must be either student or admin' };
+  validateUserRole(role: string): ValidationResult {
+    const validRoles = ['student', 'admin'];
+
+    if (!role || !validRoles.includes(role)) {
+      return { valid: false, error: 'Role must be either student or admin' };
     }
     
     return { valid: true, error: null };
@@ -207,12 +207,12 @@ export class ValidationService {
       }
     }
 
-    // Type validation
-    if (formData.type !== undefined) {
-      const typeResult = this.validateUserType(formData.type);
-      if (!typeResult.valid && typeResult.error) {
-        errors.push(typeResult.error);
-        invalidFields.push('type');
+    // Role validation
+    if (formData.role !== undefined) {
+      const roleResult = this.validateUserRole(formData.role);
+      if (!roleResult.valid && roleResult.error) {
+        errors.push(roleResult.error);
+        invalidFields.push('role');
       }
     }
 

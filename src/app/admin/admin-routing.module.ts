@@ -7,9 +7,11 @@ import { CreateAssessmentComponent } from './assessments/create-assessment/creat
 import { EditAssessmentComponent } from './assessments/edit-assessment/edit-assessment.component';
 import { UploadAssessmentComponent } from './assessments/upload-assessment/upload-assessment.component';
 import { AssessmentManagementComponent } from './assessments/assessment-management/assessment-management.component';
+import { CourseManagementComponent } from './courses/course-management/course-management.component';
 
 const routes: Routes = [
   { path: '', component: AdminDashboardComponent },
+  { path: 'course-management', component: CourseManagementComponent },
   { path: 'user-management', component: UserManagementComponent },
   { path: 'user-details/:id', component: UserDetailsComponent },
   // New canonical assessment routes

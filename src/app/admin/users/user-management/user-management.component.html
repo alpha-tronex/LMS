@@ -96,14 +96,14 @@
                 </div>
                 
                 <div class="mb-2">
-                  <strong>Type:</strong> 
-                  <span class="badge" [ngClass]="selectedUser.type === 'admin' ? 'bg-danger' : 'bg-primary'">
-                    {{ selectedUser.type || 'student' }}
+                  <strong>Role:</strong> 
+                  <span class="badge" [ngClass]="selectedUser.role === 'admin' ? 'bg-danger' : 'bg-primary'">
+                    {{ selectedUser.role || 'student' }}
                   </span>
                   <a href="javascript:void(0)" 
                      class="ms-2 text-decoration-none" 
                      (click)="changeUserType(selectedUser)"
-                     title="Change user type">
+                     title="Change user role">
                     <small>(change)</small>
                   </a>
                 </div>

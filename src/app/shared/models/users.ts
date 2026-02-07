@@ -1,4 +1,5 @@
 import { Assessment } from './assessment';
+import { UserRole } from './user-role';
 
 export class Address {
     street1: string;
@@ -31,7 +32,7 @@ export class User {
     uname: string;
     pass: string;
     confirmPass: string;
-    type: string;
+    role?: UserRole;
     assessments?: Assessment[];
     token?: string; // JWT token for authentication
     createdAt: Date;

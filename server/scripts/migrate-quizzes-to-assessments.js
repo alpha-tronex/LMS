@@ -1,13 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const User = require('../models/LmsUserLoose');
 
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/userDB';
-
-// Use a permissive schema so we can read legacy fields (quizzes)
-// IMPORTANT: LMS uses a separate collection (`lms_users`).
-// This migration intentionally targets LMS data only.
-const userAnySchema = new mongoose.Schema({}, { strict: false, collection: 'lms_users' });
-const User = mongoose.model('LmsUser', userAnySchema);
 
 async function migrate() {
   await mongoose.connect(mongoURI);

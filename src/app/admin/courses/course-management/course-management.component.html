@@ -1,0 +1,99 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+
+    <h2 class="mb-4">Course Management</h2>
+
+    <div class="card text-dark mb-4">
+      <div class="card-header bg-secondary text-white text-start">
+        <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Create Course</h5>
+      </div>
+      <div class="card-body text-start">
+        <div *ngIf="message" class="alert" [ngClass]="messageType === 'success' ? 'alert-success' : 'alert-danger'">
+          {{ message }}
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><strong>Title</strong></label>
+            <input class="form-control" [(ngModel)]="newTitle" [disabled]="saving" placeholder="Course title" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><strong>Description</strong></label>
+            <input class="form-control" [(ngModel)]="newDescription" [disabled]="saving" placeholder="Optional description" />
+          </div>
+        </div>
+
+        <button class="btn btn-success" (click)="createCourse()" [disabled]="saving">
+          <i class="fas fa-save"></i> Create
+        </button>
+      </div>
+    </div>
+
+    <div class="card text-dark">
+      <div class="card-header bg-info text-white text-start">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Courses</h5>
+      </div>
+      <div class="card-body">
+        <div *ngIf="loading" class="text-center py-4">
+          <p>Loading courses...</p>
+        </div>
+
+        <div *ngIf="!loading && courses.length === 0" class="alert alert-info text-start">
+          No courses found.
+        </div>
+
+        <div *ngIf="!loading && courses.length > 0" class="table-responsive">
+          <table class="table table-striped table-hover text-start">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 22%">Title</th>
+                <th>Description</th>
+                <th style="width: 10%">Status</th>
+                <th style="width: 22%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let course of courses">
+                <td>
+                  <span *ngIf="!isEditing(course)"><strong>{{ course.title }}</strong></span>
+                  <input *ngIf="isEditing(course)" class="form-control" [(ngModel)]="editTitle" [disabled]="saving" />
+                </td>
+                <td>
+                  <span *ngIf="!isEditing(course)">{{ course.description || '—' }}</span>
+                  <input *ngIf="isEditing(course)" class="form-control" [(ngModel)]="editDescription" [disabled]="saving" />
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="course.status === 'active' ? 'bg-success' : 'bg-secondary'">
+                    {{ course.status }}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <button *ngIf="!isEditing(course)" class="btn btn-outline-primary btn-sm" (click)="startEdit(course)" [disabled]="saving">
+                      <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button *ngIf="isEditing(course)" class="btn btn-primary btn-sm" (click)="saveEdit(course)" [disabled]="saving">
+                      <i class="fas fa-save"></i> Save
+                    </button>
+                    <button *ngIf="isEditing(course)" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()" [disabled]="saving">
+                      Cancel
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" (click)="archiveCourse(course)" [disabled]="saving || course.status === 'archived'">
+                      <i class="fas fa-archive"></i> Archive
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

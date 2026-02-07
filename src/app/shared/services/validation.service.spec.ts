@@ -128,7 +128,7 @@ describe('ValidationService', () => {
         phone: '1234567890',
         fname: 'John',
         lname: 'Doe',
-        type: 'student'
+        role: 'student'
       };
       const result = service.validateForm(formData);
       expect(result.valid).toBe(true);

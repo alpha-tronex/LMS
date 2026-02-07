@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "migrate:assessments": "node scripts/migrate-quizzes-to-assessments.js"
+    "migrate:assessments": "node scripts/migrate-quizzes-to-assessments.js",
+    "cleanup:remove-legacy-type": "node scripts/remove-legacy-type-field.js"
   },
   "author": "",
   "license": "ISC",

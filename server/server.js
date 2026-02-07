@@ -7,6 +7,8 @@ const authRoutes = require(`${__dirname}/routes/authRoutes.js`);
 const assessmentRoutes = require(`${__dirname}/routes/assessmentRoutes.js`);
 const adminUserRoutes = require(`${__dirname}/routes/adminUserRoutes.js`);
 const adminAssessmentRoutes = require(`${__dirname}/routes/adminAssessmentRoutes.js`);
+const courseRoutes = require(`${__dirname}/routes/courseRoutes.js`);
+const adminCourseRoutes = require(`${__dirname}/routes/adminCourseRoutes.js`);
 const utilRoutes = require(`${__dirname}/routes/utilRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
@@ -36,54 +38,37 @@ if (fs.existsSync(distBrowserPath)) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-// Define the User schema
-const userSchema = new mongoose.Schema ({
-    fname: String,
-    lname: String,
-    username: String,
-    email: String,
-    password: String,
-    phone: String,
-    address: {
-        street1: String,
-        street2: String,
-        street3: String,
-        city: String,
-        state: String,
-        zipCode: String,
-        country: String
-    },
-    type: String,
-    createdAt: Date,
-    updatedAt: Date,
-    assessments: [{
-        id: Number,
-        title: String,
-        completedAt: Date,
-        questions: [{
-            questionNum: Number,
-            question: String,
-            answers: [String],
-            selection: [Number],
-            correct: [Number],
-            isCorrect: Boolean
-        }],
-        score: Number,
-        totalQuestions: Number,
-        duration: Number,
-        createdAt: Date,
-        updatedAt: Date
-    }]
-});
+// Models
+const User = require(`${__dirname}/models/User.js`);
 
-// Define the User model
-// NOTE: LMS intentionally uses a separate MongoDB collection from the legacy app.
-// This avoids sharing the same `users` collection with the old "quizzes" production deployment.
-const User = mongoose.model("LmsUser", userSchema, "lms_users");
+// Additional models
+const Course = require(`${__dirname}/models/Course.js`);
+const Enrollment = require(`${__dirname}/models/Enrollment.js`);
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";
 mongoose.connect(mongoURI);
+
+// Backfill `role` for legacy user documents that only had `type`
+mongoose.connection.once('open', async () => {
+    try {
+        const col = mongoose.connection.db.collection('lms_users');
+        const cursor = col.find({ role: { $exists: false } }, { projection: { type: 1 } });
+
+        let migrated = 0;
+        for await (const doc of cursor) {
+            const role = doc.type || 'student';
+            await col.updateOne({ _id: doc._id }, { $set: { role: role } });
+            migrated++;
+        }
+
+        if (migrated > 0) {
+            console.log(`[migration] Backfilled role for ${migrated} users`);
+        }
+    } catch (err) {
+        console.log('[migration] Failed to backfill role:', err);
+    }
+});
 
 // Setup authentication routes
 authRoutes(app, User);
@@ -91,9 +76,13 @@ authRoutes(app, User);
 // Setup assessment routes (student-facing)
 assessmentRoutes(app, User);
 
+// Setup course routes (student-facing)
+courseRoutes(app, Course, Enrollment);
+
 // Setup admin routes
 adminUserRoutes(app, User);
 adminAssessmentRoutes(app);
+adminCourseRoutes(app, Course);
 
 // Setup utility routes
 utilRoutes(app);

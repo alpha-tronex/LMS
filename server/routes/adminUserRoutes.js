@@ -20,7 +20,7 @@ module.exports = function(app, User) {
                     uname: user.username,
                     email: user.email || '',
                     phone: user.phone || '',
-                    type: user.type || 'student',
+                    role: user.role || 'student',
                     assessments: user.assessments || []
                 }));
 
@@ -50,7 +50,7 @@ module.exports = function(app, User) {
                     uname: user.username,
                     email: user.email || '',
                     phone: user.phone || '',
-                    type: user.type || 'student',
+                    role: user.role || 'student',
                     address: user.address || {
                         street1: '',
                         street2: '',
@@ -75,7 +75,7 @@ module.exports = function(app, User) {
         .put(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const userId = req.params.id;
-                const { fname, lname, email, phone, uname, type, address } = req.body || {};
+                const { fname, lname, email, phone, uname, role, address } = req.body || {};
 
                 // Validation using validators module
                 const validationErrors = [];
@@ -115,10 +115,10 @@ module.exports = function(app, User) {
                     }
                 }
 
-                if (type && type.trim()) {
-                    const typeValidation = validators.validateUserType(type);
-                    if (!typeValidation.valid) {
-                        validationErrors.push(typeValidation.error);
+                if (role && role.trim()) {
+                    const roleValidation = (validators.validateUserRole || validators.validateUserType)(role);
+                    if (!roleValidation.valid) {
+                        validationErrors.push(roleValidation.error);
                     }
                 }
 
@@ -148,7 +148,7 @@ module.exports = function(app, User) {
                 if (email !== undefined) updateData.email = email;
                 if (phone !== undefined) updateData.phone = phone;
                 if (uname !== undefined) updateData.username = uname;
-                if (type !== undefined) updateData.type = type;
+                if (role !== undefined) updateData.role = role;
                 if (address !== undefined) updateData.address = address;
                 updateData.updatedAt = new Date();
 
@@ -169,7 +169,7 @@ module.exports = function(app, User) {
                     uname: updatedUser.username,
                     email: updatedUser.email || '',
                     phone: updatedUser.phone || '',
-                    type: updatedUser.type || 'student',
+                    role: updatedUser.role || 'student',
                     address: updatedUser.address || {
                         street1: '',
                         street2: '',
@@ -207,20 +207,18 @@ module.exports = function(app, User) {
             }
         });
 
-    // Update user type (promote/demote admin)
-    app.route("/api/admin/user/:id/type")
-        .patch(verifyToken, verifyAdmin, async (req, res) => {
+    async function updateUserRoleHandler(req, res) {
             try {
                 const userId = req.params.id;
-                const { type } = req.body || {};
+                const { role } = req.body || {};
 
-                if (!type || !['student', 'admin'].includes(type)) {
-                    return res.status(400).json({ error: 'Invalid user type. Must be student or admin' });
+                if (!role || !['student', 'admin'].includes(role)) {
+                    return res.status(400).json({ error: 'Invalid user role. Must be student or admin' });
                 }
 
                 const updatedUser = await User.findByIdAndUpdate(
                     userId,
-                    { type: type },
+                    { role: role },
                     { new: true }
                 );
 
@@ -235,7 +233,7 @@ module.exports = function(app, User) {
                     uname: updatedUser.username,
                     email: updatedUser.email || '',
                     phone: updatedUser.phone || '',
-                    type: updatedUser.type || 'student'
+                    role: updatedUser.role || 'student'
                 };
 
                 res.status(200).json(userObj);
@@ -243,6 +241,20 @@ module.exports = function(app, User) {
                 console.log('err: ' + err);
                 res.status(500).json({ error: 'Internal server error' });
             }
+    }
+
+    // Update user role (promote/demote admin)
+    app.route("/api/admin/user/:id/role")
+        .patch(verifyToken, verifyAdmin, updateUserRoleHandler);
+
+    // Legacy alias
+    app.route("/api/admin/user/:id/type")
+        .patch(verifyToken, verifyAdmin, (req, res) => {
+            // Support old payload shape: { type: 'admin' | 'student' }
+            if (req.body && req.body.type !== undefined && req.body.role === undefined) {
+                req.body.role = req.body.type;
+            }
+            return updateUserRoleHandler(req, res);
         });
 
     // Delete all assessment history data from a specific user

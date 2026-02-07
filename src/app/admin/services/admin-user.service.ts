@@ -38,9 +38,9 @@ export class AdminUserService {
     );
   }
 
-  updateUserType(userId: string, type: string): Observable<User> {
-    return this.http.patch<User>(`/api/admin/user/${userId}/type`, { type }).pipe(
-      tap(response => this.logger.info('User type updated', response)),
+  updateUserRole(userId: string, role: string): Observable<User> {
+    return this.http.patch<User>(`/api/admin/user/${userId}/role`, { role }).pipe(
+      tap(response => this.logger.info('User role updated', response)),
       catchError((error) => this.handleError(error))
     );
   }

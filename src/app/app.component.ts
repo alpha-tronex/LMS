@@ -32,6 +32,11 @@ export class AppComponent implements OnInit, OnDestroy {
     if (currentUser) {
       try {
         const user = JSON.parse(currentUser);
+        // Backward compatibility: older stored sessions used `type`.
+        if (user && !user.role && user.type) {
+          user.role = user.type;
+          localStorage.setItem('currentUser', JSON.stringify(user));
+        }
         this.loginService.user = user;
         this.loginService.loggedIn = true;
         // Start idle monitoring for already logged in user

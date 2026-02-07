@@ -82,7 +82,7 @@ module.exports = function(app, User) {
                     email: email || '',
                     password: hash,
                     phone: phone || '',
-                    type: 'student',
+                    role: 'student',
                     createdAt: new Date(),
                     updatedAt: new Date()
                 });
@@ -107,7 +107,7 @@ module.exports = function(app, User) {
                     phone: user.phone,
                     pass: '', // Don't send the hashed password
                     confirmPass: '',
-                    type: user.type,
+                    role: user.role,
                     token: token
                 };
                 res.status(200).json(userObj);
@@ -152,7 +152,7 @@ module.exports = function(app, User) {
                         address: foundUser.address,
                         pass: '', // Don't send the hashed password
                         confirmPass: '',
-                        type: foundUser.type,
+                        role: foundUser.role || 'student',
                         token: token
                     };
                     res.status(200).json(userObj);
@@ -188,7 +188,7 @@ module.exports = function(app, User) {
                     uname: user.username,
                     email: user.email || '',
                     phone: user.phone || '',
-                    type: user.type || 'student'
+                    role: user.role || 'student'
                 }));
 
                 res.status(200).json(userList);
@@ -278,7 +278,7 @@ module.exports = function(app, User) {
                     address: updatedUser.address,
                     pass: '',
                     confirmPass: '',
-                    type: updatedUser.type
+                    role: updatedUser.role || 'student'
                 };
 
                 res.status(200).json(userObj);

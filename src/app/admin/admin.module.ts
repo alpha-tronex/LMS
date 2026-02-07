@@ -13,12 +13,14 @@ import { EditAssessmentComponent } from './assessments/edit-assessment/edit-asse
 import { UploadAssessmentComponent } from './assessments/upload-assessment/upload-assessment.component';
 import { AssessmentManagementComponent } from './assessments/assessment-management/assessment-management.component';
 import { SharedModule } from '../shared/shared.module';
+import { CourseManagementComponent } from './courses/course-management/course-management.component';
 
 @NgModule({
   declarations: [
     AdminDashboardComponent,
     AdminBreadcrumbComponent,
     AdminMenuComponent,
+    CourseManagementComponent,
     UserManagementComponent,
     CreateAssessmentComponent,
     EditAssessmentComponent,

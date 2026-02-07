@@ -1,0 +1,38 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-breadcrumb></app-breadcrumb>
+    <h2 class="mb-4">Course Details</h2>
+
+    <div class="card text-dark">
+      <div class="card-body">
+        <div *ngIf="loading" class="text-center py-4">
+          <p>Loading course...</p>
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <div *ngIf="!loading && !error && course">
+          <h3 class="mb-2">{{ course.title }}</h3>
+          <p *ngIf="course.description">{{ course.description }}</p>
+          <p class="text-muted" *ngIf="!course.description">No description provided.</p>
+
+          <hr />
+          <div class="alert alert-info mb-0">
+            Course content (lessons/chapters) will appear here in the next milestone.
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer bg-white">
+        <a class="btn btn-outline-primary btn-sm" [routerLink]="['/courses']">
+          Back to catalog
+        </a>
+        <a class="btn btn-outline-secondary btn-sm ml-2" [routerLink]="['/my-courses']">
+          My courses
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

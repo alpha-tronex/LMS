@@ -99,18 +99,23 @@ function validateName(name, fieldName = 'Name') {
 }
 
 /**
- * Validate user type
- * @param {string} type - User type to validate
+ * Validate user role
+ * @param {string} role - User role to validate
  * @returns {object} - { valid: boolean, error: string }
  */
-function validateUserType(type) {
-  const validTypes = ['student', 'admin'];
-  
-  if (!type || !validTypes.includes(type)) {
-    return { valid: false, error: 'Type must be either student or admin' };
+function validateUserRole(role) {
+  const validRoles = ['student', 'admin'];
+
+  if (!role || !validRoles.includes(role)) {
+    return { valid: false, error: 'Role must be either student or admin' };
   }
-  
+
   return { valid: true, error: null };
+}
+
+// Backwards compatible alias
+function validateUserType(type) {
+  return validateUserRole(type);
 }
 
 /**
@@ -155,6 +160,7 @@ module.exports = {
   validateEmail,
   validatePhone,
   validateName,
+  validateUserRole,
   validateUserType,
   validateZipCode,
   validateRequiredFields

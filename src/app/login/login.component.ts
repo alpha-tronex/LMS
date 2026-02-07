@@ -30,7 +30,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       email: '',
       pass: '',
       confirmPass: '',
-      type: '',
+      role: undefined,
       fname: '',
       lname: '',
       phone: '',

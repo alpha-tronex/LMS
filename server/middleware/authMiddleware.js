@@ -32,7 +32,8 @@ function verifyToken(req, res, next) {
  * Middleware to verify admin role
  */
 function verifyAdmin(req, res, next) {
-    if (!req.user || req.user.type !== 'admin') {
+    const role = req.user && (req.user.role || req.user.type);
+    if (!req.user || role !== 'admin') {
         return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
     }
     next();
@@ -42,10 +43,13 @@ function verifyAdmin(req, res, next) {
  * Generate JWT token
  */
 function generateToken(user) {
+    const role = user.role;
     const payload = {
         id: user._id || user.id,
         username: user.username || user.uname,
-        type: user.type,
+        role: role,
+        // keep legacy claim for existing consumers
+        type: role,
         email: user.email
     };
 

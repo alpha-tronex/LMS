@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { User } from '@models/users';
+import { UserRole } from '@models/user-role';
 
 @Injectable()
 export class LoginService {
@@ -29,11 +30,11 @@ export class LoginService {
   }
 
   isAdmin(): boolean {
-    return this.user && this.user.type === 'admin';
+    return this.user && this.user.role === UserRole.Admin;
   }
 
   isStudent(): boolean {
-    return this.user && this.user.type === 'student';
+    return this.user && this.user.role === UserRole.Student;
   }
 
   

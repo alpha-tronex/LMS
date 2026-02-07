@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { User } from '@models/users';
 import { LoggerService } from '@core/services/logger.service';
+import { UserRole } from '@models/user-role';
 
 @Injectable({
   providedIn: 'root'
@@ -32,11 +33,11 @@ export class LoginService {
   }
 
   isAdmin(): boolean {
-    return this.user && this.user.type === 'admin';
+    return this.user && this.user.role === UserRole.Admin;
   }
 
   isStudent(): boolean {
-    return this.user && this.user.type === 'student';
+    return this.user && this.user.role === UserRole.Student;
   }
 
   

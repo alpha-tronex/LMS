@@ -42,7 +42,7 @@
             <div class="col-12">
               <h5>Account Details</h5>
               <hr>
-              <p><strong>Account Type:</strong> <span class="badge" [ngClass]="user.type === 'admin' ? 'bg-danger' : 'bg-success'">{{ user.type | uppercase }}</span></p>
+              <p><strong>Role:</strong> <span class="badge" [ngClass]="user.role === 'admin' ? 'bg-danger' : 'bg-success'">{{ (user.role || 'student') | uppercase }}</span></p>
             </div>
           </div>
           

@@ -3,6 +3,7 @@ import { User } from '@models/users';
 import { AdminUserService } from '@admin/services/admin-user.service';
 import { LoginService } from '@core/services/login-service';
 import { LoggerService } from '@core/services/logger.service';
+import { UserRole } from '@models/user-role';
 
 @Component({
     selector: 'app-user-management',
@@ -30,11 +31,11 @@ export class UserManagementComponent implements OnInit {
   }
 
   get totalAdmins(): number {
-    return this.users.filter(u => u.type === 'admin').length;
+    return this.users.filter(u => u.role === 'admin').length;
   }
 
   get totalStudents(): number {
-    return this.users.filter(u => u.type === 'student' || !u.type).length;
+    return this.users.filter(u => u.role === 'student' || !u.role).length;
   }
 
   get totalQuizzesTaken(): number {
@@ -89,13 +90,13 @@ export class UserManagementComponent implements OnInit {
       return;
     }
 
-    const currentType = user.type || 'student';
-    const newType = currentType === 'admin' ? 'student' : 'admin';
-    const action = newType === 'admin' ? 'promote to administrator' : 'demote to student';
+    const currentRole: UserRole = user.role || UserRole.Student;
+    const newRole: UserRole = currentRole === UserRole.Admin ? UserRole.Student : UserRole.Admin;
+    const action = newRole === UserRole.Admin ? 'promote to administrator' : 'demote to student';
     
     // Prevent admin from demoting themselves
     const currentUser = this.loginService.user;
-    if (currentUser && currentUser.id === user.id && currentType === 'admin' && newType === 'student') {
+    if (currentUser && currentUser.id === user.id && currentRole === UserRole.Admin && newRole === UserRole.Student) {
       this.confirmUser = user;
       this.confirmAction = null; // Informational only
       this.confirmTitle = 'Cannot Demote Yourself';
@@ -116,27 +117,27 @@ export class UserManagementComponent implements OnInit {
       return;
     }
 
-    const currentType = this.confirmUser.type || 'student';
-    const newType = currentType === 'admin' ? 'student' : 'admin';
+    const currentRole: UserRole = this.confirmUser.role || UserRole.Student;
+    const newRole: UserRole = currentRole === UserRole.Admin ? UserRole.Student : UserRole.Admin;
     
-    this.adminUserService.updateUserType(this.confirmUser.id, newType).subscribe({
+    this.adminUserService.updateUserRole(this.confirmUser.id, newRole).subscribe({
       next: (_updatedUser) => {
         // Update the selected user
         if (this.selectedUser && this.selectedUser.id === this.confirmUser!.id) {
-          this.selectedUser.type = newType;
+          this.selectedUser.role = newRole;
         }
         
         // Update the user in the users array
         const userIndex = this.users.findIndex(u => u.id === this.confirmUser!.id);
         if (userIndex !== -1) {
-          this.users[userIndex].type = newType;
+          this.users[userIndex].role = newRole;
         }
         
         this.logger.info('User type updated successfully');
       },
       error: (error) => {
         this.logger.error('Error updating user type', error);
-        alert('Failed to update user type: ' + error);
+        alert('Failed to update user role: ' + error);
       }
     });
   }

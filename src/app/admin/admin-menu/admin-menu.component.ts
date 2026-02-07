@@ -17,6 +17,13 @@ interface MenuItem {
 export class AdminMenuComponent {
   menuItems: MenuItem[] = [
     {
+      title: 'Course Management',
+      description: 'Create, edit, and archive courses',
+      icon: 'fas fa-book',
+      route: '/admin/course-management',
+      color: 'info'
+    },
+    {
       title: 'User Management',
       description: 'View, edit, and manage user accounts',
       icon: 'fas fa-users',

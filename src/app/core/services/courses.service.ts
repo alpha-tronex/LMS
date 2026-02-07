@@ -1,0 +1,66 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, retry } from 'rxjs/operators';
+import { Course } from '@models/course';
+import { LoggerService } from '@core/services/logger.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CoursesService {
+  constructor(private http: HttpClient, private logger: LoggerService) {}
+
+  getCourses(): Observable<Course[]> {
+    return this.http.get<Course[]>('/api/courses').pipe(
+      retry(1),
+      catchError((error) => {
+        this.logger.error('Error in getCourses', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  getMyCourses(): Observable<Course[]> {
+    return this.http.get<Course[]>('/api/my/courses').pipe(
+      retry(1),
+      catchError((error) => {
+        this.logger.error('Error in getMyCourses', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  getCourse(courseId: string): Observable<Course> {
+    return this.http.get<Course>(`/api/courses/${courseId}`).pipe(
+      retry(1),
+      catchError((error) => {
+        this.logger.error('Error in getCourse', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  enroll(courseId: string): Observable<any> {
+    return this.http.post<any>(`/api/courses/${courseId}/enroll`, {}).pipe(
+      catchError((error) => {
+        this.logger.error('Error in enroll', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  withdraw(courseId: string): Observable<any> {
+    return this.http.post<any>(`/api/courses/${courseId}/withdraw`, {}).pipe(
+      catchError((error) => {
+        this.logger.error('Error in withdraw', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    const backendError = error.error || 'Something bad happened; please try again later.';
+    return throwError(backendError);
+  }
+}
