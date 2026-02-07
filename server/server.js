@@ -56,7 +56,7 @@ const userSchema = new mongoose.Schema ({
     type: String,
     createdAt: Date,
     updatedAt: Date,
-    quizzes: [{
+    assessments: [{
         id: Number,
         title: String,
         completedAt: Date,

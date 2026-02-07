@@ -3,9 +3,9 @@ const bodyParser = require("body-parser");
 const { verifyToken } = require('../middleware/authMiddleware');
 
 module.exports = function(app, User) {
-    // Get list of all available quizzes (protected route)
-    app.get("/api/quizzes", verifyToken, (req, res) => {
-        console.log('loading available quizzes');
+    // Get list of all available assessments (protected route)
+    app.get("/api/assessments", verifyToken, (req, res) => {
+        console.log('loading available assessments');
         const quizzesDir = __dirname + '/../quizzes';
         console.log('quizzesDir: ' + quizzesDir);
         const quizFiles = fs.readdirSync(quizzesDir).filter(file => file.endsWith('.json'));
@@ -21,21 +21,21 @@ module.exports = function(app, User) {
         res.json(quizzes);
     });
 
-    // Get a specific quiz or default quiz (protected route)
-    app.route("/api/quiz")
+    // Get a specific assessment or default assessment (protected route)
+    app.route("/api/assessment")
         .get(verifyToken, (req, res) => {
-            console.log('loading quiz data');
-            const quizId = req.query.id || 0;
-            console.log('quizId: ' + quizId);
-            const jsonData = fs.readFileSync(__dirname + `/../quizzes/quiz_${quizId}.json`);
+            console.log('loading assessment data');
+            const assessmentId = req.query.id || 0;
+            console.log('assessmentId: ' + assessmentId);
+            const jsonData = fs.readFileSync(__dirname + `/../quizzes/quiz_${assessmentId}.json`);
             res.send(jsonData);
         })
         .post(verifyToken, bodyParser.json(), async (req, res) => {
             try {
-                const { username, quizData } = req.body;
+                const { username, assessmentData } = req.body;
                 
-                if (!username || !quizData) {
-                    return res.status(400).json({ error: 'Username and quiz data are required' });
+                if (!username || !assessmentData) {
+                    return res.status(400).json({ error: 'Username and assessment data are required' });
                 }
                 
                 const user = await User.findOne({ username: username });
@@ -43,21 +43,24 @@ module.exports = function(app, User) {
                     return res.status(404).json({ error: 'User not found' });
                 }
                 
-                // Add the completed quiz to user's quizzes array
-                user.quizzes.push(quizData);
+                // Add the completed assessment to user's assessments array
+                if (!user.assessments) {
+                    user.assessments = [];
+                }
+                user.assessments.push(assessmentData);
                 user.updatedAt = new Date();
                 await user.save();
                 
-                console.log('Quiz saved for user:', username);
-                res.status(200).json({ message: 'Quiz saved successfully', quiz: quizData });
+                console.log('Assessment saved for user:', username);
+                res.status(200).json({ message: 'Assessment saved successfully', assessment: assessmentData });
             } catch (error) {
-                console.error('Error saving quiz:', error);
-                res.status(500).json({ error: 'Failed to save quiz' });
+                console.error('Error saving assessment:', error);
+                res.status(500).json({ error: 'Failed to save assessment' });
             }
         });
 
-    // Get quiz history for a specific user (protected route)
-    app.get("/api/quiz/history/:username", verifyToken, async (req, res) => {
+    // Get assessment history for a specific user (protected route)
+    app.get("/api/assessment/history/:username", verifyToken, async (req, res) => {
         try {
             const username = req.params.username;
             
@@ -70,11 +73,11 @@ module.exports = function(app, User) {
                 return res.status(404).json({ error: 'User not found' });
             }
             
-            console.log('Quiz history retrieved for user:', username);
-            res.status(200).json({ quizzes: user.quizzes || [] });
+            console.log('Assessment history retrieved for user:', username);
+            res.status(200).json({ assessments: user.assessments || [] });
         } catch (error) {
-            console.error('Error retrieving quiz history:', error);
-            res.status(500).json({ error: 'Failed to retrieve quiz history' });
+            console.error('Error retrieving assessment history:', error);
+            res.status(500).json({ error: 'Failed to retrieve assessment history' });
         }
     });
 };

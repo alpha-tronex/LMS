@@ -1,4 +1,4 @@
-import { Quiz } from './quiz';
+import { Assessment } from './assessment';
 
 export class Address {
     street1: string;
@@ -18,7 +18,7 @@ export class Admin {
 export class Student {
     id: string;
     user: User
-    quizzes: Quiz[];
+    assessments: Assessment[];
 }
 
 export class User {
@@ -32,7 +32,7 @@ export class User {
     pass: string;
     confirmPass: string;
     type: string;
-    quizzes?: Quiz[];
+    assessments?: Assessment[];
     token?: string; // JWT token for authentication
     createdAt: Date;
     updatedAt: Date;

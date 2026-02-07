@@ -36,7 +36,7 @@ export class AdminDashboardComponent implements OnInit {
         this.totalUsers = users.length;
         this.totalAdmins = users.filter(u => u.type === 'admin').length;
         this.totalStudents = users.filter(u => u.type !== 'admin').length;
-        this.totalQuizAttempts = users.reduce((sum, user) => sum + (user.quizzes?.length || 0), 0);
+        this.totalQuizAttempts = users.reduce((sum, user) => sum + (user.assessments?.length || 0), 0);
         this.loading = false;
       },
       error: (error) => {

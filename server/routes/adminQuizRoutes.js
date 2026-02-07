@@ -8,18 +8,18 @@ const path = require('path');
  */
 module.exports = function(app) {
 
-    // Upload quiz (admin only)
-    app.route("/api/quiz/upload")
+    // Upload assessment (admin only)
+    app.route("/api/assessment/upload")
         .post(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const quizData = req.body;
                 
                 // Validate required fields (ID will be auto-assigned)
                 if (!quizData.title) {
-                    return res.status(400).json({ error: 'Quiz must have a title field' });
+                    return res.status(400).json({ error: 'Assessment must have a title field' });
                 }
                 if (!quizData.questions || !Array.isArray(quizData.questions) || quizData.questions.length === 0) {
-                    return res.status(400).json({ error: 'Quiz must have a questions array with at least one question' });
+                    return res.status(400).json({ error: 'Assessment must have a questions array with at least one question' });
                 }
                 
                 // Validate each question
@@ -111,21 +111,21 @@ module.exports = function(app) {
                 // Write quiz to file
                 fs.writeFileSync(filePath, JSON.stringify(quizData, null, 2), 'utf8');
                 
-                console.log(`Quiz uploaded: ${quizData.title} (ID: ${newId})`);
+                console.log(`Assessment uploaded: ${quizData.title} (ID: ${newId})`);
                 
                 res.status(201).json({ 
-                    message: 'Quiz uploaded successfully', 
-                    quizId: newId,
+                    message: 'Assessment uploaded successfully', 
+                    assessmentId: newId,
                     title: quizData.title
                 });
             } catch (err) {
-                console.log('Quiz upload error:', err);
+                console.log('Assessment upload error:', err);
                 res.status(500).json({ error: 'Internal server error' });
             }
         });
 
-    // Get list of all uploaded quizzes (admin only)
-    app.route("/api/quiz/list")
+    // Get list of all uploaded assessments (admin only)
+    app.route("/api/assessment/list")
         .get(verifyToken, verifyAdmin, (req, res) => {
             try {
                 const quizzesDir = path.join(__dirname, '../quizzes');
@@ -148,27 +148,27 @@ module.exports = function(app) {
                 
                 res.status(200).json(quizzes);
             } catch (err) {
-                console.log('Error listing quizzes:', err);
-                res.status(500).json({ error: 'Failed to load quiz list' });
+                console.log('Error listing assessments:', err);
+                res.status(500).json({ error: 'Failed to load assessment list' });
             }
         });
 
-    // Delete a specific quiz file (admin only)
-    app.route("/api/admin/quiz-file/:quizId")
+    // Delete a specific assessment file (admin only)
+    app.route("/api/admin/assessment-file/:assessmentId")
         .delete(verifyToken, verifyAdmin, async (req, res) => {
             try {
-                const quizId = req.params.quizId;
-                const quizFilePath = path.join(__dirname, '../quizzes', `quiz_${quizId}.json`);
+                const assessmentId = req.params.assessmentId;
+                const quizFilePath = path.join(__dirname, '../quizzes', `quiz_${assessmentId}.json`);
 
                 if (!fs.existsSync(quizFilePath)) {
-                    return res.status(404).json({ error: 'Quiz file not found' });
+                    return res.status(404).json({ error: 'Assessment file not found' });
                 }
 
                 fs.unlinkSync(quizFilePath);
 
                 res.status(200).json({ 
-                    message: 'Quiz file deleted successfully',
-                    quizId: quizId 
+                    message: 'Assessment file deleted successfully',
+                    assessmentId: assessmentId 
                 });
             } catch (err) {
                 console.log('err: ' + err);
@@ -176,8 +176,8 @@ module.exports = function(app) {
             }
         });
 
-    // Delete all quiz files (admin only)
-    app.route("/api/admin/quiz-files/all")
+    // Delete all assessment files (admin only)
+    app.route("/api/admin/assessment-files/all")
         .delete(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const quizzesDir = path.join(__dirname, '../quizzes');
@@ -193,7 +193,7 @@ module.exports = function(app) {
                 }
 
                 res.status(200).json({ 
-                    message: 'All quiz files deleted successfully',
+                    message: 'All assessment files deleted successfully',
                     deletedCount: deletedCount 
                 });
             } catch (err) {
@@ -202,8 +202,8 @@ module.exports = function(app) {
             }
         });
 
-    // Delete quiz by ID (admin only) - Alternative endpoint
-    app.route("/api/quiz/delete/:id")
+    // Delete assessment by ID (admin only) - Alternative endpoint
+    app.route("/api/assessment/delete/:id")
         .delete(verifyToken, verifyAdmin, (req, res) => {
             try {
                 const quizId = req.params.id;
@@ -211,17 +211,17 @@ module.exports = function(app) {
                 const filePath = path.join(quizzesDir, `quiz_${quizId}.json`);
                 
                 if (!fs.existsSync(filePath)) {
-                    return res.status(404).json({ error: 'Quiz not found' });
+                    return res.status(404).json({ error: 'Assessment not found' });
                 }
                 
                 fs.unlinkSync(filePath);
                 
-                console.log(`Quiz deleted: ID ${quizId}`);
+                console.log(`Assessment deleted: ID ${quizId}`);
                 
-                res.status(200).json({ message: 'Quiz deleted successfully' });
+                res.status(200).json({ message: 'Assessment deleted successfully' });
             } catch (err) {
-                console.log('Quiz delete error:', err);
-                res.status(500).json({ error: 'Failed to delete quiz' });
+                console.log('Assessment delete error:', err);
+                res.status(500).json({ error: 'Failed to delete assessment' });
             }
         });
 

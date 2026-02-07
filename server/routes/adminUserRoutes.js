@@ -21,7 +21,7 @@ module.exports = function(app, User) {
                     email: user.email || '',
                     phone: user.phone || '',
                     type: user.type || 'student',
-                    quizzes: user.quizzes || []
+                    assessments: user.assessments || []
                 }));
 
                 res.status(200).json(usersArray);
@@ -60,7 +60,7 @@ module.exports = function(app, User) {
                         zipCode: '',
                         country: ''
                     },
-                    quizzes: user.quizzes || []
+                    assessments: user.assessments || []
                 };
 
                 res.status(200).json(userObj);
@@ -245,15 +245,15 @@ module.exports = function(app, User) {
             }
         });
 
-    // Delete all quiz data from a specific user
-    app.route("/api/admin/user/:id/quizzes")
+    // Delete all assessment history data from a specific user
+    app.route("/api/admin/user/:id/assessments")
         .delete(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const userId = req.params.id;
                 
                 const updatedUser = await User.findByIdAndUpdate(
                     userId,
-                    { $set: { quizzes: [] } },
+                    { $set: { assessments: [] } },
                     { new: true }
                 );
 
@@ -262,7 +262,7 @@ module.exports = function(app, User) {
                 }
 
                 res.status(200).json({ 
-                    message: 'User quiz data deleted successfully', 
+                    message: 'User assessment history deleted successfully', 
                     userId: userId 
                 });
             } catch (err) {
@@ -271,16 +271,16 @@ module.exports = function(app, User) {
             }
         });
 
-    // Delete a specific quiz from a specific user
-    app.route("/api/admin/user/:userId/quiz/:quizId")
+    // Delete a specific assessment attempt from a specific user
+    app.route("/api/admin/user/:userId/assessment/:assessmentId")
         .delete(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const userId = req.params.userId;
-                const quizId = req.params.quizId;
+                const assessmentId = req.params.assessmentId;
                 
                 const updatedUser = await User.findByIdAndUpdate(
                     userId,
-                    { $pull: { quizzes: { _id: quizId } } },
+                    { $pull: { assessments: { _id: assessmentId } } },
                     { new: true }
                 );
 
@@ -289,9 +289,9 @@ module.exports = function(app, User) {
                 }
 
                 res.status(200).json({ 
-                    message: 'Quiz entry deleted successfully', 
+                    message: 'Assessment entry deleted successfully', 
                     userId: userId,
-                    quizId: quizId
+                    assessmentId: assessmentId
                 });
             } catch (err) {
                 console.log('err: ' + err);
@@ -299,17 +299,17 @@ module.exports = function(app, User) {
             }
         });
 
-    // Delete all quiz data from all users
-    app.route("/api/admin/quizzes/all-users-data")
+    // Delete all assessment history data from all users
+    app.route("/api/admin/assessments/all-users-data")
         .delete(verifyToken, verifyAdmin, async (req, res) => {
             try {
                 const result = await User.updateMany(
                     {},
-                    { $set: { quizzes: [] } }
+                    { $set: { assessments: [] } }
                 );
 
                 res.status(200).json({ 
-                    message: 'All users quiz data deleted successfully',
+                    message: 'All users assessment history deleted successfully',
                     modifiedCount: result.modifiedCount 
                 });
             } catch (err) {

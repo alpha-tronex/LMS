@@ -19,10 +19,10 @@ The application has been enhanced with JWT (JSON Web Token) based authentication
      - Login and register now return JWT tokens
      - `/api/user/update` requires valid token
    
-   - **Quiz Routes** (`server/quizRoutes.js`):
-     - `/api/quizzes` - requires authentication
-     - `/api/quiz` (GET/POST) - requires authentication
-     - `/api/quiz/history/:username` - requires authentication
+     - **Assessment Routes** (`server/quizRoutes.js`):
+        - `/api/assessments` - requires authentication
+        - `/api/assessment` (GET/POST) - requires authentication
+        - `/api/assessment/history/:username` - requires authentication
    
    - **Admin Routes** (`server/adminRoutes.js`):
      - `/api/admin/users` - requires admin token

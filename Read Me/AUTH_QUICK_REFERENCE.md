@@ -31,7 +31,7 @@
 4. **Use token in requests**:
    ```bash
    # Get protected resource
-   curl -X GET http://localhost:3000/api/quizzes \
+    curl -X GET http://localhost:3000/api/assessments \
      -H "Authorization: Bearer YOUR_TOKEN_HERE"
    ```
 
@@ -81,7 +81,7 @@ PORT=3000
 
 3. **Test Protected Route**:
    - Clear localStorage: `localStorage.clear()`
-   - Try to access `/api/quizzes`
+   - Try to access `/api/assessments`
    - Should get 401 error and redirect to login
 
 ### Common Issues

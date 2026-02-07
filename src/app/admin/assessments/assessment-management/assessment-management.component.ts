@@ -115,8 +115,8 @@ export class AssessmentManagementComponent implements OnInit {
     
     if (this.selectedUserIdForSpecificAssessment) {
       const user = this.users.find(u => u.id === this.selectedUserIdForSpecificAssessment);
-      if (user && user.quizzes) {
-        this.userAssessments = user.quizzes;
+      if (user && user.assessments) {
+        this.userAssessments = user.assessments;
       }
     }
   }

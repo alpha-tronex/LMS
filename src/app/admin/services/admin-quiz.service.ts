@@ -12,34 +12,34 @@ export class AdminQuizService {
   constructor(private http: HttpClient, private logger: LoggerService) { }
 
   getAvailableQuizzes(): Observable<any[]> {
-    return this.http.get<any[]>('/api/quizzes').pipe(
+    return this.http.get<any[]>('/api/assessments').pipe(
       catchError((error) => this.handleError(error))
     );
   }
 
   uploadQuiz(assessmentData: any): Observable<any> {
-    return this.http.post('/api/quiz/upload', assessmentData).pipe(
+    return this.http.post('/api/assessment/upload', assessmentData).pipe(
       tap(() => this.logger.info('Assessment uploaded successfully')),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllUsersQuizData(): Observable<any> {
-    return this.http.delete('/api/admin/quizzes/all-users-data').pipe(
+    return this.http.delete('/api/admin/assessments/all-users-data').pipe(
       tap(() => this.logger.info('All users assessment data deleted')),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteQuizFile(assessmentFileId: string): Observable<any> {
-    return this.http.delete(`/api/admin/quiz-file/${assessmentFileId}`).pipe(
+    return this.http.delete(`/api/admin/assessment-file/${assessmentFileId}`).pipe(
       tap(() => this.logger.info('Assessment file deleted', { quizId: assessmentFileId })),
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteAllQuizFiles(): Observable<any> {
-    return this.http.delete('/api/admin/quiz-files/all').pipe(
+    return this.http.delete('/api/admin/assessment-files/all').pipe(
       tap(() => this.logger.info('All assessment files deleted')),
       catchError((error) => this.handleError(error))
     );

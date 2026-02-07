@@ -35,7 +35,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       lname: '',
       phone: '',
       address: null,
-      quizzes: [],
+      assessments: [],
       createdAt: new Date(),
       updatedAt: new Date()
     };

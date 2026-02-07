@@ -69,8 +69,8 @@
                     <option value="">-- Choose a user --</option>
                     <option *ngFor="let user of users" [value]="user.id">
                       {{ getUserDisplayName(user) }}
-                      <span *ngIf="user.quizzes && user.quizzes.length > 0">
-                        ({{ user.quizzes.length }} assessment{{ user.quizzes.length !== 1 ? 's' : '' }})
+                      <span *ngIf="user.assessments && user.assessments.length > 0">
+                        ({{ user.assessments.length }} assessment{{ user.assessments.length !== 1 ? 's' : '' }})
                       </span>
                     </option>
                   </select>
@@ -134,8 +134,8 @@
                     <option value="">-- Choose a user --</option>
                     <option *ngFor="let user of users" [value]="user.id">
                       {{ getUserDisplayName(user) }}
-                      <span *ngIf="user.quizzes && user.quizzes.length > 0">
-                        ({{ user.quizzes.length }} assessment{{ user.quizzes.length !== 1 ? 's' : '' }})
+                      <span *ngIf="user.assessments && user.assessments.length > 0">
+                        ({{ user.assessments.length }} assessment{{ user.assessments.length !== 1 ? 's' : '' }})
                       </span>
                     </option>
                   </select>

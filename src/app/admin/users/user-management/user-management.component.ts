@@ -38,7 +38,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   get totalQuizzesTaken(): number {
-    return this.users.reduce((sum, user) => sum + (user.quizzes?.length || 0), 0);
+    return this.users.reduce((sum, user) => sum + (user.assessments?.length || 0), 0);
   }
 
   constructor(

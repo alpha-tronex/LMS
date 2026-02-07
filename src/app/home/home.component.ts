@@ -61,7 +61,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     this.questionsService.getQuizHistory(username).subscribe({
       next: (data) => {
-        const assessments = data.quizzes || [];
+        const assessments = data.assessments || [];
         this.completedAssessments = assessments.length;
         
         // Calculate average score

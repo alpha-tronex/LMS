@@ -12,20 +12,20 @@ export class QuizUploadService {
   constructor(private http: HttpClient, private logger: LoggerService) { }
 
   uploadQuiz(assessmentData: any): Observable<any> {
-    return this.http.post('/api/quiz/upload', assessmentData).pipe(
+    return this.http.post('/api/assessment/upload', assessmentData).pipe(
       tap(response => this.logger.info('Assessment uploaded', response)),
       catchError((error) => this.handleError(error))
     );
   }
 
   getQuizList(): Observable<any[]> {
-    return this.http.get<any[]>('/api/quiz/list').pipe(
+    return this.http.get<any[]>('/api/assessment/list').pipe(
       catchError((error) => this.handleError(error))
     );
   }
 
   deleteQuiz(assessmentId: number): Observable<any> {
-    return this.http.delete(`/api/quiz/delete/${assessmentId}`).pipe(
+    return this.http.delete(`/api/assessment/delete/${assessmentId}`).pipe(
       tap(() => this.logger.info('Assessment deleted', { quizId: assessmentId })),
       catchError((error) => this.handleError(error))
     );

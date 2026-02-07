@@ -23,7 +23,7 @@
 ### 2. Push Code to GitHub
 
 ```bash
-cd /Users/alphathiam/Documents/GitHub/quizzes
+cd /Users/alphathiam/Documents/GitHub/LMS/LMS
 git add .
 git commit -m "Ready for deployment"
 git push origin main
@@ -34,7 +34,7 @@ git push origin main
 1. Go to https://render.com
 2. Sign up/login (use GitHub account)
 3. Click "New +" → "Web Service"
-4. Connect your GitHub repository `alpha-tronex/quizzes`
+4. Connect your GitHub repository `alpha-tronex/LMS`
 5. Configure settings:
    - **Name**: quiz-master-alpha
    - **Root Directory**: (leave empty)

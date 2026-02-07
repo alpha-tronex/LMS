@@ -10,8 +10,8 @@ The dashboard serves as the admin landing page and displays key statistics:
 - **Total Users**: Count of all registered users
 - **Total Admins**: Count of users with admin privileges
 - **Total Students**: Count of regular student users
-- **Total Quizzes**: Number of available quizzes in the system
-- **Total Quiz Attempts**: Sum of all quiz attempts across all users
+- **Total Assessments**: Number of available assessments in the system
+- **Total Assessment Attempts**: Sum of all assessment attempts across all users
 
 The dashboard also includes the breadcrumb navigation and quick actions menu for easy access to all admin functions.
 
@@ -117,7 +117,7 @@ The dashboard loads statistics in `loadDashboardStats()`:
 - totalAdmins: Filter users where type === 'admin'
 - totalStudents: Filter users where type !== 'admin'
 - totalQuizzes: Count from AdminService.getAvailableQuizzes()
-- totalQuizAttempts: Reduce sum of all user.quizzes.length
+- totalQuizAttempts: Reduce sum of all user.assessments.length
 ```
 
 ## Future Enhancements

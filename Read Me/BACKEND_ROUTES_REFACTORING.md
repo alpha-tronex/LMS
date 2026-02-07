@@ -26,7 +26,7 @@ server/routes/
 ## Route Mapping
 
 ### Admin User Routes (`adminUserRoutes.js`)
-**Purpose**: All user management and user quiz data operations for administrators
+**Purpose**: All user management and user assessment history operations for administrators
 
 | Method | Endpoint | Description | Middleware |
 |--------|----------|-------------|------------|
@@ -35,50 +35,50 @@ server/routes/
 | PUT | `/api/admin/user/:id` | Update user details | verifyToken, verifyAdmin |
 | DELETE | `/api/admin/user/:id` | Delete user account | verifyToken, verifyAdmin |
 | PATCH | `/api/admin/user/:id/type` | Update user type (admin/student) | verifyToken, verifyAdmin |
-| DELETE | `/api/admin/user/:id/quizzes` | Delete all quizzes for a user | verifyToken, verifyAdmin |
-| DELETE | `/api/admin/user/:userId/quiz/:quizId` | Delete specific quiz from user | verifyToken, verifyAdmin |
-| DELETE | `/api/admin/quizzes/all-users-data` | Delete all quiz data from all users | verifyToken, verifyAdmin |
+| DELETE | `/api/admin/user/:id/assessments` | Delete all assessment history for a user | verifyToken, verifyAdmin |
+| DELETE | `/api/admin/user/:userId/assessment/:assessmentId` | Delete specific assessment entry from user | verifyToken, verifyAdmin |
+| DELETE | `/api/admin/assessments/all-users-data` | Delete all assessment history from all users | verifyToken, verifyAdmin |
 
 **Features**:
 - User CRUD operations with validation
 - Username uniqueness checking
 - User type management (promote/demote)
-- User quiz data management
+- User assessment history management
 - Comprehensive validation using validators module
 
 ### Admin Quiz Routes (`adminQuizRoutes.js`)
-**Purpose**: Quiz file operations (upload, list, delete) for administrators
+**Purpose**: Assessment file operations (upload, list, delete) for administrators
 
 | Method | Endpoint | Description | Middleware |
 |--------|----------|-------------|------------|
-| POST | `/api/quiz/upload` | Upload new quiz file | verifyToken, verifyAdmin |
-| GET | `/api/quiz/list` | List all uploaded quizzes | verifyToken, verifyAdmin |
-| DELETE | `/api/admin/quiz-file/:quizId` | Delete specific quiz file | verifyToken, verifyAdmin |
-| DELETE | `/api/admin/quiz-files/all` | Delete all quiz files | verifyToken, verifyAdmin |
-| DELETE | `/api/quiz/delete/:id` | Delete quiz by ID (alternative) | verifyToken, verifyAdmin |
+| POST | `/api/assessment/upload` | Upload new assessment file | verifyToken, verifyAdmin |
+| GET | `/api/assessment/list` | List all uploaded assessments | verifyToken, verifyAdmin |
+| DELETE | `/api/admin/assessment-file/:assessmentId` | Delete specific assessment file | verifyToken, verifyAdmin |
+| DELETE | `/api/admin/assessment-files/all` | Delete all assessment files | verifyToken, verifyAdmin |
+| DELETE | `/api/assessment/delete/:id` | Delete assessment by ID (alternative) | verifyToken, verifyAdmin |
 
 **Features**:
-- Quiz validation (title, questions, answers, instructions)
-- Auto-assign lowest available quiz ID (fills gaps)
+- Assessment validation (title, questions, answers, instructions)
+- Auto-assign lowest available assessment ID (fills gaps)
 - Duplicate title checking
 - Batch file operations
 - Comprehensive question validation
 
-### Quiz Routes (`quizRoutes.js`)
-**Purpose**: Student-facing quiz operations (unchanged)
+### Assessment Routes (`quizRoutes.js`)
+**Purpose**: Student-facing assessment operations
 
 | Method | Endpoint | Description | Middleware |
 |--------|----------|-------------|------------|
-| GET | `/api/quizzes` | Get list of available quizzes | verifyToken |
-| GET | `/api/quiz` | Get specific quiz data | verifyToken |
-| POST | `/api/quiz` | Submit completed quiz | verifyToken |
-| GET | `/api/quiz/history/:username` | Get quiz history for user | verifyToken |
+| GET | `/api/assessments` | Get list of available assessments | verifyToken |
+| GET | `/api/assessment` | Get specific assessment data | verifyToken |
+| POST | `/api/assessment` | Submit completed assessment | verifyToken |
+| GET | `/api/assessment/history/:username` | Get assessment history for user | verifyToken |
 
 **Features**:
-- Quiz listing with ID and title
-- Quiz data retrieval
-- Quiz submission and storage
-- User quiz history
+- Assessment listing with ID and title
+- Assessment data retrieval
+- Assessment submission and storage
+- User assessment history
 
 ## Alignment with Frontend Services
 
@@ -94,18 +94,18 @@ updateUser()            → PUT /api/admin/user/:id
 deleteUser()            → DELETE /api/admin/user/:id
 updateUserType()        → PATCH /api/admin/user/:id/type
 deleteUserQuizData()    → DELETE /api/admin/user/:id/quizzes
-deleteSpecificUserQuiz()→ DELETE /api/admin/user/:userId/quiz/:quizId
+deleteSpecificUserQuiz()→ DELETE /api/admin/user/:userId/assessment/:assessmentId
 ```
 
 **AdminQuizService** → **adminQuizRoutes.js**
 ```typescript
 getAvailableQuizzes()   → GET /api/quizzes (from quizRoutes)
-deleteAllUsersQuizData()→ DELETE /api/admin/quizzes/all-users-data (from adminUserRoutes)
-deleteQuizFile()        → DELETE /api/admin/quiz-file/:quizId
-deleteAllQuizFiles()    → DELETE /api/admin/quiz-files/all
+deleteAllUsersQuizData()→ DELETE /api/admin/assessments/all-users-data (from adminUserRoutes)
+deleteQuizFile()        → DELETE /api/admin/assessment-file/:assessmentId
+deleteAllQuizFiles()    → DELETE /api/admin/assessment-files/all
 ```
 
-**Note**: `getAvailableQuizzes()` uses the public quiz endpoint, and `deleteAllUsersQuizData()` is in adminUserRoutes since it operates on user data.
+**Note**: `getAvailableQuizzes()` uses the public assessment list endpoint, and `deleteAllUsersQuizData()` is in adminUserRoutes since it operates on user data.
 
 ## Benefits of Refactoring
 
@@ -136,8 +136,15 @@ deleteAllQuizFiles()    → DELETE /api/admin/quiz-files/all
 
 ## Migration Notes
 
-### No Breaking Changes
-All existing endpoints remain unchanged:
+### Breaking Change
+These endpoints were renamed from `quiz*` → `assessment*`, and the persisted Mongo field was renamed from `user.quizzes` → `user.assessments`.
+
+### One-time DB Migration
+Run the migration script once before/alongside deployment:
+```bash
+cd server
+npm run migrate:assessments
+```
 - ✅ API paths identical
 - ✅ Request/response formats unchanged
 - ✅ Middleware unchanged
