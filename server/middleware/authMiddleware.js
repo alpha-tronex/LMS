@@ -40,6 +40,19 @@ function verifyAdmin(req, res, next) {
 }
 
 /**
+ * Middleware to verify admin OR instructor role
+ */
+function verifyAdminOrInstructor(req, res, next) {
+    const role = req.user && (req.user.role || req.user.type);
+    if (!req.user || (role !== 'admin' && role !== 'instructor')) {
+        return res
+            .status(403)
+            .json({ error: 'Access denied. Admin or instructor privileges required.' });
+    }
+    next();
+}
+
+/**
  * Generate JWT token
  */
 function generateToken(user) {
@@ -60,6 +73,7 @@ function generateToken(user) {
 module.exports = {
     verifyToken,
     verifyAdmin,
+    verifyAdminOrInstructor,
     generateToken,
     JWT_SECRET
 };

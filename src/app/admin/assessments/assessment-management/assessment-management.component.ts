@@ -10,6 +10,8 @@ import { LoggerService } from '@core/services/logger.service';
     standalone: false
 })
 export class AssessmentManagementComponent implements OnInit {
+  isStrictAdmin = false;
+
   users: any[] = [];
   selectedUserId: string = '';
   assessmentFiles: any[] = [];
@@ -45,7 +47,19 @@ export class AssessmentManagementComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.loadUsers();
+    const currentUserRaw = localStorage.getItem('currentUser');
+    if (currentUserRaw) {
+      try {
+        const parsed = JSON.parse(currentUserRaw);
+        this.isStrictAdmin = !!parsed && parsed.role === 'admin';
+      } catch {
+        this.isStrictAdmin = false;
+      }
+    }
+
+    if (this.isStrictAdmin) {
+      this.loadUsers();
+    }
     this.loadAssessmentFiles();
   }
 

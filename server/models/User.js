@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   // Canonical authorization field
   role: {
     type: String,
-    enum: ['student', 'admin'],
+    enum: ['student', 'instructor', 'admin'],
     default: 'student',
   },
   createdAt: Date,

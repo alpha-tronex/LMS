@@ -20,10 +20,14 @@ export class UserManagementComponent implements OnInit {
   private modalInstance: any = null;
   // private confirmModalInstance: any = null;
     showConfirmModal: boolean = false;
-  confirmAction: 'promote' | 'delete' | null = null;
+  confirmAction: 'promote' | 'delete' | 'changeRole' | null = null;
   confirmUser: User | null = null;
+  pendingRole: UserRole | null = null;
   confirmMessage: string = '';
   confirmTitle: string = '';
+
+  private roleSelectEl: HTMLSelectElement | null = null;
+  private roleSelectPrevValue: string | null = null;
 
   // Dashboard statistics
   get totalUsers(): number {
@@ -32,6 +36,10 @@ export class UserManagementComponent implements OnInit {
 
   get totalAdmins(): number {
     return this.users.filter(u => u.role === 'admin').length;
+  }
+
+  get totalInstructors(): number {
+    return this.users.filter(u => u.role === 'instructor').length;
   }
 
   get totalStudents(): number {
@@ -49,6 +57,26 @@ export class UserManagementComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    const currentUserRaw = localStorage.getItem('currentUser');
+    if (!currentUserRaw) {
+      this.errorMessage = 'Please login as an admin to manage users.';
+      this.loading = false;
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(currentUserRaw);
+      if (!parsed || parsed.role !== 'admin') {
+        this.errorMessage = 'Access denied. Admin privileges required.';
+        this.loading = false;
+        return;
+      }
+    } catch {
+      this.errorMessage = 'Unable to read current user. Please login again.';
+      this.loading = false;
+      return;
+    }
+
     this.loadUsers();
   }
 
@@ -112,6 +140,49 @@ export class UserManagementComponent implements OnInit {
     this.showConfirmModal = true;
   }
 
+  onRoleSelectChange(user: User, event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const newRoleRaw = target.value;
+
+    const currentRole: UserRole = user.role || UserRole.Student;
+    if (!newRoleRaw || newRoleRaw === currentRole) {
+      target.value = currentRole;
+      return;
+    }
+
+    // Preserve the previous selection so we can revert if the admin cancels.
+    this.roleSelectEl = target;
+    this.roleSelectPrevValue = currentRole;
+
+    const newRole = newRoleRaw as UserRole;
+    this.requestRoleChange(user, newRole);
+  }
+
+  private requestRoleChange(user: User, newRole: UserRole): void {
+    if (!user || !user.id) {
+      return;
+    }
+
+    const currentRole: UserRole = user.role || UserRole.Student;
+
+    const currentUser = this.loginService.user;
+    if (currentUser && currentUser.id === user.id && currentRole === UserRole.Admin && newRole !== UserRole.Admin) {
+      this.confirmUser = user;
+      this.confirmAction = null; // Informational only
+      this.confirmTitle = 'Cannot Demote Yourself';
+      this.confirmMessage = 'You cannot remove your own administrator privileges while logged in.';
+      this.showConfirmModal = true;
+      return;
+    }
+
+    this.pendingRole = newRole;
+    this.confirmUser = user;
+    this.confirmAction = 'changeRole';
+    this.confirmTitle = 'Change User Role';
+    this.confirmMessage = `Are you sure you want to change user "${user.uname}" to role "${newRole}"?`;
+    this.showConfirmModal = true;
+  }
+
   private executePromote(): void {
     if (!this.confirmUser || !this.confirmUser.id) {
       return;
@@ -137,6 +208,48 @@ export class UserManagementComponent implements OnInit {
       },
       error: (error) => {
         this.logger.error('Error updating user type', error);
+        alert('Failed to update user role: ' + error);
+      }
+    });
+  }
+
+  private executeRoleChange(): void {
+    if (!this.confirmUser || !this.confirmUser.id || !this.pendingRole) {
+      return;
+    }
+
+    const newRole = this.pendingRole;
+
+    this.adminUserService.updateUserRole(this.confirmUser.id, newRole).subscribe({
+      next: (_updatedUser) => {
+        if (this.selectedUser && this.selectedUser.id === this.confirmUser!.id) {
+          this.selectedUser.role = newRole;
+        }
+
+        const userIndex = this.users.findIndex(u => u.id === this.confirmUser!.id);
+        if (userIndex !== -1) {
+          this.users[userIndex].role = newRole;
+        }
+
+        // If the updated user is the currently logged-in user, keep localStorage/LoginService in sync.
+        const currentUser = this.loginService.user;
+        if (currentUser && currentUser.id === this.confirmUser!.id) {
+          this.loginService.user = { ...currentUser, role: newRole };
+          try {
+            const raw = localStorage.getItem('currentUser');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              localStorage.setItem('currentUser', JSON.stringify({ ...parsed, role: newRole }));
+            }
+          } catch {
+            // ignore localStorage parse errors
+          }
+        }
+
+        this.logger.info('User role updated successfully');
+      },
+      error: (error) => {
+        this.logger.error('Error updating user role', error);
         alert('Failed to update user role: ' + error);
       }
     });
@@ -249,13 +362,21 @@ export class UserManagementComponent implements OnInit {
 
   // showConfirmModal is now a boolean property controlling modal visibility
 
-  closeConfirmModal(): void {
+  closeConfirmModal(revertRoleSelect: boolean = true): void {
+    if (revertRoleSelect && this.roleSelectEl && this.roleSelectPrevValue !== null) {
+      this.roleSelectEl.value = this.roleSelectPrevValue;
+    }
+
     this.showConfirmModal = false;
     // Reset confirmation state
     this.confirmAction = null;
     this.confirmUser = null;
+    this.pendingRole = null;
     this.confirmMessage = '';
     this.confirmTitle = '';
+
+    this.roleSelectEl = null;
+    this.roleSelectPrevValue = null;
   }
 
   confirmActionExecute(): void {
@@ -263,8 +384,11 @@ export class UserManagementComponent implements OnInit {
       this.executePromote();
     } else if (this.confirmAction === 'delete') {
       this.executeDelete();
+    } else if (this.confirmAction === 'changeRole') {
+      this.executeRoleChange();
     }
-    this.closeConfirmModal();
+    // Don't revert the role dropdown on successful confirmation.
+    this.closeConfirmModal(false);
   }
 
   getConfirmButtonClass(): string {
@@ -272,7 +396,9 @@ export class UserManagementComponent implements OnInit {
   }
 
   getConfirmButtonText(): string {
-    return this.confirmAction === 'delete' ? 'Delete' : 'Confirm';
+    if (this.confirmAction === 'delete') return 'Delete';
+    if (this.confirmAction === 'changeRole') return 'Update Role';
+    return 'Confirm';
   }
 
 }

@@ -74,6 +74,9 @@
                 </td>
                 <td>
                   <div class="btn-group" role="group">
+                    <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/admin/course-content', course.id]" [class.disabled]="saving">
+                      <i class="fas fa-sitemap"></i> Content
+                    </a>
                     <button *ngIf="!isEditing(course)" class="btn btn-outline-primary btn-sm" (click)="startEdit(course)" [disabled]="saving">
                       <i class="fas fa-edit"></i> Edit
                     </button>

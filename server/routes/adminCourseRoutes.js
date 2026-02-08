@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
+const { verifyToken, verifyAdminOrInstructor } = require('../middleware/authMiddleware');
 
 function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
@@ -39,7 +39,7 @@ function validateCoursePayload(payload, { requireTitle }) {
 
 module.exports = function adminCourseRoutes(app, Course) {
   // Create course
-  app.post('/api/admin/courses', verifyToken, verifyAdmin, async (req, res) => {
+  app.post('/api/admin/courses', verifyToken, verifyAdminOrInstructor, async (req, res) => {
     try {
       const validation = validateCoursePayload(req.body || {}, { requireTitle: true });
       if (!validation.valid) {
@@ -67,7 +67,7 @@ module.exports = function adminCourseRoutes(app, Course) {
   });
 
   // Update course
-  app.put('/api/admin/courses/:courseId', verifyToken, verifyAdmin, async (req, res) => {
+  app.put('/api/admin/courses/:courseId', verifyToken, verifyAdminOrInstructor, async (req, res) => {
     try {
       const { courseId } = req.params;
       if (!isValidObjectId(courseId)) {
@@ -110,7 +110,7 @@ module.exports = function adminCourseRoutes(app, Course) {
   app.post(
     '/api/admin/courses/:courseId/archive',
     verifyToken,
-    verifyAdmin,
+    verifyAdminOrInstructor,
     async (req, res) => {
       try {
         const { courseId } = req.params;
@@ -137,7 +137,7 @@ module.exports = function adminCourseRoutes(app, Course) {
   );
 
   // List courses (includes archived)
-  app.get('/api/admin/courses', verifyToken, verifyAdmin, async (req, res) => {
+  app.get('/api/admin/courses', verifyToken, verifyAdminOrInstructor, async (req, res) => {
     try {
       const courses = await Course.find({}).sort({ updatedAt: -1 }).lean();
 

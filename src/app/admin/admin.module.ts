@@ -14,6 +14,7 @@ import { UploadAssessmentComponent } from './assessments/upload-assessment/uploa
 import { AssessmentManagementComponent } from './assessments/assessment-management/assessment-management.component';
 import { SharedModule } from '../shared/shared.module';
 import { CourseManagementComponent } from './courses/course-management/course-management.component';
+import { CourseContentManagementComponent } from './courses/course-content-management/course-content-management.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { CourseManagementComponent } from './courses/course-management/course-ma
     AdminBreadcrumbComponent,
     AdminMenuComponent,
     CourseManagementComponent,
+    CourseContentManagementComponent,
     UserManagementComponent,
     CreateAssessmentComponent,
     EditAssessmentComponent,

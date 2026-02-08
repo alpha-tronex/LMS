@@ -34,15 +34,15 @@ export class CourseManagementComponent implements OnInit {
   ngOnInit(): void {
     const currentUserRaw = localStorage.getItem('currentUser');
     if (!currentUserRaw) {
-      this.error = 'Please login as an admin to manage courses.';
+      this.error = 'Please login as an admin or instructor to manage courses.';
       this.loading = false;
       return;
     }
 
     try {
       const parsed = JSON.parse(currentUserRaw);
-      if (!parsed || parsed.role !== 'admin') {
-        this.error = 'Access denied. Admin privileges required.';
+      if (!parsed || (parsed.role !== 'admin' && parsed.role !== 'instructor')) {
+        this.error = 'Access denied. Admin or instructor privileges required.';
         this.loading = false;
         return;
       }

@@ -33,6 +33,14 @@ export class LoginService {
     return this.user && this.user.role === UserRole.Admin;
   }
 
+  isInstructor(): boolean {
+    return this.user && this.user.role === UserRole.Instructor;
+  }
+
+  isAdminOrInstructor(): boolean {
+    return this.isAdmin() || this.isInstructor();
+  }
+
   isStudent(): boolean {
     return this.user && this.user.role === UserRole.Student;
   }

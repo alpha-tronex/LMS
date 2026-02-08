@@ -27,6 +27,15 @@
             </div>
           </div>
           <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-info text-white h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-chalkboard-teacher fa-3x mb-2"></i>
+                <h3 class="mb-0">{{ totalInstructors }}</h3>
+                <p class="mb-0">Instructors</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
             <div class="card bg-success text-white h-100">
               <div class="card-body text-center">
                 <i class="fas fa-user-graduate fa-3x mb-2"></i>
@@ -97,15 +106,20 @@
                 
                 <div class="mb-2">
                   <strong>Role:</strong> 
-                  <span class="badge" [ngClass]="selectedUser.role === 'admin' ? 'bg-danger' : 'bg-primary'">
+                  <span
+                    class="badge"
+                    [ngClass]="selectedUser.role === 'admin' ? 'bg-danger' : (selectedUser.role === 'instructor' ? 'bg-info' : 'bg-primary')">
                     {{ selectedUser.role || 'student' }}
                   </span>
-                  <a href="javascript:void(0)" 
-                     class="ms-2 text-decoration-none" 
-                     (click)="changeUserType(selectedUser)"
-                     title="Change user role">
-                    <small>(change)</small>
-                  </a>
+                  <select
+                    class="form-select form-control d-inline-block w-auto ms-2"
+                    [value]="selectedUser.role || 'student'"
+                    (change)="onRoleSelectChange(selectedUser, $event)"
+                    aria-label="Change user role">
+                    <option value="student">student</option>
+                    <option value="instructor">instructor</option>
+                    <option value="admin">admin</option>
+                  </select>
                 </div>
                 
                 <div class="mb-3 mt-3 d-flex gap-2 justify-content-center">

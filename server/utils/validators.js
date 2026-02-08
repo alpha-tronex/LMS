@@ -104,10 +104,10 @@ function validateName(name, fieldName = 'Name') {
  * @returns {object} - { valid: boolean, error: string }
  */
 function validateUserRole(role) {
-  const validRoles = ['student', 'admin'];
+  const validRoles = ['student', 'admin', 'instructor'];
 
   if (!role || !validRoles.includes(role)) {
-    return { valid: false, error: 'Role must be either student or admin' };
+    return { valid: false, error: 'Role must be one of: student, instructor, admin' };
   }
 
   return { valid: true, error: null };

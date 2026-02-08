@@ -1,0 +1,276 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Course Content</h2>
+      <div class="btn-group" role="group">
+        <a class="btn btn-outline-light btn-sm" [routerLink]="['/courses', courseId]">
+          <i class="fas fa-external-link-alt"></i> View Course
+        </a>
+        <button class="btn btn-outline-light btn-sm" (click)="backToCourses()">
+          <i class="fas fa-arrow-left"></i> Back to Courses
+        </button>
+      </div>
+    </div>
+
+    <div class="card text-dark mb-4">
+      <div class="card-body text-start">
+        <div *ngIf="message" class="alert" [ngClass]="messageType === 'success' ? 'alert-success' : 'alert-danger'">
+          {{ message }}
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <div *ngIf="course" class="mb-2">
+          <h5 class="mb-1">{{ course.title }}</h5>
+          <p class="text-muted mb-0">{{ course.description || '—' }}</p>
+          <small class="text-muted">Status: {{ course.status }}</small>
+        </div>
+
+        <div *ngIf="!course" class="alert alert-info mb-0">
+          Course not found in admin list (it may be archived or missing). You can still manage lessons.
+        </div>
+      </div>
+    </div>
+
+    <div class="card text-dark mb-4">
+      <div class="card-header bg-secondary text-white text-start">
+        <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Create Lesson</h5>
+      </div>
+      <div class="card-body text-start">
+        <div class="row">
+          <div class="col-md-5 mb-3">
+            <label class="form-label"><strong>Title</strong></label>
+            <input class="form-control" [(ngModel)]="newLessonTitle" [disabled]="saving" placeholder="Lesson title" />
+          </div>
+          <div class="col-md-5 mb-3">
+            <label class="form-label"><strong>Description</strong></label>
+            <input class="form-control" [(ngModel)]="newLessonDescription" [disabled]="saving" placeholder="Optional description" />
+          </div>
+          <div class="col-md-2 mb-3">
+            <label class="form-label"><strong>Sort</strong></label>
+            <input class="form-control" type="number" [(ngModel)]="newLessonSortOrder" [disabled]="saving" placeholder="0" />
+          </div>
+        </div>
+
+        <button class="btn btn-success" (click)="createLesson()" [disabled]="saving">
+          <i class="fas fa-save"></i> Create Lesson
+        </button>
+      </div>
+    </div>
+
+    <div class="card text-dark">
+      <div class="card-header bg-info text-white text-start">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Lessons & Chapters</h5>
+      </div>
+      <div class="card-body text-start">
+        <div *ngIf="loading" class="text-center py-4">
+          <p>Loading lessons...</p>
+        </div>
+
+        <div *ngIf="!loading && lessons.length === 0" class="alert alert-info">
+          No lessons found.
+        </div>
+
+        <div *ngIf="!loading && lessons.length > 0">
+          <div *ngFor="let lesson of lessons" class="mb-3">
+            <div class="card">
+              <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <span class="badge" [ngClass]="lesson.status === 'active' ? 'bg-success' : 'bg-secondary'">
+                      {{ lesson.status }}
+                    </span>
+                    <strong class="ms-2" *ngIf="!isEditingLesson(lesson)">{{ lesson.title }}</strong>
+                    <span class="ms-2" *ngIf="isEditingLesson(lesson)">Editing lesson</span>
+                  </div>
+                  <div class="btn-group" role="group">
+                    <button *ngIf="!isEditingLesson(lesson)" class="btn btn-outline-primary btn-sm" (click)="startEditLesson(lesson)" [disabled]="saving">
+                      <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button *ngIf="isEditingLesson(lesson)" class="btn btn-primary btn-sm" (click)="saveEditLesson(lesson)" [disabled]="saving">
+                      <i class="fas fa-save"></i> Save
+                    </button>
+                    <button *ngIf="isEditingLesson(lesson)" class="btn btn-outline-secondary btn-sm" (click)="cancelEditLesson()" [disabled]="saving">
+                      Cancel
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" (click)="archiveLesson(lesson)" [disabled]="saving || lesson.status === 'archived'">
+                      <i class="fas fa-archive"></i> Archive
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div *ngIf="isEditingLesson(lesson)" class="row">
+                  <div class="col-md-5 mb-3">
+                    <label class="form-label"><strong>Title</strong></label>
+                    <input class="form-control" [(ngModel)]="editLessonTitle" [disabled]="saving" />
+                  </div>
+                  <div class="col-md-5 mb-3">
+                    <label class="form-label"><strong>Description</strong></label>
+                    <input class="form-control" [(ngModel)]="editLessonDescription" [disabled]="saving" />
+                  </div>
+                  <div class="col-md-2 mb-3">
+                    <label class="form-label"><strong>Sort</strong></label>
+                    <input class="form-control" type="number" [(ngModel)]="editLessonSortOrder" [disabled]="saving" />
+                  </div>
+                </div>
+
+                <div *ngIf="!isEditingLesson(lesson)" class="mb-3">
+                  <div class="text-muted">Sort: {{ lesson.sortOrder }}</div>
+                  <div class="text-muted">{{ lesson.description || '—' }}</div>
+                </div>
+
+                <hr />
+
+                <h6 class="mb-2">Chapters</h6>
+
+                <div class="row mb-3">
+                  <div class="col-md-7 mb-2">
+                    <input class="form-control" [(ngModel)]="newChapterTitle[lesson.id]" [disabled]="saving" placeholder="New chapter title" />
+                  </div>
+                  <div class="col-md-3 mb-2">
+                    <input class="form-control" type="number" [(ngModel)]="newChapterSortOrder[lesson.id]" [disabled]="saving" placeholder="Sort" />
+                  </div>
+                  <div class="col-md-2 mb-2">
+                    <button class="btn btn-success w-100" (click)="createChapter(lesson)" [disabled]="saving">
+                      <i class="fas fa-plus"></i> Add
+                    </button>
+                  </div>
+                </div>
+
+                <div *ngIf="lesson.chaptersLoading" class="text-center py-2">
+                  <p class="mb-0">Loading chapters...</p>
+                </div>
+
+                <div *ngIf="!lesson.chaptersLoading && (!lesson.chapters || lesson.chapters.length === 0)" class="alert alert-light mb-0">
+                  No chapters.
+                </div>
+
+                <div *ngIf="!lesson.chaptersLoading && lesson.chapters && lesson.chapters.length > 0" class="table-responsive">
+                  <table class="table table-sm table-striped align-middle">
+                    <thead>
+                      <tr>
+                        <th style="width: 38%">Title</th>
+                        <th style="width: 10%">Sort</th>
+                        <th style="width: 12%">Status</th>
+                        <th style="width: 40%">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container *ngFor="let chapter of lesson.chapters">
+                        <tr>
+                          <td>
+                            <span *ngIf="!isEditingChapter(chapter)"><strong>{{ chapter.title }}</strong></span>
+                            <input *ngIf="isEditingChapter(chapter)" class="form-control form-control-sm" [(ngModel)]="editChapterTitle" [disabled]="saving" />
+                          </td>
+                          <td>
+                            <span *ngIf="!isEditingChapter(chapter)">{{ chapter.sortOrder }}</span>
+                            <input *ngIf="isEditingChapter(chapter)" class="form-control form-control-sm" type="number" [(ngModel)]="editChapterSortOrder" [disabled]="saving" />
+                          </td>
+                          <td>
+                            <span class="badge" [ngClass]="chapter.status === 'active' ? 'bg-success' : 'bg-secondary'">
+                              {{ chapter.status }}
+                            </span>
+                          </td>
+                          <td>
+                            <div class="btn-group" role="group">
+                              <button class="btn btn-outline-secondary btn-sm" (click)="openContentEditor(chapter)" [disabled]="saving || chapter.status === 'archived'">
+                                <i class="fas fa-file-upload"></i> Content
+                              </button>
+                              <button *ngIf="!isEditingChapter(chapter)" class="btn btn-outline-primary btn-sm" (click)="startEditChapter(chapter)" [disabled]="saving">
+                                <i class="fas fa-edit"></i> Edit
+                              </button>
+                              <button *ngIf="isEditingChapter(chapter)" class="btn btn-primary btn-sm" (click)="saveEditChapter(lesson.id, chapter)" [disabled]="saving">
+                                <i class="fas fa-save"></i> Save
+                              </button>
+                              <button *ngIf="isEditingChapter(chapter)" class="btn btn-outline-secondary btn-sm" (click)="cancelEditChapter()" [disabled]="saving">
+                                Cancel
+                              </button>
+                              <button class="btn btn-outline-danger btn-sm" (click)="archiveChapter(lesson.id, chapter)" [disabled]="saving || chapter.status === 'archived'">
+                                <i class="fas fa-archive"></i> Archive
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        <tr *ngIf="isEditingContent(chapter)">
+                          <td colspan="4" class="p-0 border-0">
+                            <div class="card card-body">
+                              <div *ngIf="contentLoading" class="text-center py-2">
+                                <p class="mb-0">Loading content...</p>
+                              </div>
+
+                              <div *ngIf="!contentLoading">
+                                <div class="mb-3">
+                                  <label class="form-label"><strong>Text</strong></label>
+                                  <textarea class="form-control" rows="4" [(ngModel)]="contentText" [disabled]="contentSaving || contentUploading"></textarea>
+                                </div>
+
+                                <div
+                                  class="border rounded p-3 mb-3"
+                                  [class.bg-light]="!isDragOver"
+                                  [class.border-primary]="isDragOver"
+                                  (dragover)="onDragOver($event)"
+                                  (dragleave)="onDragLeave($event)"
+                                  (drop)="onDrop($event)"
+                                >
+                                  <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                      <strong>Upload files</strong>
+                                      <div class="text-muted">Drag & drop images/gifs/videos, or choose a file</div>
+                                    </div>
+                                    <div>
+                                      <input type="file" (change)="onFileSelected($event)" [disabled]="contentUploading || contentSaving" multiple />
+                                    </div>
+                                  </div>
+                                  <div *ngIf="contentUploading" class="text-muted mt-2">Uploading...</div>
+                                </div>
+
+                                <div class="mb-3">
+                                  <strong>Attached assets</strong>
+
+                                  <div *ngIf="contentAssets.length === 0" class="text-muted">No assets attached.</div>
+
+                                  <ul *ngIf="contentAssets.length > 0" class="list-group mt-2">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let asset of contentAssets">
+                                      <div>
+                                        <span class="badge bg-secondary me-2">{{ asset.kind }}</span>
+                                        <a [href]="asset.url" target="_blank" rel="noopener">{{ asset.originalName || asset.url }}</a>
+                                      </div>
+                                      <button class="btn btn-outline-danger btn-sm" (click)="removeAsset(asset.url)" [disabled]="contentSaving || contentUploading">
+                                        Remove
+                                      </button>
+                                    </li>
+                                  </ul>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                  <button class="btn btn-primary" (click)="saveChapterContent(chapter)" [disabled]="contentSaving || contentUploading">
+                                    <i class="fas fa-save"></i> Save Content
+                                  </button>
+                                  <button class="btn btn-outline-secondary" (click)="closeContentEditor()" [disabled]="contentSaving || contentUploading">
+                                    Close
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

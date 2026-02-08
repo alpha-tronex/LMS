@@ -35,6 +35,26 @@ export class UserDetailsComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit() {
+    const currentUserRaw = localStorage.getItem('currentUser');
+    if (!currentUserRaw) {
+      this.errorMessage = 'Please login as an admin to manage users.';
+      this.loading = false;
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(currentUserRaw);
+      if (!parsed || parsed.role !== 'admin') {
+        this.errorMessage = 'Access denied. Admin privileges required.';
+        this.loading = false;
+        return;
+      }
+    } catch {
+      this.errorMessage = 'Unable to read current user. Please login again.';
+      this.loading = false;
+      return;
+    }
+
     const userId = this.route.snapshot.paramMap.get('id');
     if (userId) {
       this.loadUser(userId);

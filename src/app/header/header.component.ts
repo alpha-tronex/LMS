@@ -62,6 +62,13 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isAdmin(): boolean {
     if (localStorage.getItem('currentUser')) {
+      return this.loginService.isAdminOrInstructor();
+    }
+    return false;
+  }
+
+  isStrictAdmin(): boolean {
+    if (localStorage.getItem('currentUser')) {
       return this.loginService.isAdmin();
     }
     return false;

@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { Course } from '@models/course';
+import { ChapterDetail, CourseContentTree } from '@models/course-content';
 import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
@@ -36,6 +37,26 @@ export class CoursesService {
       retry(1),
       catchError((error) => {
         this.logger.error('Error in getCourse', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  getCourseContent(courseId: string): Observable<CourseContentTree> {
+    return this.http.get<CourseContentTree>(`/api/courses/${courseId}/content`).pipe(
+      retry(1),
+      catchError((error) => {
+        this.logger.error('Error in getCourseContent', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  getChapter(chapterId: string): Observable<ChapterDetail> {
+    return this.http.get<ChapterDetail>(`/api/chapters/${chapterId}`).pipe(
+      retry(1),
+      catchError((error) => {
+        this.logger.error('Error in getChapter', error);
         return this.handleError(error);
       })
     );

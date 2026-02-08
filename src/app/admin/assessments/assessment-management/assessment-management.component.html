@@ -48,8 +48,8 @@
             </div>
           </div>
 
-          <!-- Section 2: Delete User Assessment Data -->
-          <div class="col-md-6 mb-4">
+          <!-- Section 2: Delete User Assessment Data (admin only) -->
+          <div class="col-md-6 mb-4" *ngIf="isStrictAdmin">
             <div class="card h-100">
               <div class="card-header bg-warning text-dark">
                 <h5 class="mb-0">
@@ -86,8 +86,8 @@
             </div>
           </div>
 
-          <!-- Section 2: Delete all assessment data from all users -->
-          <div class="col-md-6 mb-4">
+          <!-- Section 2: Delete all assessment data from all users (admin only) -->
+          <div class="col-md-6 mb-4" *ngIf="isStrictAdmin">
             <div class="card h-100">
               <div class="card-header bg-danger text-white">
                 <h5 class="mb-0">
@@ -112,8 +112,8 @@
             </div>
           </div>
 
-          <!-- Section 3: Delete specific assessment from specific user -->
-          <div class="col-md-6 mb-4">
+          <!-- Section 3: Delete specific assessment from specific user (admin only) -->
+          <div class="col-md-6 mb-4" *ngIf="isStrictAdmin">
             <div class="card h-100">
               <div class="card-header bg-warning text-dark">
                 <h5 class="mb-0">

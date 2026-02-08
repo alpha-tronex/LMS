@@ -1,4 +1,4 @@
-const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
+const { verifyToken, verifyAdmin, verifyAdminOrInstructor } = require('../middleware/authMiddleware');
 const fs = require('fs');
 const path = require('path');
 
@@ -49,10 +49,10 @@ function readAssessmentsFromDisk() {
  * Handles assessment file operations (upload, delete) for administrators
  */
 module.exports = function (app) {
-  // Upload assessment (admin only)
+  // Upload assessment (admin or instructor)
   app
     .route('/api/assessment/upload')
-    .post(verifyToken, verifyAdmin, async (req, res) => {
+    .post(verifyToken, verifyAdminOrInstructor, async (req, res) => {
       try {
         const assessmentData = req.body;
 
@@ -170,8 +170,8 @@ module.exports = function (app) {
       }
     });
 
-  // Get list of all uploaded assessments (admin only)
-  app.route('/api/assessment/list').get(verifyToken, verifyAdmin, (req, res) => {
+  // Get list of all uploaded assessments (admin or instructor)
+  app.route('/api/assessment/list').get(verifyToken, verifyAdminOrInstructor, (req, res) => {
     try {
       const assessments = readAssessmentsFromDisk();
       res.status(200).json(assessments);
@@ -181,10 +181,10 @@ module.exports = function (app) {
     }
   });
 
-  // Delete a specific assessment file (admin only)
+  // Delete a specific assessment file (admin or instructor)
   app
     .route('/api/admin/assessment-file/:assessmentId')
-    .delete(verifyToken, verifyAdmin, async (req, res) => {
+    .delete(verifyToken, verifyAdminOrInstructor, async (req, res) => {
       try {
         const assessmentId = req.params.assessmentId;
         const newPath = path.join(__dirname, '../assessments', `assessment_${assessmentId}.json`);
@@ -207,10 +207,10 @@ module.exports = function (app) {
       }
     });
 
-  // Delete all assessment files (admin only)
+  // Delete all assessment files (admin or instructor)
   app
     .route('/api/admin/assessment-files/all')
-    .delete(verifyToken, verifyAdmin, async (req, res) => {
+    .delete(verifyToken, verifyAdminOrInstructor, async (req, res) => {
       try {
         const assessmentsDir = path.join(__dirname, '../assessments');
         const legacyDir = path.join(__dirname, '../quizzes');
@@ -248,10 +248,10 @@ module.exports = function (app) {
       }
     });
 
-  // Delete assessment by ID (admin only) - Alternative endpoint
+  // Delete assessment by ID (admin or instructor) - Alternative endpoint
   app
     .route('/api/assessment/delete/:id')
-    .delete(verifyToken, verifyAdmin, (req, res) => {
+    .delete(verifyToken, verifyAdminOrInstructor, (req, res) => {
       try {
         const assessmentId = req.params.id;
         const newPath = path.join(__dirname, '../assessments', `assessment_${assessmentId}.json`);

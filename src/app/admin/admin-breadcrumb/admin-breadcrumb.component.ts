@@ -19,6 +19,7 @@ export class AdminBreadcrumbComponent implements OnInit {
   private routeLabels: { [key: string]: string } = {
     'admin': 'Admin',
     'course-management': 'Course Management',
+    'course-content': 'Course Content',
     'user-management': 'User Management',
     'user-details': 'User Details',
     'create-assessment': 'Create Assessment',
@@ -56,6 +57,11 @@ export class AdminBreadcrumbComponent implements OnInit {
     segments.forEach((segment) => {
       // Remove query/hash/matrix parameters if any
       const cleanSegment = segment.split(/[?#;]/)[0];
+
+      // Skip common route parameter segments (ObjectId, numeric ids)
+      if (/^[0-9a-fA-F]{24}$/.test(cleanSegment) || /^\d+$/.test(cleanSegment)) {
+        return;
+      }
       let label = this.routeLabels[cleanSegment] || this.formatSegment(cleanSegment);
       let url = currentPath + `/${cleanSegment}`;
 

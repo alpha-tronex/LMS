@@ -5,7 +5,7 @@ function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
 }
 
-module.exports = function courseRoutes(app, Course, Enrollment) {
+module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter) {
   // List active courses
   app.get('/api/courses', verifyToken, async (req, res) => {
     try {
@@ -98,6 +98,85 @@ module.exports = function courseRoutes(app, Course, Enrollment) {
     }
   });
 
+  // Get course content tree (lessons + chapters)
+  app.get('/api/courses/:courseId/content', verifyToken, async (req, res) => {
+    try {
+      const { courseId } = req.params;
+      if (!isValidObjectId(courseId)) {
+        return res.status(400).json({ error: 'Invalid courseId' });
+      }
+
+      const course = await Course.findOne({
+        _id: new mongoose.Types.ObjectId(courseId),
+        status: 'active',
+      }).lean();
+
+      if (!course) {
+        return res.status(404).json({ error: 'Course not found' });
+      }
+
+      // Defensive: if models aren't provided, return empty outline.
+      if (!Lesson || !Chapter) {
+        return res.status(200).json({
+          course: {
+            id: String(course._id),
+            title: course.title,
+            description: course.description || '',
+          },
+          lessons: [],
+        });
+      }
+
+      const lessons = await Lesson.find({
+        courseId: new mongoose.Types.ObjectId(courseId),
+        status: 'active',
+      })
+        .sort({ sortOrder: 1, title: 1 })
+        .lean();
+
+      const chapters = await Chapter.find({
+        courseId: new mongoose.Types.ObjectId(courseId),
+        status: 'active',
+      })
+        .sort({ sortOrder: 1, title: 1 })
+        .lean();
+
+      const chaptersByLessonId = new Map();
+      for (const c of chapters) {
+        const lessonKey = String(c.lessonId);
+        const arr = chaptersByLessonId.get(lessonKey) || [];
+        arr.push({
+          id: String(c._id),
+          lessonId: String(c.lessonId),
+          title: c.title,
+          sortOrder: c.sortOrder || 0,
+        });
+        chaptersByLessonId.set(lessonKey, arr);
+      }
+
+      const resultLessons = lessons.map((l) => ({
+        id: String(l._id),
+        courseId: String(l.courseId),
+        title: l.title,
+        description: l.description || '',
+        sortOrder: l.sortOrder || 0,
+        chapters: chaptersByLessonId.get(String(l._id)) || [],
+      }));
+
+      res.status(200).json({
+        course: {
+          id: String(course._id),
+          title: course.title,
+          description: course.description || '',
+        },
+        lessons: resultLessons,
+      });
+    } catch (err) {
+      console.log('err: ' + err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Enroll current user in course
   app.post('/api/courses/:courseId/enroll', verifyToken, async (req, res) => {
     try {
@@ -176,6 +255,51 @@ module.exports = function courseRoutes(app, Course, Enrollment) {
       );
 
       res.status(200).json({ message: 'Withdrawn', courseId: String(courseId) });
+    } catch (err) {
+      console.log('err: ' + err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get a chapter (including content)
+  app.get('/api/chapters/:chapterId', verifyToken, async (req, res) => {
+    try {
+      const { chapterId } = req.params;
+      if (!isValidObjectId(chapterId)) {
+        return res.status(400).json({ error: 'Invalid chapterId' });
+      }
+
+      if (!Chapter) {
+        return res.status(500).json({ error: 'Chapter model not configured' });
+      }
+
+      const chapter = await Chapter.findOne({
+        _id: new mongoose.Types.ObjectId(chapterId),
+        status: 'active',
+      }).lean();
+
+      if (!chapter) {
+        return res.status(404).json({ error: 'Chapter not found' });
+      }
+
+      // Ensure parent course is active
+      const course = await Course.findOne({
+        _id: new mongoose.Types.ObjectId(String(chapter.courseId)),
+        status: 'active',
+      }).lean();
+
+      if (!course) {
+        return res.status(404).json({ error: 'Course not found' });
+      }
+
+      res.status(200).json({
+        id: String(chapter._id),
+        courseId: String(chapter.courseId),
+        lessonId: String(chapter.lessonId),
+        title: chapter.title,
+        sortOrder: chapter.sortOrder || 0,
+        content: chapter.content || {},
+      });
     } catch (err) {
       console.log('err: ' + err);
       res.status(500).json({ error: 'Internal server error' });

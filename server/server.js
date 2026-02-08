@@ -9,6 +9,8 @@ const adminUserRoutes = require(`${__dirname}/routes/adminUserRoutes.js`);
 const adminAssessmentRoutes = require(`${__dirname}/routes/adminAssessmentRoutes.js`);
 const courseRoutes = require(`${__dirname}/routes/courseRoutes.js`);
 const adminCourseRoutes = require(`${__dirname}/routes/adminCourseRoutes.js`);
+const adminLessonChapterRoutes = require(`${__dirname}/routes/adminLessonChapterRoutes.js`);
+const adminUploadRoutes = require(`${__dirname}/routes/adminUploadRoutes.js`);
 const utilRoutes = require(`${__dirname}/routes/utilRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
@@ -35,6 +37,10 @@ if (fs.existsSync(distBrowserPath)) {
     // fallback to serving the source index during development
     app.use(express.static(srcPath));
 }
+
+// Serve uploaded assets
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -44,6 +50,8 @@ const User = require(`${__dirname}/models/User.js`);
 // Additional models
 const Course = require(`${__dirname}/models/Course.js`);
 const Enrollment = require(`${__dirname}/models/Enrollment.js`);
+const Lesson = require(`${__dirname}/models/Lesson.js`);
+const Chapter = require(`${__dirname}/models/Chapter.js`);
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";
@@ -77,12 +85,14 @@ authRoutes(app, User);
 assessmentRoutes(app, User);
 
 // Setup course routes (student-facing)
-courseRoutes(app, Course, Enrollment);
+courseRoutes(app, Course, Enrollment, Lesson, Chapter);
 
 // Setup admin routes
 adminUserRoutes(app, User);
 adminAssessmentRoutes(app);
 adminCourseRoutes(app, Course);
+adminLessonChapterRoutes(app, Course, Lesson, Chapter);
+adminUploadRoutes(app);
 
 // Setup utility routes
 utilRoutes(app);

@@ -19,11 +19,11 @@
                   Admin
                 </a>
                 <div class="dropdown-menu" aria-labelledby="adminDropdown">
-                  <a class="dropdown-item" [routerLink]="['admin']" (click)="collapseNavbar()"><i class="fas fa-home"></i> Dashboard</a>
-                  <div class="dropdown-divider"></div>
+                  <a *ngIf="isStrictAdmin()" class="dropdown-item" [routerLink]="['admin']" (click)="collapseNavbar()"><i class="fas fa-home"></i> Dashboard</a>
+                  <div *ngIf="isStrictAdmin()" class="dropdown-divider"></div>
                   <a class="dropdown-item" [routerLink]="['admin/course-management']" (click)="collapseNavbar()"><i class="fas fa-book"></i> Courses</a>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" [routerLink]="['admin/user-management']" (click)="collapseNavbar()"><i class="fas fa-users"></i> Users</a>
+                  <div *ngIf="isStrictAdmin()" class="dropdown-divider"></div>
+                  <a *ngIf="isStrictAdmin()" class="dropdown-item" [routerLink]="['admin/user-management']" (click)="collapseNavbar()"><i class="fas fa-users"></i> Users</a>
                   <div class="dropdown-divider"></div>
                   <div class="dropdown-submenu">
                     <a
@@ -42,12 +42,12 @@
                       <a class="dropdown-item" [routerLink]="['admin/assessment-management']" (click)="collapseNavbar()"><i class="fas fa-edit"></i> Edit Assessment</a>
                     </div>
                   </div>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#" (click)="showUnderConstruction($event, 'Lesson Management')">
+                  <div *ngIf="isStrictAdmin()" class="dropdown-divider"></div>
+                  <a *ngIf="isStrictAdmin()" class="dropdown-item" href="#" (click)="showUnderConstruction($event, 'Lesson Management')">
                     <i class="fas fa-book"></i> Lessons
                   </a>
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#" (click)="showUnderConstruction($event, 'Enrollment Management')">
+                  <div *ngIf="isStrictAdmin()" class="dropdown-divider"></div>
+                  <a *ngIf="isStrictAdmin()" class="dropdown-item" href="#" (click)="showUnderConstruction($event, 'Enrollment Management')">
                     <i class="fas fa-user-check"></i> Enrollments
                   </a>
                 </div>
