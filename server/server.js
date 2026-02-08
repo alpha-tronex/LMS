@@ -9,6 +9,7 @@ const adminUserRoutes = require(`${__dirname}/routes/adminUserRoutes.js`);
 const adminAssessmentRoutes = require(`${__dirname}/routes/adminAssessmentRoutes.js`);
 const courseRoutes = require(`${__dirname}/routes/courseRoutes.js`);
 const adminCourseRoutes = require(`${__dirname}/routes/adminCourseRoutes.js`);
+const adminEnrollmentRoutes = require(`${__dirname}/routes/adminEnrollmentRoutes.js`);
 const adminLessonChapterRoutes = require(`${__dirname}/routes/adminLessonChapterRoutes.js`);
 const adminUploadRoutes = require(`${__dirname}/routes/adminUploadRoutes.js`);
 const utilRoutes = require(`${__dirname}/routes/utilRoutes.js`);
@@ -90,7 +91,8 @@ courseRoutes(app, Course, Enrollment, Lesson, Chapter);
 // Setup admin routes
 adminUserRoutes(app, User);
 adminAssessmentRoutes(app);
-adminCourseRoutes(app, Course);
+adminCourseRoutes(app, Course, User);
+adminEnrollmentRoutes(app, Course, Enrollment, User);
 adminLessonChapterRoutes(app, Course, Lesson, Chapter);
 adminUploadRoutes(app);
 

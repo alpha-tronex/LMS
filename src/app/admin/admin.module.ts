@@ -15,6 +15,8 @@ import { AssessmentManagementComponent } from './assessments/assessment-manageme
 import { SharedModule } from '../shared/shared.module';
 import { CourseManagementComponent } from './courses/course-management/course-management.component';
 import { CourseContentManagementComponent } from './courses/course-content-management/course-content-management.component';
+import { CourseInstructorsComponent } from './courses/course-instructors/course-instructors.component';
+import { EnrollmentManagementComponent } from './enrollments/enrollment-management/enrollment-management.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +25,8 @@ import { CourseContentManagementComponent } from './courses/course-content-manag
     AdminMenuComponent,
     CourseManagementComponent,
     CourseContentManagementComponent,
+    CourseInstructorsComponent,
+    EnrollmentManagementComponent,
     UserManagementComponent,
     CreateAssessmentComponent,
     EditAssessmentComponent,

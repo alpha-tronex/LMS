@@ -9,11 +9,15 @@ import { UploadAssessmentComponent } from './assessments/upload-assessment/uploa
 import { AssessmentManagementComponent } from './assessments/assessment-management/assessment-management.component';
 import { CourseManagementComponent } from './courses/course-management/course-management.component';
 import { CourseContentManagementComponent } from './courses/course-content-management/course-content-management.component';
+import { EnrollmentManagementComponent } from './enrollments/enrollment-management/enrollment-management.component';
+import { CourseInstructorsComponent } from './courses/course-instructors/course-instructors.component';
 
 const routes: Routes = [
   { path: '', component: AdminDashboardComponent },
   { path: 'course-management', component: CourseManagementComponent },
   { path: 'course-content/:courseId', component: CourseContentManagementComponent },
+  { path: 'course-instructors/:courseId', component: CourseInstructorsComponent },
+  { path: 'enrollment-management', component: EnrollmentManagementComponent },
   { path: 'user-management', component: UserManagementComponent },
   { path: 'user-details/:id', component: UserDetailsComponent },
   // New canonical assessment routes

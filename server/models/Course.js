@@ -3,6 +3,12 @@ const mongoose = require('mongoose');
 const courseSchema = new mongoose.Schema({
   title: { type: String, required: true, index: true },
   description: { type: String, default: '' },
+  // Instructors who are allowed to manage this course (content, enrollments, etc.)
+  instructorIds: {
+    type: [mongoose.Schema.Types.ObjectId],
+    default: [],
+    index: true,
+  },
   status: {
     type: String,
     enum: ['active', 'archived'],

@@ -11,6 +11,8 @@ import { LoggerService } from '@core/services/logger.service';
 export class CourseManagementComponent implements OnInit {
   courses: AdminCourse[] = [];
 
+  isStrictAdmin = false;
+
   loading = true;
   saving = false;
   error = '';
@@ -46,6 +48,8 @@ export class CourseManagementComponent implements OnInit {
         this.loading = false;
         return;
       }
+
+      this.isStrictAdmin = parsed.role === 'admin';
     } catch {
       this.error = 'Unable to read current user. Please login again.';
       this.loading = false;

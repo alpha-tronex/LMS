@@ -47,7 +47,7 @@
                     <i class="fas fa-book"></i> Lessons
                   </a>
                   <div *ngIf="isStrictAdmin()" class="dropdown-divider"></div>
-                  <a *ngIf="isStrictAdmin()" class="dropdown-item" href="#" (click)="showUnderConstruction($event, 'Enrollment Management')">
+                  <a class="dropdown-item" [routerLink]="['admin/enrollment-management']" (click)="collapseNavbar()">
                     <i class="fas fa-user-check"></i> Enrollments
                   </a>
                 </div>

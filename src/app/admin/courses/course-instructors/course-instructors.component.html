@@ -1,0 +1,83 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+
+    <h2 class="mb-2">Course Instructors</h2>
+    <p class="mb-4" *ngIf="courseTitle"><strong>{{ courseTitle }}</strong></p>
+
+    <div class="card text-dark">
+      <div class="card-body">
+        <div *ngIf="message" class="alert" [ngClass]="messageType === 'success' ? 'alert-success' : 'alert-danger'">
+          {{ message }}
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <div *ngIf="loading" class="text-center py-3">
+          <p>Loading...</p>
+        </div>
+
+        <div *ngIf="!loading && assignment" class="text-start">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Assigned Instructors</h5>
+            <button class="btn btn-sm btn-outline-secondary" (click)="backToCourses()">Back to Courses</button>
+          </div>
+
+          <div class="card mb-3">
+            <div class="card-body">
+              <h6 class="card-title">Add Instructor</h6>
+              <div class="row">
+                <div class="col-md-8 mb-2">
+                  <select class="form-select form-control" [(ngModel)]="selectedInstructorId" [disabled]="saving">
+                    <option value="">-- Select instructor --</option>
+                    <option *ngFor="let u of allInstructorUsers" [value]="u.id">
+                      {{ u.uname }} ({{ (u.fname + ' ' + u.lname).trim() || '—' }})
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-4 mb-2">
+                  <button class="btn btn-primary w-100" (click)="addInstructor()" [disabled]="saving">
+                    Add
+                  </button>
+                </div>
+              </div>
+              <small class="text-muted">Only users with the instructor role can be assigned.</small>
+            </div>
+          </div>
+
+          <div *ngIf="assignedInstructors.length === 0" class="text-muted">
+            <em>No instructors assigned.</em>
+          </div>
+
+          <div *ngIf="assignedInstructors.length > 0" class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let ins of assignedInstructors">
+                  <td>{{ ins.uname }}</td>
+                  <td>{{ (ins.fname + ' ' + ins.lname).trim() }}</td>
+                  <td>{{ ins.email }}</td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-danger" (click)="removeInstructor(ins.id)" [disabled]="saving">
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

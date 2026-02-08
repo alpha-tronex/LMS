@@ -1,0 +1,124 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+
+    <h2 class="mb-4">Enrollment Management</h2>
+
+    <div class="card text-dark">
+      <div class="card-body">
+        <div *ngIf="message" class="alert" [ngClass]="messageType === 'success' ? 'alert-success' : 'alert-danger'">
+          {{ message }}
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <div class="row text-start">
+          <div class="col-md-8 offset-md-2">
+            <div class="mb-3">
+              <label for="courseSelect" class="form-label"><strong>Select Course:</strong></label>
+              <select
+                id="courseSelect"
+                class="form-select form-control"
+                [(ngModel)]="selectedCourseId"
+                (change)="onCourseChange()"
+                [disabled]="loadingCourses || courses.length === 0">
+                <option value="">-- Choose a course --</option>
+                <option *ngFor="let course of courses" [value]="course.id">
+                  {{ course.title }}
+                </option>
+              </select>
+              <small class="text-muted" *ngIf="!loadingCourses && courses.length === 0">No courses found.</small>
+            </div>
+
+            <div class="card mb-4" *ngIf="selectedCourseId">
+              <div class="card-body">
+                <h5 class="card-title">Enroll Student</h5>
+                <p class="text-muted mb-2">Enter the student’s username and click Enroll.</p>
+
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="student username"
+                    [(ngModel)]="studentUsername"
+                    [disabled]="saving" />
+                  <button class="btn btn-primary" (click)="enrollStudent()" [disabled]="saving">
+                    Enroll
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="selectedCourseId" class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 class="card-title mb-0">Enrolled Students</h5>
+                  <button class="btn btn-sm btn-secondary" (click)="loadEnrollments()" [disabled]="loadingEnrollments || saving">
+                    Refresh
+                  </button>
+                </div>
+
+                <div *ngIf="loadingEnrollments" class="text-center py-3">
+                  <p>Loading enrollments...</p>
+                </div>
+
+                <div *ngIf="!loadingEnrollments && enrollments.length === 0" class="py-3 text-muted">
+                  <em>No enrolled students found.</em>
+                </div>
+
+                <div class="table-responsive" *ngIf="!loadingEnrollments && enrollments.length > 0">
+                  <table class="table table-sm table-striped">
+                    <thead>
+                      <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Enrolled</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of enrollments">
+                        <td>{{ row.username }}</td>
+                        <td>{{ (row.fname + ' ' + row.lname).trim() }}</td>
+                        <td>{{ row.email }}</td>
+                        <td>{{ formatDate(row.enrolledAt) }}</td>
+                        <td class="text-end">
+                          <button
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="requestWithdraw(row.userId, row.username)"
+                            [disabled]="saving">
+                            Withdraw
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<alpha-tronex-modal
+  [show]="showConfirmModal"
+  [title]="confirmTitle"
+  [type]="'warning'"
+  [content]="confirmMessage"
+  [scrollToTopOnHide]="true"
+  (close)="closeConfirmModal()"
+  (confirm)="confirmActionExecute()">
+  <div modal-actions>
+    <button type="button" class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+    <button type="button" class="btn btn-danger ml-2 mr-2" (click)="confirmActionExecute()">
+      Confirm
+    </button>
+  </div>
+</alpha-tronex-modal>

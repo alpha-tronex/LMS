@@ -11,6 +11,19 @@ export interface AdminCourse {
   status: 'active' | 'archived';
 }
 
+export interface CourseInstructorAssignment {
+  courseId: string;
+  instructorIds: string[];
+  instructors: Array<{
+    id: string;
+    uname: string;
+    fname: string;
+    lname: string;
+    email: string;
+    role: string;
+  }>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -52,6 +65,26 @@ export class AdminCourseService {
         return this.handleError(error);
       })
     );
+  }
+
+  getCourseInstructors(courseId: string): Observable<CourseInstructorAssignment> {
+    return this.http.get<CourseInstructorAssignment>(`/api/admin/courses/${courseId}/instructors`).pipe(
+      catchError((error) => {
+        this.logger.error('Error in getCourseInstructors', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  setCourseInstructors(courseId: string, instructorIds: string[]): Observable<CourseInstructorAssignment> {
+    return this.http
+      .put<CourseInstructorAssignment>(`/api/admin/courses/${courseId}/instructors`, { instructorIds })
+      .pipe(
+        catchError((error) => {
+          this.logger.error('Error in setCourseInstructors', error);
+          return this.handleError(error);
+        })
+      );
   }
 
   private handleError(error: HttpErrorResponse) {

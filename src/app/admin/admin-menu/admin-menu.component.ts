@@ -30,6 +30,13 @@ export class AdminMenuComponent {
         route: '/admin/course-management',
         color: 'info'
       },
+      {
+        title: 'Enrollment Management',
+        description: 'Enroll or withdraw students from courses',
+        icon: 'fas fa-user-check',
+        route: '/admin/enrollment-management',
+        color: 'secondary'
+      },
       ...(this.isStrictAdmin
         ? [
             {

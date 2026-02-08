@@ -35,6 +35,33 @@ Run `npm run dev` for the Angular dev server (proxying API calls). Navigate to `
 
 Run `npm start` to run the Express server that serves the built Angular app (and API) on `http://localhost:3000`.
 
+## Demo (seeded accounts + sample course)
+
+If you want a ready-to-click dataset (instructor + student + a small course with lessons/chapters), run:
+
+- `node server/scripts/seed_small_course.js`
+
+This uses `MONGODB_URI` if set; otherwise it defaults to `mongodb://localhost:27017/userDB`.
+
+### Seeded logins
+
+- Admin: `admin / local123`
+- Instructor: `instruct / local123`
+- Student: `student / local123`
+
+### What to click
+
+- **Admin**
+	- Admin → Course Management → (per course) **Instructors** to assign instructors to admin-created courses
+	- Admin → **Enrollment Management** to enroll/withdraw users in a course
+
+- **Instructor**
+	- Admin → Course Management / Content Management to manage lessons/chapters/uploads
+	- Admin → Enrollment Management (only for courses where the instructor is assigned)
+
+- **Student**
+	- My Courses → open the seeded course → expand lessons → open chapters to view chapter content
+
 ## Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
