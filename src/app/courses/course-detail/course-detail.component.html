@@ -44,52 +44,9 @@
 
                   <ul class="list-group" *ngIf="lesson.chapters && lesson.chapters.length > 0">
                     <li class="list-group-item" *ngFor="let chapter of lesson.chapters">
-                      <button
-                        type="button"
-                        class="btn btn-link p-0"
-                        (click)="selectChapter(chapter)"
-                        [class.fw-bold]="isSelectedChapter(chapter)"
-                      >
+                      <button type="button" class="btn btn-link p-0" (click)="openChapter(chapter)">
                         {{ chapter.title }}
                       </button>
-
-                      <div *ngIf="isSelectedChapter(chapter)" class="mt-3">
-                        <div *ngIf="chapterLoading" class="text-muted">Loading chapter...</div>
-
-                        <div *ngIf="chapterError" class="alert alert-danger mb-2">
-                          {{ chapterError }}
-                        </div>
-
-                        <div *ngIf="!chapterLoading && !chapterError && chapterDetail">
-                          <div *ngIf="chapterDetail.content?.text" class="mb-3" style="white-space: pre-wrap">
-                            {{ chapterDetail.content.text }}
-                          </div>
-
-                          <div *ngIf="chapterDetail.content?.assets && chapterDetail.content.assets.length > 0">
-                            <div class="mb-2"><strong>Assets</strong></div>
-
-                            <div class="mb-3" *ngFor="let asset of chapterDetail.content.assets; trackBy: trackAsset">
-                              <div *ngIf="asset.kind === 'image'">
-                                <img [src]="asset.url" class="img-fluid" [alt]="asset.originalName || 'image'" />
-                              </div>
-
-                              <div *ngIf="asset.kind === 'video'">
-                                <video [src]="asset.url" class="w-100" controls></video>
-                              </div>
-
-                              <div *ngIf="asset.kind === 'file'">
-                                <a [href]="asset.url" target="_blank" rel="noopener">
-                                  {{ asset.originalName || asset.url }}
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div *ngIf="!chapterDetail.content?.text && (!chapterDetail.content?.assets || chapterDetail.content.assets.length === 0)" class="text-muted">
-                            No content yet for this chapter.
-                          </div>
-                        </div>
-                      </div>
                     </li>
                   </ul>
 

@@ -56,8 +56,16 @@ export class CourseContentManagementComponent implements OnInit {
   contentUploading = false;
   isDragOver = false;
 
+  contentPages: Array<{
+    text: string;
+    assets: Array<{ url: string; kind: 'image' | 'video' | 'file'; originalName?: string; mimetype?: string }>;
+  }> = [];
+  contentPageIndex = 0;
+
   contentText = '';
   contentAssets: Array<{ url: string; kind: 'image' | 'video' | 'file'; originalName?: string; mimetype?: string }> = [];
+
+  youtubeUrl = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -446,25 +454,54 @@ export class CourseContentManagementComponent implements OnInit {
 
     this.contentChapterId = chapter.id;
     this.contentLoading = true;
+    this.contentPages = [];
+    this.contentPageIndex = 0;
     this.contentText = '';
     this.contentAssets = [];
+    this.youtubeUrl = '';
     this.message = '';
     this.error = '';
 
     this.adminContentService.getChapter(chapter.id).subscribe({
       next: (detail) => {
         const content = (detail && detail.content) || {};
-        this.contentText = typeof content.text === 'string' ? content.text : '';
-        this.contentAssets = Array.isArray(content.assets)
-          ? content.assets
-              .map((a: any) => ({
-                url: String(a?.url || ''),
-                kind: a?.kind === 'video' || a?.kind === 'file' ? a.kind : 'image',
-                originalName: a?.originalName ? String(a.originalName) : undefined,
-                mimetype: a?.mimetype ? String(a.mimetype) : undefined,
-              }))
-              .filter((a: any) => a.url)
-          : [];
+
+        const pagesRaw = content && Array.isArray(content.pages) ? content.pages : [];
+        const normalizedPages = pagesRaw
+          .map((p: any) => ({
+            text: typeof p?.text === 'string' ? p.text : '',
+            assets: Array.isArray(p?.assets)
+              ? p.assets
+                  .map((a: any) => ({
+                    url: String(a?.url || ''),
+                    kind: a?.kind === 'video' || a?.kind === 'file' ? a.kind : 'image',
+                    originalName: a?.originalName ? String(a.originalName) : undefined,
+                    mimetype: a?.mimetype ? String(a.mimetype) : undefined,
+                  }))
+                  .filter((a: any) => a.url)
+              : [],
+          }))
+          .filter((p: any) => p.text || (p.assets && p.assets.length > 0));
+
+        // Auto-migrate legacy chapters: if no pages exist, use legacy text/assets as Page 1
+        if (normalizedPages.length === 0) {
+          const legacyText = typeof content.text === 'string' ? content.text : '';
+          const legacyAssets = Array.isArray(content.assets)
+            ? content.assets
+                .map((a: any) => ({
+                  url: String(a?.url || ''),
+                  kind: a?.kind === 'video' || a?.kind === 'file' ? a.kind : 'image',
+                  originalName: a?.originalName ? String(a.originalName) : undefined,
+                  mimetype: a?.mimetype ? String(a.mimetype) : undefined,
+                }))
+                .filter((a: any) => a.url)
+            : [];
+          this.contentPages = [{ text: legacyText, assets: legacyAssets }];
+        } else {
+          this.contentPages = normalizedPages;
+        }
+
+        this.loadPage(0);
         this.contentLoading = false;
       },
       error: (err) => {
@@ -481,8 +518,98 @@ export class CourseContentManagementComponent implements OnInit {
     this.contentSaving = false;
     this.contentUploading = false;
     this.isDragOver = false;
+    this.contentPages = [];
+    this.contentPageIndex = 0;
     this.contentText = '';
     this.contentAssets = [];
+    this.youtubeUrl = '';
+  }
+
+  get pageCount(): number {
+    return this.contentPages.length;
+  }
+
+  private saveCurrentPageToModel(): void {
+    if (!this.contentPages || this.contentPages.length === 0) return;
+    const i = this.contentPageIndex;
+    if (i < 0 || i >= this.contentPages.length) return;
+
+    this.contentPages[i] = {
+      text: this.contentText || '',
+      assets: Array.isArray(this.contentAssets) ? [...this.contentAssets] : [],
+    };
+  }
+
+  private loadPage(index: number): void {
+    if (!this.contentPages || this.contentPages.length === 0) {
+      this.contentPages = [{ text: '', assets: [] }];
+    }
+
+    const nextIndex = Math.max(0, Math.min(index, this.contentPages.length - 1));
+    this.contentPageIndex = nextIndex;
+
+    const page = this.contentPages[nextIndex] || { text: '', assets: [] };
+    this.contentText = typeof page.text === 'string' ? page.text : '';
+    this.contentAssets = Array.isArray(page.assets) ? [...page.assets] : [];
+    this.youtubeUrl = '';
+  }
+
+  prevPage(): void {
+    if (this.contentLoading || this.contentSaving || this.contentUploading) return;
+    if (this.contentPageIndex <= 0) return;
+    this.saveCurrentPageToModel();
+    this.loadPage(this.contentPageIndex - 1);
+  }
+
+  nextPage(): void {
+    if (this.contentLoading || this.contentSaving || this.contentUploading) return;
+    if (this.contentPageIndex >= this.contentPages.length - 1) return;
+    this.saveCurrentPageToModel();
+    this.loadPage(this.contentPageIndex + 1);
+  }
+
+  addPage(): void {
+    if (this.contentLoading || this.contentSaving || this.contentUploading) return;
+    this.saveCurrentPageToModel();
+    this.contentPages = [...(this.contentPages || []), { text: '', assets: [] }];
+    this.loadPage(this.contentPages.length - 1);
+  }
+
+  removeCurrentPage(): void {
+    if (this.contentLoading || this.contentSaving || this.contentUploading) return;
+    if (!this.contentPages || this.contentPages.length <= 1) return;
+
+    const i = this.contentPageIndex;
+    this.contentPages = this.contentPages.filter((_p, idx) => idx !== i);
+    this.loadPage(Math.min(i, this.contentPages.length - 1));
+  }
+
+  movePageUp(): void {
+    if (this.contentLoading || this.contentSaving || this.contentUploading) return;
+    const i = this.contentPageIndex;
+    if (!this.contentPages || i <= 0) return;
+    this.saveCurrentPageToModel();
+
+    const next = [...this.contentPages];
+    const tmp = next[i - 1];
+    next[i - 1] = next[i];
+    next[i] = tmp;
+    this.contentPages = next;
+    this.loadPage(i - 1);
+  }
+
+  movePageDown(): void {
+    if (this.contentLoading || this.contentSaving || this.contentUploading) return;
+    const i = this.contentPageIndex;
+    if (!this.contentPages || i >= this.contentPages.length - 1) return;
+    this.saveCurrentPageToModel();
+
+    const next = [...this.contentPages];
+    const tmp = next[i + 1];
+    next[i + 1] = next[i];
+    next[i] = tmp;
+    this.contentPages = next;
+    this.loadPage(i + 1);
   }
 
   onDragOver(event: DragEvent): void {
@@ -565,6 +692,49 @@ export class CourseContentManagementComponent implements OnInit {
     this.contentAssets = this.contentAssets.filter((a) => a.url !== url);
   }
 
+  addYouTubeVideo(): void {
+    if (this.contentSaving || this.contentUploading || this.contentLoading) return;
+
+    const url = (this.youtubeUrl || '').trim();
+    if (!url) {
+      this.error = 'Please enter a YouTube URL.';
+      return;
+    }
+
+    const lowered = url.toLowerCase();
+    const isYouTube =
+      lowered.includes('youtube.com/watch') ||
+      lowered.includes('youtube.com/embed/') ||
+      lowered.includes('youtu.be/') ||
+      lowered.includes('youtube-nocookie.com/embed/');
+
+    if (!isYouTube) {
+      this.error = 'Please enter a valid YouTube link (youtube.com or youtu.be).';
+      return;
+    }
+
+    if (this.contentAssets.some((a) => a.url === url)) {
+      this.messageType = 'danger';
+      this.message = 'That video URL is already attached to this page.';
+      return;
+    }
+
+    this.error = '';
+    this.messageType = 'success';
+    this.message = 'YouTube video link added to this page.';
+
+    this.contentAssets = [
+      ...this.contentAssets,
+      {
+        url,
+        kind: 'video',
+        originalName: 'YouTube video',
+        mimetype: 'text/url',
+      },
+    ];
+    this.youtubeUrl = '';
+  }
+
   saveChapterContent(chapter: AdminChapter): void {
     if (!this.contentChapterId || chapter.id !== this.contentChapterId) return;
 
@@ -572,11 +742,18 @@ export class CourseContentManagementComponent implements OnInit {
     this.error = '';
     this.message = '';
 
+    this.saveCurrentPageToModel();
+    const pages = Array.isArray(this.contentPages) && this.contentPages.length > 0 ? this.contentPages : [{ text: '', assets: [] }];
+    const first = pages[0] || { text: '', assets: [] };
+
     this.adminContentService
       .updateChapter(chapter.id, {
         content: {
-          text: this.contentText || '',
-          assets: this.contentAssets,
+          pages,
+          // Best-effort legacy compatibility:
+          // expose page 1 as the legacy single-text + single-asset-list fields.
+          text: first.text || '',
+          assets: Array.isArray(first.assets) ? first.assets : [],
         },
       })
       .subscribe({

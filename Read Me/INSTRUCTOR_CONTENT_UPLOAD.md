@@ -53,11 +53,12 @@ If you need durable storage, the usual upgrade is to store assets in object stor
 
 4) **Edit a chapter’s content**
 - In the chapter row, click **Content**
-- Add **Text** in the text box
+- Add **Page text** in the editor (chapters can have multiple pages)
+- Use **Add page** to create additional pages, and **Previous/Next** to navigate between pages
 
 5) **Upload assets (drag & drop OR file picker)**
 - Drag files into the upload box, OR click the file input and select one or more files
-- The UI will upload each file and add it to **Attached assets**
+- The UI will upload each file and add it to **Page assets** (assets are attached to the currently selected page)
 
 6) **Save**
 - Click **Save Content** to persist the chapter text + asset list
@@ -65,7 +66,7 @@ If you need durable storage, the usual upgrade is to store assets in object stor
 7) **Verify as a student**
 - Click **View Course**
 - In the Course Details page, click the chapter title
-- You should see the text and any uploaded assets rendered
+- You should land on a dedicated Chapter page with **Previous/Next** navigation between pages
 
 ---
 

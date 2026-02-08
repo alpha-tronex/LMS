@@ -9,6 +9,7 @@ import { HistoryComponent } from './history/history.component';
 import { CourseCatalogComponent } from './courses/course-catalog/course-catalog.component';
 import { MyCoursesComponent } from './courses/my-courses/my-courses.component';
 import { CourseDetailComponent } from './courses/course-detail/course-detail.component';
+import { ChapterViewerComponent } from './courses/chapter-viewer/chapter-viewer.component';
 
 
 const routes: Routes = [
@@ -16,6 +17,7 @@ const routes: Routes = [
   { path: 'questions', component: QuestionsComponent },
   { path: 'courses', component: CourseCatalogComponent },
   { path: 'my-courses', component: MyCoursesComponent },
+  { path: 'courses/:courseId/chapters/:chapterId', component: ChapterViewerComponent },
   { path: 'courses/:id', component: CourseDetailComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },

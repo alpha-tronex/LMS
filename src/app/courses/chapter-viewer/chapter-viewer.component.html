@@ -1,0 +1,100 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-breadcrumb></app-breadcrumb>
+
+    <h2 class="mb-2">Chapter</h2>
+
+    <div class="card text-dark">
+      <div class="card-body">
+        <div *ngIf="loading" class="text-center py-4">
+          <p>Loading chapter...</p>
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <div *ngIf="!loading && !error && chapter">
+          <h3 class="mb-2">{{ chapter.title }}</h3>
+          <p class="text-muted mb-4">Page {{ currentPageNumber }} of {{ pageCount }}</p>
+
+          <div *ngIf="pageCount > 1" class="mb-3">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <strong>Pages</strong>
+              <div class="btn-group" role="group" aria-label="Page navigation">
+                <button
+                  type="button"
+                  class="btn btn-sm"
+                  *ngFor="let n of pageNumbers"
+                  (click)="goToPage(n)"
+                  [ngClass]="n === currentPageNumber ? 'btn-primary' : 'btn-outline-primary'"
+                >
+                  {{ n }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="currentPage.text" class="mb-3" style="white-space: pre-wrap">
+            {{ currentPage.text }}
+          </div>
+
+          <div *ngIf="currentPage.assets && currentPage.assets.length > 0">
+            <div class="mb-2"><strong>Assets</strong></div>
+
+            <div class="mb-3" *ngFor="let asset of currentPage.assets; trackBy: trackAsset">
+              <div *ngIf="asset.kind === 'image'">
+                <img [src]="asset.url" class="img-fluid" [alt]="asset.originalName || 'image'" />
+              </div>
+
+              <div *ngIf="asset.kind === 'video'">
+                <div *ngIf="isYouTubeVideoUrl(asset.url); else normalVideo">
+                  <iframe
+                    class="w-100"
+                    style="height: 360px"
+                    [src]="youtubeSafeUrl(asset.url)"
+                    title="YouTube video"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                  ></iframe>
+                </div>
+                <ng-template #normalVideo>
+                  <video [src]="asset.url" class="w-100" controls></video>
+                </ng-template>
+              </div>
+
+              <div *ngIf="asset.kind === 'file'">
+                <a [href]="asset.url" target="_blank" rel="noopener">
+                  {{ asset.originalName || asset.url }}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!currentPage.text && (!currentPage.assets || currentPage.assets.length === 0)" class="text-muted">
+            No content yet for this page.
+          </div>
+
+          <div class="row mt-5">
+            <div class="col-sm-4">
+              <button class="btn btn-secondary w-100" (click)="goPrev()" [disabled]="!canPrev()">Previous</button>
+            </div>
+            <div class="col-sm-4">
+              <button class="btn btn-outline-primary w-100" (click)="backToCourse()">Back to Course</button>
+            </div>
+            <div class="col-sm-4">
+              <button class="btn btn-secondary w-100" (click)="goNext()" [disabled]="!canNext()">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer bg-white">
+        <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/courses', courseId]">
+          Back to course
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

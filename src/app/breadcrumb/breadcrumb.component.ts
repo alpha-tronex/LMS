@@ -26,6 +26,7 @@ export class BreadcrumbComponent implements OnInit {
     'admin': 'Admin',
     'user-management': 'User Management',
     'user-details': 'User Details',
+    'chapters': 'Chapter',
     // Canonical assessment routes
     'assessment-management': 'Assessment Management',
     'create-assessment': 'Create Assessment',

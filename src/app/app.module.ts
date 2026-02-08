@@ -17,6 +17,7 @@ import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 import { CourseCatalogComponent } from './courses/course-catalog/course-catalog.component';
 import { MyCoursesComponent } from './courses/my-courses/my-courses.component';
 import { CourseDetailComponent } from './courses/course-detail/course-detail.component';
+import { ChapterViewerComponent } from './courses/chapter-viewer/chapter-viewer.component';
 import { LoginService } from '@core/services/login-service';
 import { QuestionsService } from '@core/services/questions-service';
 import { AuthInterceptor } from '@core/services/auth.interceptor';
@@ -36,7 +37,8 @@ import { SharedModule } from './shared/shared.module';
         BreadcrumbComponent,
         CourseCatalogComponent,
         MyCoursesComponent,
-        CourseDetailComponent
+        CourseDetailComponent,
+        ChapterViewerComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,

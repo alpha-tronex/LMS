@@ -292,13 +292,37 @@ module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter)
         return res.status(404).json({ error: 'Course not found' });
       }
 
+      const rawContent = chapter.content || {};
+      const pages =
+        rawContent && Array.isArray(rawContent.pages)
+          ? rawContent.pages
+              .map((p) => ({
+                text: typeof p?.text === 'string' ? p.text : '',
+                assets: Array.isArray(p?.assets) ? p.assets : [],
+              }))
+              .filter((p) => p.text || (p.assets && p.assets.length > 0))
+          : [];
+
+      const legacyText = rawContent && typeof rawContent.text === 'string' ? rawContent.text : '';
+      const legacyAssets = rawContent && Array.isArray(rawContent.assets) ? rawContent.assets : [];
+
+      // Backward compatibility + forward default:
+      // - If there are no pages, expose a single page derived from legacy fields.
+      // - Keep legacy fields in the response so older clients don't break.
+      const normalizedPages = pages.length > 0 ? pages : [{ text: legacyText, assets: legacyAssets }];
+
       res.status(200).json({
         id: String(chapter._id),
         courseId: String(chapter.courseId),
         lessonId: String(chapter.lessonId),
         title: chapter.title,
         sortOrder: chapter.sortOrder || 0,
-        content: chapter.content || {},
+        content: {
+          ...rawContent,
+          pages: normalizedPages,
+          text: legacyText,
+          assets: legacyAssets,
+        },
       });
     } catch (err) {
       console.log('err: ' + err);

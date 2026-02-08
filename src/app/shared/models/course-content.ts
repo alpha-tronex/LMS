@@ -12,7 +12,16 @@ export interface ChapterAsset {
   mimetype?: string;
 }
 
+export interface ChapterPage {
+  text?: string;
+  assets?: ChapterAsset[];
+}
+
 export interface ChapterContent {
+  // New (preferred): paged content
+  pages?: ChapterPage[];
+
+  // Legacy (kept for backward compatibility)
   text?: string;
   assets?: ChapterAsset[];
 }

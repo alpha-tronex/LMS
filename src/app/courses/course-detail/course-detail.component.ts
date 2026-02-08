@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CoursesService } from '@core/services/courses.service';
 import { Course } from '@models/course';
-import { ChapterAsset, ChapterDetail, ChapterOutline, LessonOutline } from '@models/course-content';
+import { ChapterOutline, LessonOutline } from '@models/course-content';
 import { LoggerService } from '@core/services/logger.service';
 
 @Component({
@@ -12,6 +12,7 @@ import { LoggerService } from '@core/services/logger.service';
   standalone: false,
 })
 export class CourseDetailComponent implements OnInit {
+  courseId = '';
   course: Course | null = null;
   loading = true;
   error = '';
@@ -20,13 +21,9 @@ export class CourseDetailComponent implements OnInit {
   outlineError = '';
   lessons: LessonOutline[] = [];
 
-  selectedChapterId: string | null = null;
-  chapterLoading = false;
-  chapterError = '';
-  chapterDetail: ChapterDetail | null = null;
-
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private coursesService: CoursesService,
     private logger: LoggerService
   ) {}
@@ -44,6 +41,8 @@ export class CourseDetailComponent implements OnInit {
       this.loading = false;
       return;
     }
+
+    this.courseId = courseId;
 
     this.coursesService.getCourse(courseId).subscribe({
       next: (course) => {
@@ -70,32 +69,10 @@ export class CourseDetailComponent implements OnInit {
     });
   }
 
-  selectChapter(chapter: ChapterOutline): void {
-    if (!chapter?.id) return;
-
-    this.selectedChapterId = chapter.id;
-    this.chapterLoading = true;
-    this.chapterError = '';
-    this.chapterDetail = null;
-
-    this.coursesService.getChapter(chapter.id).subscribe({
-      next: (detail) => {
-        this.chapterDetail = detail;
-        this.chapterLoading = false;
-      },
-      error: (err) => {
-        this.logger.error('Failed to load chapter', err);
-        this.chapterError = 'Failed to load chapter content.';
-        this.chapterLoading = false;
-      },
+  openChapter(chapter: ChapterOutline): void {
+    if (!chapter?.id || !this.courseId) return;
+    this.router.navigate(['/courses', this.courseId, 'chapters', chapter.id], {
+      queryParams: { page: 1 },
     });
-  }
-
-  isSelectedChapter(chapter: ChapterOutline): boolean {
-    return !!chapter?.id && this.selectedChapterId === chapter.id;
-  }
-
-  trackAsset(_index: number, asset: ChapterAsset): string {
-    return asset.url;
   }
 }

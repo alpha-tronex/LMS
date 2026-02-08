@@ -26,6 +26,58 @@ const Enrollment = require('../models/Enrollment');
 
 const SALT_ROUNDS = 10;
 
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+
+function ensureUploadsDir() {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+}
+
+function ensureSeedGif(filename) {
+  ensureUploadsDir();
+  const target = path.join(UPLOADS_DIR, filename);
+  if (fs.existsSync(target)) return;
+
+  // Minimal 1x1 GIF (valid .gif). Small + safe for demo.
+  const base64 = 'R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==';
+  fs.writeFileSync(target, Buffer.from(base64, 'base64'));
+}
+
+async function ensureChapterPages({ chapterId, pages }) {
+  if (!chapterId) return;
+
+  const chapter = await Chapter.findById(new mongoose.Types.ObjectId(String(chapterId))).exec();
+  if (!chapter) return;
+
+  const current = chapter.content || {};
+  const existingPages = current && Array.isArray(current.pages) ? current.pages : [];
+  if (existingPages.length > 0) {
+    console.log(`[seed]    Chapter already has pages; skipping pages seed: ${String(chapter._id)}`);
+    return;
+  }
+
+  const normalizedPages = Array.isArray(pages)
+    ? pages.map((p) => ({
+        text: typeof p?.text === 'string' ? p.text : '',
+        assets: Array.isArray(p?.assets) ? p.assets : [],
+      }))
+    : [];
+
+  const first = normalizedPages[0] || { text: '', assets: [] };
+
+  chapter.content = {
+    ...(current || {}),
+    pages: normalizedPages,
+    // Legacy compatibility: page 1 mirrors to legacy fields
+    text: first.text || '',
+    assets: Array.isArray(first.assets) ? first.assets : [],
+  };
+  chapter.updatedAt = new Date();
+  await chapter.save();
+  console.log(`[seed]    Seeded pages into chapter: ${String(chapter._id)} (pages=${normalizedPages.length})`);
+}
+
 function uniqObjectIds(ids) {
   const seen = new Set();
   const out = [];
@@ -291,13 +343,67 @@ async function main() {
     sortOrder: 1,
   });
 
-  await ensureChapter({
+  const lesson1chapter1 = await ensureChapter({
     courseId: course._id,
     lessonId: lesson1._id,
     title: 'Chapter 1: What Is a Prophet?',
     sortOrder: 1,
     text:
       'In the Old Testament, prophets were God’s messengers who spoke His word to His people. They did more than predict the future; they called people back to covenant faithfulness.\n\nKey idea: prophecy is primarily about faithful proclamation—exposing sin, warning of consequences, and pointing to hope when people return to God.',
+  });
+
+  // Add a 3-page demo to one chapter (each page has text + a GIF).
+  // Also includes an example embedded video via a direct MP4 URL.
+  ensureSeedGif('seed_page.gif');
+  const seedGifUrl = '/uploads/seed_page.gif';
+  await ensureChapterPages({
+    chapterId: lesson1chapter1._id,
+    pages: [
+      {
+        text:
+          'Page 1: Overview\n\nProphets speak God’s truth into real situations. Their message often includes correction, warning, and a call to return to faithful living.',
+        assets: [
+          {
+            url: seedGifUrl,
+            kind: 'image',
+            originalName: 'seed_page.gif',
+            mimetype: 'image/gif',
+          },
+        ],
+      },
+      {
+        text:
+          'Page 2: Common Patterns\n\nMany prophetic books follow a rhythm: sin → warning → consequence → hope. This helps learners see structure across different prophets.',
+        assets: [
+          {
+            url: seedGifUrl,
+            kind: 'image',
+            originalName: 'seed_page.gif',
+            mimetype: 'image/gif',
+          },
+          {
+            // Direct MP4 URL example (works with the existing <video> renderer).
+            // If you later store a YouTube URL here, the Chapter Viewer can embed it.
+            url: 'https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4',
+            kind: 'video',
+            originalName: 'BigBuckBunny_320x180.mp4',
+            mimetype: 'video/mp4',
+          },
+        ],
+      },
+      {
+        text:
+          'Page 3: Reflection\n\nThink about a time when a hard truth helped you grow. The prophets often delivered hard truths so people could return to what is right.',
+        assets: [
+          {
+            url: seedGifUrl,
+            kind: 'image',
+            originalName: 'seed_page.gif',
+            mimetype: 'image/gif',
+          },
+        ],
+      },
+    ],
   });
 
   await ensureChapter({
@@ -364,6 +470,7 @@ async function main() {
     instructorId: String(instructor._id),
     studentId: String(student._id),
     courseId: String(course._id),
+    demoChapterId: String(lesson1chapter1._id),
   });
 
   await mongoose.disconnect();
