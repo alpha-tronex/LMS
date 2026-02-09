@@ -146,7 +146,7 @@ export class AdminContentService {
   }
 
   getChapter(chapterId: string): Observable<ChapterDetail> {
-    return this.http.get<ChapterDetail>(`/api/chapters/${chapterId}`).pipe(
+    return this.http.get<ChapterDetail>(`/api/admin/chapters/${chapterId}`).pipe(
       retry(1),
       catchError((error) => {
         this.logger.error('Error in getChapter', error);

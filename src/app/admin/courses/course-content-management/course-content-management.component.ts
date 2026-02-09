@@ -452,64 +452,15 @@ export class CourseContentManagementComponent implements OnInit {
   openContentEditor(chapter: AdminChapter): void {
     if (!chapter || chapter.status === 'archived') return;
 
-    this.contentChapterId = chapter.id;
-    this.contentLoading = true;
-    this.contentPages = [];
-    this.contentPageIndex = 0;
-    this.contentText = '';
-    this.contentAssets = [];
-    this.youtubeUrl = '';
-    this.message = '';
-    this.error = '';
-
-    this.adminContentService.getChapter(chapter.id).subscribe({
-      next: (detail) => {
-        const content = (detail && detail.content) || {};
-
-        const pagesRaw = content && Array.isArray(content.pages) ? content.pages : [];
-        const normalizedPages = pagesRaw
-          .map((p: any) => ({
-            text: typeof p?.text === 'string' ? p.text : '',
-            assets: Array.isArray(p?.assets)
-              ? p.assets
-                  .map((a: any) => ({
-                    url: String(a?.url || ''),
-                    kind: a?.kind === 'video' || a?.kind === 'file' ? a.kind : 'image',
-                    originalName: a?.originalName ? String(a.originalName) : undefined,
-                    mimetype: a?.mimetype ? String(a.mimetype) : undefined,
-                  }))
-                  .filter((a: any) => a.url)
-              : [],
-          }))
-          .filter((p: any) => p.text || (p.assets && p.assets.length > 0));
-
-        // Auto-migrate legacy chapters: if no pages exist, use legacy text/assets as Page 1
-        if (normalizedPages.length === 0) {
-          const legacyText = typeof content.text === 'string' ? content.text : '';
-          const legacyAssets = Array.isArray(content.assets)
-            ? content.assets
-                .map((a: any) => ({
-                  url: String(a?.url || ''),
-                  kind: a?.kind === 'video' || a?.kind === 'file' ? a.kind : 'image',
-                  originalName: a?.originalName ? String(a.originalName) : undefined,
-                  mimetype: a?.mimetype ? String(a.mimetype) : undefined,
-                }))
-                .filter((a: any) => a.url)
-            : [];
-          this.contentPages = [{ text: legacyText, assets: legacyAssets }];
-        } else {
-          this.contentPages = normalizedPages;
-        }
-
-        this.loadPage(0);
-        this.contentLoading = false;
-      },
-      error: (err) => {
-        this.logger.error('Failed to load chapter content', err);
-        this.error = 'Failed to load chapter content.';
-        this.contentLoading = false;
-      },
-    });
+    // Dedicated page editor (keeps the course-content screen less busy)
+    this.router.navigate([
+      '/admin/course-content',
+      this.courseId,
+      'chapters',
+      chapter.id,
+      'pages',
+      1,
+    ]);
   }
 
   closeContentEditor(): void {

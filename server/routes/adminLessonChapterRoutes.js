@@ -400,6 +400,57 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
     }
   });
 
+  // Get a chapter (including content) for admin/instructor editing
+  app.get('/api/admin/chapters/:chapterId', verifyToken, verifyAdminOrInstructor, async (req, res) => {
+    try {
+      const { chapterId } = req.params;
+      if (!isValidObjectId(chapterId)) {
+        return res.status(400).json({ error: 'Invalid chapterId' });
+      }
+
+      const chapter = await Chapter.findOne({
+        _id: new mongoose.Types.ObjectId(chapterId),
+      }).lean();
+
+      if (!chapter) {
+        return res.status(404).json({ error: 'Chapter not found' });
+      }
+
+      const rawContent = chapter.content || {};
+      const pages =
+        rawContent && Array.isArray(rawContent.pages)
+          ? rawContent.pages
+              .map((p) => ({
+                text: typeof p?.text === 'string' ? p.text : '',
+                assets: Array.isArray(p?.assets) ? p.assets : [],
+              }))
+              .filter((p) => p.text || (p.assets && p.assets.length > 0))
+          : [];
+
+      const legacyText = rawContent && typeof rawContent.text === 'string' ? rawContent.text : '';
+      const legacyAssets = rawContent && Array.isArray(rawContent.assets) ? rawContent.assets : [];
+
+      const normalizedPages = pages.length > 0 ? pages : [{ text: legacyText, assets: legacyAssets }];
+
+      res.status(200).json({
+        id: String(chapter._id),
+        courseId: String(chapter.courseId),
+        lessonId: String(chapter.lessonId),
+        title: chapter.title,
+        sortOrder: chapter.sortOrder || 0,
+        content: {
+          ...rawContent,
+          pages: normalizedPages,
+          text: legacyText,
+          assets: legacyAssets,
+        },
+      });
+    } catch (err) {
+      console.log('err: ' + err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Archive chapter
   app.post(
     '/api/admin/chapters/:chapterId/archive',
