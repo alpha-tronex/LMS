@@ -7,6 +7,20 @@ import { ChapterDetail, CourseContentTree } from '@models/course-content';
 import { ChapterProgressItem, ChapterProgressStatus } from '@models/chapter-progress';
 import { LoggerService } from '@core/services/logger.service';
 
+export interface CourseSurveyStatus {
+  courseCompleted: boolean;
+  chaptersCompleted: boolean;
+  finalAssessmentRequired: boolean;
+  finalAssessmentPassed: boolean;
+  surveySubmitted: boolean;
+}
+
+export interface SubmitCourseSurveyPayload {
+  ratingOverall: number;
+  ratingDifficulty?: number;
+  comment?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -101,6 +115,25 @@ export class CoursesService {
     return this.http.post<any>(`/api/courses/${courseId}/withdraw`, {}).pipe(
       catchError((error) => {
         this.logger.error('Error in withdraw', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  getCourseSurveyStatus(courseId: string): Observable<CourseSurveyStatus> {
+    return this.http.get<CourseSurveyStatus>(`/api/courses/${courseId}/survey/status`).pipe(
+      retry(1),
+      catchError((error) => {
+        this.logger.error('Error in getCourseSurveyStatus', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  submitCourseSurvey(courseId: string, payload: SubmitCourseSurveyPayload): Observable<any> {
+    return this.http.post<any>(`/api/courses/${courseId}/survey`, payload).pipe(
+      catchError((error) => {
+        this.logger.error('Error in submitCourseSurvey', error);
         return this.handleError(error);
       })
     );

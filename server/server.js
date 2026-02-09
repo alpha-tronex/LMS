@@ -14,6 +14,7 @@ const adminEnrollmentRoutes = require(`${__dirname}/routes/adminEnrollmentRoutes
 const adminLessonChapterRoutes = require(`${__dirname}/routes/adminLessonChapterRoutes.js`);
 const adminUploadRoutes = require(`${__dirname}/routes/adminUploadRoutes.js`);
 const utilRoutes = require(`${__dirname}/routes/utilRoutes.js`);
+const courseSurveyRoutes = require(`${__dirname}/routes/courseSurveyRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -60,6 +61,7 @@ const Lesson = require(`${__dirname}/models/Lesson.js`);
 const Chapter = require(`${__dirname}/models/Chapter.js`);
 const ChapterProgress = require(`${__dirname}/models/ChapterProgress.js`);
 const ContentAssessment = require(`${__dirname}/models/ContentAssessment.js`);
+const CourseSurvey = require(`${__dirname}/models/CourseSurvey.js`);
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";
@@ -94,6 +96,9 @@ assessmentRoutes(app, User, ContentAssessment);
 
 // Setup course routes (student-facing)
 courseRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress, ContentAssessment, User);
+
+// End-of-course survey routes (student-facing)
+courseSurveyRoutes(app, Course, Lesson, Chapter, ChapterProgress, ContentAssessment, User, CourseSurvey);
 
 // Setup admin routes
 adminUserRoutes(app, User);

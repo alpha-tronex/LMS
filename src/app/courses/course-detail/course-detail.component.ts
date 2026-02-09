@@ -5,6 +5,7 @@ import { Course } from '@models/course';
 import { ChapterOutline, ContentAssessmentAttachment, LessonOutline } from '@models/course-content';
 import { ChapterProgressStatus } from '@models/chapter-progress';
 import { LoggerService } from '@core/services/logger.service';
+import { CourseSurveyStatus, SubmitCourseSurveyPayload } from '@core/services/courses.service';
 
 @Component({
   selector: 'app-course-detail',
@@ -26,6 +27,17 @@ export class CourseDetailComponent implements OnInit {
   progressLoading = true;
   progressError = '';
   progressByChapterId = new Map<string, ChapterProgressStatus>();
+
+  surveyLoading = true;
+  surveyError = '';
+  surveyStatus: CourseSurveyStatus | null = null;
+  surveyDismissed = false;
+  surveySubmitted = false;
+  surveyForm: SubmitCourseSurveyPayload = {
+    ratingOverall: 0,
+    ratingDifficulty: undefined,
+    comment: '',
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -49,6 +61,21 @@ export class CourseDetailComponent implements OnInit {
     }
 
     this.courseId = courseId;
+
+    this.surveyDismissed = this.isSurveyDismissed(courseId);
+
+    this.coursesService.getCourseSurveyStatus(courseId).subscribe({
+      next: (status) => {
+        this.surveyStatus = status;
+        this.surveySubmitted = !!status.surveySubmitted;
+        this.surveyLoading = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to load course survey status', err);
+        this.surveyError = 'Failed to load survey status.';
+        this.surveyLoading = false;
+      },
+    });
 
     this.coursesService.getCourse(courseId).subscribe({
       next: (course) => {
@@ -136,5 +163,62 @@ export class CourseDetailComponent implements OnInit {
     this.router.navigate(['/courses', this.courseId, 'chapters', chapter.id], {
       queryParams: { page: 1 },
     });
+  }
+
+  shouldShowSurvey(): boolean {
+    if (this.surveyLoading) return false;
+    if (this.surveyDismissed) return false;
+    if (this.surveySubmitted) return false;
+    if (!this.surveyStatus) return false;
+    return !!this.surveyStatus.courseCompleted;
+  }
+
+  dismissSurvey(): void {
+    this.surveyDismissed = true;
+    this.setSurveyDismissed(this.courseId);
+  }
+
+  submitSurvey(): void {
+    if (!this.courseId) return;
+    if (!Number.isInteger(Number(this.surveyForm.ratingOverall)) || Number(this.surveyForm.ratingOverall) < 1) return;
+
+    const payload: SubmitCourseSurveyPayload = {
+      ratingOverall: Number(this.surveyForm.ratingOverall),
+      ratingDifficulty:
+        this.surveyForm.ratingDifficulty === undefined || this.surveyForm.ratingDifficulty === null || this.surveyForm.ratingDifficulty === ('' as any)
+          ? undefined
+          : Number(this.surveyForm.ratingDifficulty),
+      comment: (this.surveyForm.comment || '').trim(),
+    };
+
+    this.coursesService.submitCourseSurvey(this.courseId, payload).subscribe({
+      next: () => {
+        this.surveySubmitted = true;
+      },
+      error: (err) => {
+        this.logger.error('Failed to submit course survey', err);
+        this.surveyError = (err && (err.error || err.message)) || 'Failed to submit survey.';
+      },
+    });
+  }
+
+  private surveyDismissKey(courseId: string): string {
+    return `courseSurveyDismissed:${courseId}`;
+  }
+
+  private isSurveyDismissed(courseId: string): boolean {
+    try {
+      return localStorage.getItem(this.surveyDismissKey(courseId)) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  private setSurveyDismissed(courseId: string): void {
+    try {
+      localStorage.setItem(this.surveyDismissKey(courseId), '1');
+    } catch {
+      // ignore
+    }
   }
 }

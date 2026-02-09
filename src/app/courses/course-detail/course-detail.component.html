@@ -18,6 +18,72 @@
           <p *ngIf="course.description">{{ course.description }}</p>
           <p class="text-muted" *ngIf="!course.description">No description provided.</p>
 
+          <div *ngIf="surveyError" class="alert alert-danger">
+            {{ surveyError }}
+          </div>
+
+          <div *ngIf="shouldShowSurvey()" class="card mb-3">
+            <div class="card-body">
+              <h5 class="mb-2">Course Complete — Quick Survey</h5>
+              <p class="text-muted mb-3">This survey is optional and only appears after you complete the course.</p>
+
+              <div class="form-group">
+                <label for="ratingOverall">Overall rating (1–5)</label>
+                <select
+                  id="ratingOverall"
+                  class="form-control"
+                  [(ngModel)]="surveyForm.ratingOverall"
+                  name="ratingOverall"
+                >
+                  <option [ngValue]="0">Select...</option>
+                  <option [ngValue]="1">1</option>
+                  <option [ngValue]="2">2</option>
+                  <option [ngValue]="3">3</option>
+                  <option [ngValue]="4">4</option>
+                  <option [ngValue]="5">5</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="ratingDifficulty">Difficulty (optional, 1–5)</label>
+                <select
+                  id="ratingDifficulty"
+                  class="form-control"
+                  [(ngModel)]="surveyForm.ratingDifficulty"
+                  name="ratingDifficulty"
+                >
+                  <option [ngValue]="undefined">Select...</option>
+                  <option [ngValue]="1">1</option>
+                  <option [ngValue]="2">2</option>
+                  <option [ngValue]="3">3</option>
+                  <option [ngValue]="4">4</option>
+                  <option [ngValue]="5">5</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="comment">Comments (optional)</label>
+                <textarea
+                  id="comment"
+                  class="form-control"
+                  rows="3"
+                  [(ngModel)]="surveyForm.comment"
+                  name="comment"
+                ></textarea>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                (click)="submitSurvey()"
+                [disabled]="!surveyForm.ratingOverall || surveyForm.ratingOverall < 1"
+              >
+                Submit
+              </button>
+              <button type="button" class="btn btn-link btn-sm" (click)="dismissSurvey()">Skip</button>
+            </div>
+          </div>
+
           <div *ngIf="courseAssessments && courseAssessments.length > 0" class="alert alert-light">
             <button
               type="button"

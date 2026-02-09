@@ -77,3 +77,13 @@ Next up: start with centralized request validation (shared validators) and a sim
 - [x] Rate limit `/api/login`
 - [x] Consistent error shapes
 - [x] Remove legacy storage fallback after rollout
+
+## Milestone H — End-of-course survey (MVP)
+**Status:** DONE
+- [x] Backend: survey status endpoint (strictly post-completion)
+- [x] Backend: survey submission endpoint (enforce post-completion)
+- [x] Frontend: show survey prompt only after completion
+- [x] Testing: smoke test for gating + idempotent submission
+
+Notes:
+- “Course completed” for survey gating means: all chapters completed, and if a course-scope required assessment is attached, it must be passed.
