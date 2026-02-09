@@ -17,10 +17,14 @@ const utilRoutes = require(`${__dirname}/routes/utilRoutes.js`);
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const { sendError } = require(`${__dirname}/utils/responses.js`);
 
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Ensure req.ip reflects real client IP behind proxies (Render/Heroku/etc.)
+app.set('trust proxy', 1);
 
 
 const path = require("path");
@@ -102,6 +106,22 @@ adminUploadRoutes(app);
 
 // Setup utility routes
 utilRoutes(app);
+
+// Consistent API 404 (must be after all API routes)
+app.use('/api', (req, res) => {
+    return sendError(res, 404, 'Not found');
+});
+
+// Consistent API error handler
+app.use((err, req, res, next) => {
+    if (req && req.path && req.path.startsWith('/api/')) {
+        const status = Number(err && (err.statusCode || err.status)) || 500;
+        const message = status >= 500 ? 'Internal server error' : (err && err.message) || 'Request failed';
+        console.log('[api] unhandled error:', err);
+        return sendError(res, status, message);
+    }
+    return next(err);
+});
 
 // Serve Angular app for any other GET request (must be after API routes)
 app.use((req, res, next) => {

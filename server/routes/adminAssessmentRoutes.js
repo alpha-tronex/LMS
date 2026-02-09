@@ -5,6 +5,9 @@ const path = require('path');
 function readAssessmentsFromDisk() {
   const assessmentsDir = path.join(__dirname, '../assessments');
   const legacyDir = path.join(__dirname, '../quizzes');
+  const disableLegacy =
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === '1' ||
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === 'true';
 
   const resultsById = new Map();
 
@@ -38,7 +41,9 @@ function readAssessmentsFromDisk() {
   };
 
   // Load legacy first, then new to prefer new files on collisions.
-  scanDir(legacyDir, true);
+  if (!disableLegacy) {
+    scanDir(legacyDir, true);
+  }
   scanDir(assessmentsDir, false);
 
   return Array.from(resultsById.values()).sort((a, b) => a.id - b.id);
@@ -49,6 +54,10 @@ function readAssessmentsFromDisk() {
  * Handles assessment file operations (upload, delete) for administrators
  */
 module.exports = function (app) {
+  const disableLegacy =
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === '1' ||
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === 'true';
+
   // Upload assessment (admin or instructor)
   app
     .route('/api/assessment/upload')
@@ -189,9 +198,11 @@ module.exports = function (app) {
         const assessmentId = req.params.assessmentId;
         const newPath = path.join(__dirname, '../assessments', `assessment_${assessmentId}.json`);
         const legacyPath = path.join(__dirname, '../quizzes', `quiz_${assessmentId}.json`);
-        const assessmentFilePath = fs.existsSync(newPath) ? newPath : legacyPath;
+        const assessmentFilePath = fs.existsSync(newPath)
+          ? newPath
+          : (!disableLegacy && fs.existsSync(legacyPath) ? legacyPath : null);
 
-        if (!fs.existsSync(assessmentFilePath)) {
+        if (!assessmentFilePath) {
           return res.status(404).json({ error: 'Assessment file not found' });
         }
 
@@ -215,7 +226,7 @@ module.exports = function (app) {
         const assessmentsDir = path.join(__dirname, '../assessments');
         const legacyDir = path.join(__dirname, '../quizzes');
 
-        const dirsToScan = [assessmentsDir, legacyDir].filter((d) => fs.existsSync(d));
+        const dirsToScan = [assessmentsDir, ...(disableLegacy ? [] : [legacyDir])].filter((d) => fs.existsSync(d));
         if (dirsToScan.length === 0) {
           return res.status(200).json({
             message: 'All assessment files deleted successfully',
@@ -256,9 +267,11 @@ module.exports = function (app) {
         const assessmentId = req.params.id;
         const newPath = path.join(__dirname, '../assessments', `assessment_${assessmentId}.json`);
         const legacyPath = path.join(__dirname, '../quizzes', `quiz_${assessmentId}.json`);
-        const filePath = fs.existsSync(newPath) ? newPath : legacyPath;
+        const filePath = fs.existsSync(newPath)
+          ? newPath
+          : (!disableLegacy && fs.existsSync(legacyPath) ? legacyPath : null);
 
-        if (!fs.existsSync(filePath)) {
+        if (!filePath) {
           return res.status(404).json({ error: 'Assessment not found' });
         }
 

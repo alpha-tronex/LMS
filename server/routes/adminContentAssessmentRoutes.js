@@ -11,9 +11,13 @@ function assessmentFileExists(assessmentId) {
   const id = Number(assessmentId);
   if (!Number.isFinite(id) || id < 0) return false;
 
+  const disableLegacy =
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === '1' ||
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === 'true';
+
   const newPath = path.join(__dirname, '../assessments', `assessment_${id}.json`);
   const legacyPath = path.join(__dirname, '../quizzes', `quiz_${id}.json`);
-  return fs.existsSync(newPath) || fs.existsSync(legacyPath);
+  return fs.existsSync(newPath) || (!disableLegacy && fs.existsSync(legacyPath));
 }
 
 function parseOptionalNumber(value) {

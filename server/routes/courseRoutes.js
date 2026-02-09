@@ -19,6 +19,10 @@ module.exports = function courseRoutes(
   ContentAssessment,
   User
 ) {
+  const disableLegacyContentFields =
+    String(process.env.DISABLE_LEGACY_CONTENT_FIELDS || '').toLowerCase() === '1' ||
+    String(process.env.DISABLE_LEGACY_CONTENT_FIELDS || '').toLowerCase() === 'true';
+
   // List active courses
   app.get('/api/courses', verifyToken, async (req, res) => {
     try {
@@ -566,7 +570,12 @@ module.exports = function courseRoutes(
       // Backward compatibility + forward default:
       // - If there are no pages, expose a single page derived from legacy fields.
       // - Keep legacy fields in the response so older clients don't break.
-      const normalizedPages = pages.length > 0 ? pages : [{ text: legacyText, assets: legacyAssets }];
+      const normalizedPages =
+        pages.length > 0
+          ? pages
+          : disableLegacyContentFields
+            ? []
+            : [{ text: legacyText, assets: legacyAssets }];
 
       res.status(200).json({
         id: String(chapter._id),
@@ -577,8 +586,7 @@ module.exports = function courseRoutes(
         content: {
           ...rawContent,
           pages: normalizedPages,
-          text: legacyText,
-          assets: legacyAssets,
+          ...(disableLegacyContentFields ? {} : { text: legacyText, assets: legacyAssets }),
         },
       });
     } catch (err) {

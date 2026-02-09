@@ -1,5 +1,6 @@
 const validators = require('../utils/validators');
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
+const { sendValidationError } = require('../utils/responses');
 
 /**
  * Admin User Routes
@@ -130,7 +131,7 @@ module.exports = function(app, User) {
                 }
 
                 if (validationErrors.length) {
-                    return res.status(400).json({ errors: validationErrors });
+                    return sendValidationError(res, validationErrors);
                 }
 
                 // Check if username is taken by another user

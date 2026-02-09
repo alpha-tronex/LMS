@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { verifyToken, verifyAdmin, verifyAdminOrInstructor } = require('../middleware/authMiddleware');
+const { sendValidationError } = require('../utils/responses');
 
 function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
@@ -60,7 +61,7 @@ module.exports = function adminCourseRoutes(app, Course, User) {
     try {
       const validation = validateCoursePayload(req.body || {}, { requireTitle: true });
       if (!validation.valid) {
-        return res.status(400).json({ errors: validation.errors });
+        return sendValidationError(res, validation.errors);
       }
 
       const requesterRole = req.user && (req.user.role || req.user.type);
@@ -100,7 +101,7 @@ module.exports = function adminCourseRoutes(app, Course, User) {
 
       const validation = validateCoursePayload(req.body || {}, { requireTitle: false });
       if (!validation.valid) {
-        return res.status(400).json({ errors: validation.errors });
+        return sendValidationError(res, validation.errors);
       }
 
       const update = { updatedAt: new Date() };

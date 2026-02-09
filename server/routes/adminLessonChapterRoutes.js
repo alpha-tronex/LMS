@@ -1,5 +1,19 @@
 const mongoose = require('mongoose');
 const { verifyToken, verifyAdminOrInstructor } = require('../middleware/authMiddleware');
+const { sendValidationError } = require('../utils/responses');
+
+const disableLegacyContentFields =
+  String(process.env.DISABLE_LEGACY_CONTENT_FIELDS || '').toLowerCase() === '1' ||
+  String(process.env.DISABLE_LEGACY_CONTENT_FIELDS || '').toLowerCase() === 'true';
+
+function stripLegacyContentFields(content) {
+  if (!content || typeof content !== 'object') return content;
+  if (!disableLegacyContentFields) return content;
+  const cloned = { ...content };
+  delete cloned.text;
+  delete cloned.assets;
+  return cloned;
+}
 
 function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
@@ -116,7 +130,7 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
           requireCourseId: true,
         });
         if (!validation.valid) {
-          return res.status(400).json({ errors: validation.errors });
+          return sendValidationError(res, validation.errors);
         }
 
         const lesson = await Lesson.create({
@@ -198,7 +212,7 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
         requireCourseId: false,
       });
       if (!validation.valid) {
-        return res.status(400).json({ errors: validation.errors });
+        return sendValidationError(res, validation.errors);
       }
 
       const update = { updatedAt: new Date() };
@@ -323,7 +337,7 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
 
         const validation = validateChapterPayload(req.body || {}, { requireTitle: true });
         if (!validation.valid) {
-          return res.status(400).json({ errors: validation.errors });
+          return sendValidationError(res, validation.errors);
         }
 
         const chapter = await Chapter.create({
@@ -331,7 +345,7 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
           lessonId: new mongoose.Types.ObjectId(lessonId),
           title: validation.title,
           sortOrder: validation.sortOrder !== undefined ? validation.sortOrder : 0,
-          content: validation.content !== undefined ? validation.content : {},
+          content: validation.content !== undefined ? stripLegacyContentFields(validation.content) : {},
           status: 'active',
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -403,14 +417,14 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
 
       const validation = validateChapterPayload(req.body || {}, { requireTitle: false });
       if (!validation.valid) {
-        return res.status(400).json({ errors: validation.errors });
+        return sendValidationError(res, validation.errors);
       }
 
       const update = { updatedAt: new Date() };
       if (req.body && req.body.title !== undefined) update.title = validation.title;
       if (req.body && req.body.sortOrder !== undefined)
         update.sortOrder = validation.sortOrder !== undefined ? validation.sortOrder : 0;
-      if (req.body && req.body.content !== undefined) update.content = validation.content;
+      if (req.body && req.body.content !== undefined) update.content = stripLegacyContentFields(validation.content);
 
       const updated = await Chapter.findByIdAndUpdate(
         new mongoose.Types.ObjectId(chapterId),
@@ -466,7 +480,12 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
       const legacyText = rawContent && typeof rawContent.text === 'string' ? rawContent.text : '';
       const legacyAssets = rawContent && Array.isArray(rawContent.assets) ? rawContent.assets : [];
 
-      const normalizedPages = pages.length > 0 ? pages : [{ text: legacyText, assets: legacyAssets }];
+      const normalizedPages =
+        pages.length > 0
+          ? pages
+          : disableLegacyContentFields
+            ? []
+            : [{ text: legacyText, assets: legacyAssets }];
 
       res.status(200).json({
         id: String(chapter._id),
@@ -477,8 +496,7 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
         content: {
           ...rawContent,
           pages: normalizedPages,
-          text: legacyText,
-          assets: legacyAssets,
+          ...(disableLegacyContentFields ? {} : { text: legacyText, assets: legacyAssets }),
         },
       });
     } catch (err) {

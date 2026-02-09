@@ -71,9 +71,9 @@ Notes:
 - Assessment archiving "via mapping" depends on Milestone D.
 
 ## Milestone G — Hardening
-**Status:** NOT STARTED
+**Status:** DONE
 Next up: start with centralized request validation (shared validators) and a simple rate limit on `/api/login`.
-- [ ] Request validation centralized
-- [ ] Rate limit `/api/login`
-- [ ] Consistent error shapes
-- [ ] Remove legacy storage fallback after rollout
+- [x] Request validation centralized
+- [x] Rate limit `/api/login`
+- [x] Consistent error shapes
+- [x] Remove legacy storage fallback after rollout

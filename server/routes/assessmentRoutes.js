@@ -6,6 +6,9 @@ const { verifyToken } = require('../middleware/authMiddleware');
 function listAssessmentFiles() {
   const assessmentsDir = __dirname + '/../assessments';
   const legacyDir = __dirname + '/../quizzes';
+  const disableLegacy =
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === '1' ||
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === 'true';
 
   const resultsById = new Map();
 
@@ -27,13 +30,19 @@ function listAssessmentFiles() {
   };
 
   // Scan legacy first, then new to prefer new files on ID collisions.
-  scanDir(legacyDir, true);
+  if (!disableLegacy) {
+    scanDir(legacyDir, true);
+  }
   scanDir(assessmentsDir, false);
 
   return Array.from(resultsById.values()).sort((a, b) => a.id - b.id);
 }
 
 module.exports = function (app, User, ContentAssessment) {
+
+  const disableLegacy =
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === '1' ||
+    String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === 'true';
 
   function isValidObjectId(value) {
     return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
@@ -216,7 +225,14 @@ module.exports = function (app, User, ContentAssessment) {
 
                 const assessmentPath = __dirname + `/../assessments/assessment_${assessmentId}.json`;
                 const legacyPath = __dirname + `/../quizzes/quiz_${assessmentId}.json`;
-                const filePath = fs.existsSync(assessmentPath) ? assessmentPath : legacyPath;
+                const filePath = fs.existsSync(assessmentPath)
+                  ? assessmentPath
+                  : (!disableLegacy && fs.existsSync(legacyPath) ? legacyPath : null);
+
+                if (!filePath) {
+                  return res.status(404).json({ error: 'Assessment file not found' });
+                }
+
                 const jsonData = fs.readFileSync(filePath);
                 return res.send(jsonData);
               })
@@ -236,9 +252,16 @@ module.exports = function (app, User, ContentAssessment) {
       const legacyPath = __dirname + `/../quizzes/quiz_${assessmentId}.json`;
 
       // Prefer new naming/location; fall back to legacy if needed.
-      const filePath = fs.existsSync(assessmentPath) ? assessmentPath : legacyPath;
+      const filePath = fs.existsSync(assessmentPath)
+        ? assessmentPath
+        : (!disableLegacy && fs.existsSync(legacyPath) ? legacyPath : null);
+
+      if (!filePath) {
+        return res.status(404).json({ error: 'Assessment file not found' });
+      }
+
       const jsonData = fs.readFileSync(filePath);
-      res.send(jsonData);
+      return res.send(jsonData);
     })
     .post(verifyToken, bodyParser.json(), async (req, res) => {
       try {

@@ -1,12 +1,25 @@
 const bcrypt = require('bcrypt');
 const validators = require('../utils/validators');
 const { generateToken, verifyToken } = require('../middleware/authMiddleware');
+const { sendError, sendValidationError } = require('../utils/responses');
+const { validateLoginBody, requireBodyFields } = require('../middleware/requestValidation');
+const { createInMemoryRateLimiter } = require('../middleware/rateLimit');
 const saltRounds = 10;
+
+const loginRateLimiter = createInMemoryRateLimiter({
+    windowMs: process.env.LOGIN_RATE_LIMIT_WINDOW_MS,
+    max: process.env.LOGIN_RATE_LIMIT_MAX,
+    message: 'Too many login attempts. Please try again later.',
+    keyFn: (req, ip) => {
+        const uname = req && req.body && typeof req.body.uname === 'string' ? req.body.uname.trim().toLowerCase() : '';
+        return uname ? `${ip}|${uname}` : ip;
+    },
+});
 
 module.exports = function(app, User) {
 
     app.route("/api/register")
-        .post(async (req, res) => {
+        .post(requireBodyFields(['uname', 'pass']), async (req, res) => {
             try {
                 const { fname, lname, uname, email, pass, phone, address } = req.body || {};
 
@@ -61,7 +74,7 @@ module.exports = function(app, User) {
                 }
 
                 if (validationErrors.length) {
-                    return res.status(400).json({ errors: validationErrors });
+                    return sendValidationError(res, validationErrors);
                 }
 
                 // ensure username/email uniqueness (only check email if provided)
@@ -71,7 +84,7 @@ module.exports = function(app, User) {
                 }
                 const existing = await User.findOne({ $or: uniqueQuery });
                 if (existing) {
-                    return res.status(409).json({ errors: ['Username or email already in use'] });
+                    return sendError(res, 409, 'Username or email already in use', { errors: ['Username or email already in use'] });
                 }
 
                 const hash = await bcrypt.hash(pass, saltRounds);
@@ -114,58 +127,53 @@ module.exports = function(app, User) {
 
             } catch (err) {
                 console.log('err' + err);
-                res.status(500).send(err);
+                return sendError(res, 500, 'Internal server error');
             }
         })
 
     app.route("/api/login")
-        .post(async (req,res) => {
+        .post(loginRateLimiter, validateLoginBody, async (req,res) => {
         try {
-            console.log("uname: " + req.body.uname);
-            console.log("pass: " + req.body.pass);
-            
-            const uname = req.body.uname;
-            const pass = req.body.pass;
+            const uname = String(req.body.uname).trim();
+            const pass = String(req.body.pass);
 
             // cannot query password field if it is encrypted
-            const foundUser = await User.findOne({username: uname});
-            console.log("foundUser: " + foundUser);
-
+            const foundUser = await User.findOne({ username: uname });
             if (!foundUser) {
-                return res.status(401).json({ error: 'Invalid credentials' });
+                return sendError(res, 401, 'Invalid credentials');
             }
 
-            console.log("in if (foundUser)");
-            bcrypt.compare(pass, foundUser.password, function(err, result) {
-                console.log('result: ' + result);
-                if (result === true) {
-                    // Generate JWT token
-                    const token = generateToken(foundUser);
+            const match = await bcrypt.compare(pass, foundUser.password);
+            if (!match) {
+                return sendError(res, 401, 'Invalid credentials');
+            }
 
-                    const userObj = {
-                        id: foundUser._id,
-                        fname: foundUser.fname,
-                        lname: foundUser.lname,
-                        uname: foundUser.username,
-                        email: foundUser.email,
-                        phone: foundUser.phone,
-                        address: foundUser.address,
-                        pass: '', // Don't send the hashed password
-                        confirmPass: '',
-                        role: foundUser.role || 'student',
-                        token: token
-                    };
-                    res.status(200).json(userObj);
-                    console.log("status 200 success");
-                } else {
-                    res.status(401).json({ error: 'Invalid credentials' });
-                }
-                console.log("in crypto");
-            });
+            // Generate JWT token
+            const token = generateToken(foundUser);
 
+            const userObj = {
+                id: foundUser._id,
+                fname: foundUser.fname,
+                lname: foundUser.lname,
+                uname: foundUser.username,
+                email: foundUser.email,
+                phone: foundUser.phone,
+                address: foundUser.address,
+                pass: '', // Don't send the hashed password
+                confirmPass: '',
+                role: foundUser.role || 'student',
+                token: token
+            };
+
+            // Reset limiter bucket on successful login to reduce friction.
+            if (req.rateLimitKey && typeof loginRateLimiter.resetKey === 'function') {
+                loginRateLimiter.resetKey(req.rateLimitKey);
+            }
+
+            return res.status(200).json(userObj);
         } catch (err) {
             console.log('err' + err);
-            res.status(500).send(err);
+            return sendError(res, 500, 'Internal server error');
         }
     });
 
@@ -194,12 +202,12 @@ module.exports = function(app, User) {
                 res.status(200).json(userList);
             } catch (err) {
                 console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                return sendError(res, 500, 'Internal server error');
             }
         });
 
     app.route("/api/user/update")
-        .put(verifyToken, async (req, res) => {
+        .put(verifyToken, requireBodyFields(['id']), async (req, res) => {
             try {
                 const { id, fname, lname, email, phone, address } = req.body || {};
 
@@ -207,7 +215,7 @@ module.exports = function(app, User) {
                 const validationErrors = [];
                 
                 if (!id) {
-                    return res.status(400).json({ error: 'User ID is required' });
+                    return sendError(res, 400, 'User ID is required');
                 }
 
                 // Optional fields: validate only if provided and not empty
@@ -247,7 +255,7 @@ module.exports = function(app, User) {
                 }
 
                 if (validationErrors.length) {
-                    return res.status(400).json({ errors: validationErrors });
+                    return sendValidationError(res, validationErrors);
                 }
 
                 // Update user
@@ -284,7 +292,7 @@ module.exports = function(app, User) {
                 res.status(200).json(userObj);
             } catch (err) {
                 console.log('err: ' + err);
-                res.status(500).json({ error: 'Internal server error' });
+                return sendError(res, 500, 'Internal server error');
             }
         });
 
