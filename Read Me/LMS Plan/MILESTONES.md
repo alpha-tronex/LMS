@@ -9,8 +9,7 @@ This is a shorter, execution-oriented checklist extracted from `Read Me/ARCHITEC
 	- the learner finishes the chapter content, and
 	- if a chapter checkpoint quiz is configured, they pass it.
 - A lesson is **completed** when:
-	- all chapters in the lesson are completed, and
-	- if a lesson assessment is configured, they pass it.
+	- all chapters in the lesson are completed.
 - A course is **completed** when:
 	- all lessons are completed, and
 	- if a course assessment is configured, they pass it.
@@ -34,23 +33,28 @@ Notes:
 - Chapter content supports multi-page authoring (admin/instructor).
 
 ## Milestone C — Chapter-level progress tracking
-**Status:** NOT STARTED
-Next up: implement `chapter_progress` model + endpoints first, then add a simple completion indicator in the course outline.
-- [ ] Mongo: add `chapter_progress` collection (with indexes)
-- [ ] Backend: student APIs to get/update chapter progress
-- [ ] Frontend: show per-chapter completion (derived lesson/course completion)
+**Status:** DONE
+- [x] Mongo: add `chapter_progress` collection (with indexes)
+- [x] Backend: student APIs to get/update chapter progress
+- [x] Frontend: show per-chapter completion (derived lesson/course completion)
+
+Notes:
+- Chapter completion is explicit via a "Mark Complete" action (no auto-complete on last page).
 
 ## Milestone D — Attach assessments by scope
-**Status:** NOT STARTED
-Next up: introduce the `content_assessments` mapping and wire attach/detach endpoints; UI entry points can follow.
-- [ ] Mongo: add `content_assessments` mapping (chapter/lesson/course)
-- [ ] Backend: attach/detach endpoints for chapter/lesson/course
-- [ ] Backend: include scoped assessments in course content responses
-- [ ] Frontend: chapter checkpoint quiz (3–5 Q), lesson assessment, course assessment entry points
+**Status:** DONE
+- [x] Mongo: add `content_assessments` mapping (chapter/lesson/course)
+- [x] Backend: attach/detach endpoints for chapter/lesson/course
+- [x] Backend: include scoped assessments in course content responses
+- [x] Frontend: chapter checkpoint quiz + course assessment entry points
+
+Notes (agreed rules):
+- Chapter checkpoint quizzes: unlimited tries until 100% correct.
+- Course final assessment: max 2 attempts; 80% required to pass the course.
 
 ## Milestone E — Attempts + history across scopes
 **Status:** NOT STARTED
-Next up: extend attempt submissions to include scope IDs, then build a basic grouped “History” view.
+Next up: enforce pass thresholds + attempt limits per scope, then extend submissions/history to include scope IDs.
 - [ ] Submission: include `courseId`/`lessonId`/`chapterId` in attempt payload
 - [ ] History: show attempts grouped by course + scope (simple)
 - [ ] Admin: roster view per course

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CoursesService } from '@core/services/courses.service';
-import { ChapterAsset, ChapterDetail, ChapterPage } from '@models/course-content';
+import { ChapterAsset, ChapterDetail, ChapterPage, ContentAssessmentAttachment } from '@models/course-content';
 import { ChapterProgressStatus } from '@models/chapter-progress';
 import { LoggerService } from '@core/services/logger.service';
 
@@ -27,6 +27,8 @@ export class ChapterViewerComponent implements OnInit {
 
   progressStatus: ChapterProgressStatus = 'not_started';
   markingComplete = false;
+
+  checkpointAssessments: ContentAssessmentAttachment[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -55,6 +57,8 @@ export class ChapterViewerComponent implements OnInit {
     this.courseId = courseId;
     this.chapterId = chapterId;
 
+    this.loadAttachedAssessments();
+
     this.route.queryParams.subscribe((params) => {
       const raw = params && params['page'] !== undefined ? Number(params['page']) : 1;
       const safe = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 1;
@@ -67,6 +71,48 @@ export class ChapterViewerComponent implements OnInit {
     });
 
     this.loadChapter();
+  }
+
+  private loadAttachedAssessments(): void {
+    if (!this.courseId || !this.chapterId) return;
+
+    this.coursesService.getCourseContent(this.courseId).subscribe({
+      next: (tree) => {
+        const lessons = tree && Array.isArray(tree.lessons) ? tree.lessons : [];
+        for (const lesson of lessons) {
+          const chapters = lesson && Array.isArray(lesson.chapters) ? lesson.chapters : [];
+          const found = chapters.find((c) => c && String(c.id) === String(this.chapterId));
+          if (found) {
+            this.checkpointAssessments = Array.isArray(found?.assessments) ? found.assessments : [];
+            return;
+          }
+        }
+        this.checkpointAssessments = [];
+      },
+      error: (err) => {
+        // Non-blocking: just affects the CTA.
+        this.logger.error('Failed to load attached assessments', err);
+        this.checkpointAssessments = [];
+      },
+    });
+  }
+
+  openAssessment(assessmentId: number): void {
+    const id = Number(assessmentId);
+    if (!Number.isFinite(id)) return;
+
+    // Return the learner back to the chapter's last page after finishing.
+    const returnPage = this.pageCount > 0 ? this.pageCount : 1;
+
+    this.router.navigate(['/questions'], {
+      queryParams: {
+        id,
+        returnTo: 'chapter',
+        returnCourseId: this.courseId,
+        returnChapterId: this.chapterId,
+        returnPage,
+      },
+    });
   }
 
   private loadChapter(): void {

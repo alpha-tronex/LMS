@@ -9,7 +9,15 @@ function isValidProgressStatus(value) {
   return value === 'not_started' || value === 'in_progress' || value === 'completed';
 }
 
-module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress) {
+module.exports = function courseRoutes(
+  app,
+  Course,
+  Enrollment,
+  Lesson,
+  Chapter,
+  ChapterProgress,
+  ContentAssessment
+) {
   // List active courses
   app.get('/api/courses', verifyToken, async (req, res) => {
     try {
@@ -145,6 +153,49 @@ module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter,
         .sort({ sortOrder: 1, title: 1 })
         .lean();
 
+      // Optional: include attached assessments by scope.
+      let courseAssessments = [];
+      const lessonAssessmentsByLessonId = new Map();
+      const chapterAssessmentsByChapterId = new Map();
+
+      if (ContentAssessment) {
+        const mappings = await ContentAssessment.find({
+          courseId: new mongoose.Types.ObjectId(courseId),
+          status: 'active',
+        })
+          .sort({ updatedAt: -1 })
+          .lean();
+
+        for (const m of mappings || []) {
+          const item = {
+            assessmentId: m.assessmentId,
+            isRequired: !!m.isRequired,
+            passScore: m.passScore ?? null,
+            maxAttempts: m.maxAttempts ?? null,
+          };
+
+          if (m.scopeType === 'course') {
+            courseAssessments.push(item);
+            continue;
+          }
+
+          if (m.scopeType === 'lesson') {
+            const key = String(m.scopeId);
+            const arr = lessonAssessmentsByLessonId.get(key) || [];
+            arr.push(item);
+            lessonAssessmentsByLessonId.set(key, arr);
+            continue;
+          }
+
+          if (m.scopeType === 'chapter') {
+            const key = String(m.scopeId);
+            const arr = chapterAssessmentsByChapterId.get(key) || [];
+            arr.push(item);
+            chapterAssessmentsByChapterId.set(key, arr);
+          }
+        }
+      }
+
       const chaptersByLessonId = new Map();
       for (const c of chapters) {
         const lessonKey = String(c.lessonId);
@@ -154,6 +205,7 @@ module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter,
           lessonId: String(c.lessonId),
           title: c.title,
           sortOrder: c.sortOrder || 0,
+          assessments: chapterAssessmentsByChapterId.get(String(c._id)) || [],
         });
         chaptersByLessonId.set(lessonKey, arr);
       }
@@ -165,6 +217,7 @@ module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter,
         description: l.description || '',
         sortOrder: l.sortOrder || 0,
         chapters: chaptersByLessonId.get(String(l._id)) || [],
+        assessments: lessonAssessmentsByLessonId.get(String(l._id)) || [],
       }));
 
       res.status(200).json({
@@ -172,6 +225,7 @@ module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter,
           id: String(course._id),
           title: course.title,
           description: course.description || '',
+          assessments: courseAssessments,
         },
         lessons: resultLessons,
       });

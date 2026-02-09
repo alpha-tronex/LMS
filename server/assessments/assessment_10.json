@@ -1,0 +1,51 @@
+{
+  "id": 10,
+  "title": "Essential Facts About Old Testament Prophets — Chapter 2: Practical Takeaways (Checkpoint Quiz)",
+  "questions": [
+    {
+      "questionNum": 0,
+      "questionType": "SingleAnswer",
+      "instructions": "Select the correct answer",
+      "question": "This checkpoint quiz is for which chapter?",
+      "answers": [
+        "Chapter 2: Practical Takeaways",
+        "Genesis Overview",
+        "Kings Summary",
+        "New Testament"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "questionNum": 1,
+      "questionType": "TrueFalse",
+      "instructions": "Select the correct answer (True or False)",
+      "question": "You are taking a checkpoint quiz at the end of a chapter.",
+      "answers": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "questionNum": 2,
+      "questionType": "MultipleChoice",
+      "instructions": "Select all correct answers",
+      "question": "Which actions can appear on the last page of a chapter in this LMS?",
+      "answers": [
+        "Mark Complete",
+        "Take Checkpoint Quiz",
+        "Take Lesson Assessment",
+        "Teleport to Mars"
+      ],
+      "correct": [
+        1,
+        2,
+        3
+      ]
+    }
+  ]
+}

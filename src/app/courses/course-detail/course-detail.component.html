@@ -18,6 +18,20 @@
           <p *ngIf="course.description">{{ course.description }}</p>
           <p class="text-muted" *ngIf="!course.description">No description provided.</p>
 
+          <div *ngIf="courseAssessments && courseAssessments.length > 0" class="alert alert-light">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="openAssessment(courseAssessments[0].assessmentId)"
+              [disabled]="!isCourseReadyForFinalAssessment()"
+            >
+              Take Final Assessment
+            </button>
+            <div class="text-muted mt-2" *ngIf="!isCourseReadyForFinalAssessment()">
+              Complete all chapters to unlock the final assessment.
+            </div>
+          </div>
+
           <hr />
 
           <h5 class="mb-3">Course Outline</h5>

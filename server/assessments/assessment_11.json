@@ -1,0 +1,79 @@
+{
+  "id": 11,
+  "title": "Essential Facts About Old Testament Prophets — End of Course Assessment",
+  "questions": [
+    {
+      "questionNum": 0,
+      "questionType": "TrueFalse",
+      "instructions": "Select the correct answer (True or False)",
+      "question": "This assessment is meant to run at the end of a course.",
+      "answers": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "questionNum": 1,
+      "questionType": "SingleAnswer",
+      "instructions": "Select the correct answer",
+      "question": "If the pass threshold is 80% and there are 5 questions, how many must be correct to pass?",
+      "answers": [
+        "3",
+        "4",
+        "5",
+        "2"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "questionNum": 2,
+      "questionType": "MultipleChoice",
+      "instructions": "Select all correct answers",
+      "question": "Which scopes can assessments attach to in this LMS?",
+      "answers": [
+        "Chapter",
+        "Lesson",
+        "Course",
+        "Only User Profile"
+      ],
+      "correct": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "questionNum": 3,
+      "questionType": "SingleAnswer",
+      "instructions": "Select the correct answer",
+      "question": "What does CTA stand for?",
+      "answers": [
+        "Course Test Artifact",
+        "Call To Action",
+        "Chapter Total Average",
+        "Client Token Auth"
+      ],
+      "correct": [
+        2
+      ]
+    },
+    {
+      "questionNum": 4,
+      "questionType": "TrueFalse",
+      "instructions": "Select the correct answer (True or False)",
+      "question": "The “Accept Results” button saves your attempt to history.",
+      "answers": [
+        "True",
+        "False"
+      ],
+      "correct": [
+        1
+      ]
+    }
+  ]
+}

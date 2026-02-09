@@ -3,6 +3,14 @@ export interface ChapterOutline {
   lessonId: string;
   title: string;
   sortOrder: number;
+  assessments?: ContentAssessmentAttachment[];
+}
+
+export interface ContentAssessmentAttachment {
+  assessmentId: number;
+  isRequired: boolean;
+  passScore: number | null;
+  maxAttempts: number | null;
 }
 
 export interface ChapterAsset {
@@ -42,6 +50,7 @@ export interface LessonOutline {
   description: string;
   sortOrder: number;
   chapters: ChapterOutline[];
+  assessments?: ContentAssessmentAttachment[];
 }
 
 export interface CourseContentTree {
@@ -49,6 +58,7 @@ export interface CourseContentTree {
     id: string;
     title: string;
     description: string;
+    assessments?: ContentAssessmentAttachment[];
   };
   lessons: LessonOutline[];
 }

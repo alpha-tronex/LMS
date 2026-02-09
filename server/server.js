@@ -7,6 +7,7 @@ const authRoutes = require(`${__dirname}/routes/authRoutes.js`);
 const assessmentRoutes = require(`${__dirname}/routes/assessmentRoutes.js`);
 const adminUserRoutes = require(`${__dirname}/routes/adminUserRoutes.js`);
 const adminAssessmentRoutes = require(`${__dirname}/routes/adminAssessmentRoutes.js`);
+const adminContentAssessmentRoutes = require(`${__dirname}/routes/adminContentAssessmentRoutes.js`);
 const courseRoutes = require(`${__dirname}/routes/courseRoutes.js`);
 const adminCourseRoutes = require(`${__dirname}/routes/adminCourseRoutes.js`);
 const adminEnrollmentRoutes = require(`${__dirname}/routes/adminEnrollmentRoutes.js`);
@@ -54,6 +55,7 @@ const Enrollment = require(`${__dirname}/models/Enrollment.js`);
 const Lesson = require(`${__dirname}/models/Lesson.js`);
 const Chapter = require(`${__dirname}/models/Chapter.js`);
 const ChapterProgress = require(`${__dirname}/models/ChapterProgress.js`);
+const ContentAssessment = require(`${__dirname}/models/ContentAssessment.js`);
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";
@@ -87,11 +89,12 @@ authRoutes(app, User);
 assessmentRoutes(app, User);
 
 // Setup course routes (student-facing)
-courseRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress);
+courseRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress, ContentAssessment);
 
 // Setup admin routes
 adminUserRoutes(app, User);
 adminAssessmentRoutes(app);
+adminContentAssessmentRoutes(app, Course, Lesson, Chapter, ContentAssessment);
 adminCourseRoutes(app, Course, User);
 adminEnrollmentRoutes(app, Course, Enrollment, User);
 adminLessonChapterRoutes(app, Course, Lesson, Chapter);

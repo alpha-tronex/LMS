@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CoursesService } from '@core/services/courses.service';
 import { Course } from '@models/course';
-import { ChapterOutline, LessonOutline } from '@models/course-content';
+import { ChapterOutline, ContentAssessmentAttachment, LessonOutline } from '@models/course-content';
 import { ChapterProgressStatus } from '@models/chapter-progress';
 import { LoggerService } from '@core/services/logger.service';
 
@@ -21,6 +21,7 @@ export class CourseDetailComponent implements OnInit {
   outlineLoading = true;
   outlineError = '';
   lessons: LessonOutline[] = [];
+  courseAssessments: ContentAssessmentAttachment[] = [];
 
   progressLoading = true;
   progressError = '';
@@ -64,6 +65,10 @@ export class CourseDetailComponent implements OnInit {
     this.coursesService.getCourseContent(courseId).subscribe({
       next: (tree) => {
         this.lessons = Array.isArray(tree.lessons) ? tree.lessons : [];
+        this.courseAssessments =
+          tree && tree.course && Array.isArray(tree.course.assessments)
+            ? tree.course.assessments
+            : [];
         this.outlineLoading = false;
       },
       error: (err) => {
@@ -104,6 +109,26 @@ export class CourseDetailComponent implements OnInit {
     const chapters = lesson && Array.isArray(lesson.chapters) ? lesson.chapters : [];
     if (chapters.length === 0) return false;
     return chapters.every((c) => this.isChapterCompleted(c));
+  }
+
+  isCourseReadyForFinalAssessment(): boolean {
+    const lessons = Array.isArray(this.lessons) ? this.lessons : [];
+    if (lessons.length === 0) return false;
+    return lessons.every((l) => this.isLessonCompleted(l));
+  }
+
+  openAssessment(assessmentId: number): void {
+    const id = Number(assessmentId);
+    if (!Number.isFinite(id)) return;
+
+    // After completion, return the learner back to this course.
+    this.router.navigate(['/questions'], {
+      queryParams: {
+        id,
+        returnTo: 'course',
+        returnCourseId: this.courseId,
+      },
+    });
   }
 
   openChapter(chapter: ChapterOutline): void {

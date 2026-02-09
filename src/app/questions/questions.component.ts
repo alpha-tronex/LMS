@@ -23,6 +23,11 @@ export class QuestionsComponent implements OnInit {
   resultsAccepted: boolean = false;
   startTime: number;
   elapsedTime: number = 0;
+
+  private returnTo: 'chapter' | 'course' | null = null;
+  private returnCourseId: string | null = null;
+  private returnChapterId: string | null = null;
+  private returnPage: number | null = null;
   constructor(
     private questionsService: QuestionsService,
     private router: Router,
@@ -35,6 +40,19 @@ export class QuestionsComponent implements OnInit {
     // Get assessment ID from route params
     const assessmentIdParam = this.route.snapshot.queryParams['id'];
     const id = assessmentIdParam ? parseInt(assessmentIdParam, 10) : undefined;
+
+    // Optional return target (used for chapter checkpoint / course final entry points)
+    const returnToParam = this.route.snapshot.queryParams['returnTo'];
+    if (returnToParam === 'chapter' || returnToParam === 'course') {
+      this.returnTo = returnToParam;
+    }
+    const returnCourseId = this.route.snapshot.queryParams['returnCourseId'];
+    const returnChapterId = this.route.snapshot.queryParams['returnChapterId'];
+    const returnPageParam = this.route.snapshot.queryParams['returnPage'];
+    this.returnCourseId = typeof returnCourseId === 'string' ? returnCourseId : null;
+    this.returnChapterId = typeof returnChapterId === 'string' ? returnChapterId : null;
+    const parsedPage = returnPageParam !== undefined ? Number(returnPageParam) : NaN;
+    this.returnPage = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : null;
     
     // Start timer when assessment loads
     this.startTime = Date.now();
@@ -182,15 +200,32 @@ export class QuestionsComponent implements OnInit {
     this.questionsService.saveAssessment(this.getUsername(), assessmentData).subscribe({
       next: (response) => {
         this.logger.info('Assessment saved successfully', response);
-        // Redirect to history page
-        this.router.navigate(['/history']);
+        this.navigateAfterAssessment();
       },
       error: (error) => {
         this.logger.error('Error saving assessment', error);
         // Still redirect even if save fails
-        this.router.navigate(['/history']);
+        this.navigateAfterAssessment();
       }
     });
+  }
+
+  private navigateAfterAssessment(): void {
+    if (this.returnTo === 'chapter' && this.returnCourseId && this.returnChapterId) {
+      const page = this.returnPage || 1;
+      this.router.navigate(['/courses', this.returnCourseId, 'chapters', this.returnChapterId], {
+        queryParams: { page },
+      });
+      return;
+    }
+
+    if (this.returnTo === 'course' && this.returnCourseId) {
+      this.router.navigate(['/courses', this.returnCourseId]);
+      return;
+    }
+
+    // Default legacy behavior
+    this.router.navigate(['/history']);
   }
 
   getAnswerText(question: Question, answerNum: number): string {
