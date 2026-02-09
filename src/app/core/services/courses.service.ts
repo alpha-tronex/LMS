@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { Course } from '@models/course';
 import { ChapterDetail, CourseContentTree } from '@models/course-content';
+import { ChapterProgressItem, ChapterProgressStatus } from '@models/chapter-progress';
 import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
@@ -50,6 +51,31 @@ export class CoursesService {
         return this.handleError(error);
       })
     );
+  }
+
+  getCourseProgress(courseId: string): Observable<ChapterProgressItem[]> {
+    return this.http.get<ChapterProgressItem[]>(`/api/courses/${courseId}/progress`).pipe(
+      retry(1),
+      catchError((error) => {
+        this.logger.error('Error in getCourseProgress', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  setChapterProgress(
+    courseId: string,
+    chapterId: string,
+    status: ChapterProgressStatus
+  ): Observable<ChapterProgressItem | any> {
+    return this.http
+      .post<ChapterProgressItem>(`/api/courses/${courseId}/progress`, { chapterId, status })
+      .pipe(
+        catchError((error) => {
+          this.logger.error('Error in setChapterProgress', error);
+          return this.handleError(error);
+        })
+      );
   }
 
   getChapter(chapterId: string): Observable<ChapterDetail> {

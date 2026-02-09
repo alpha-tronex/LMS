@@ -87,6 +87,17 @@
               <button class="btn btn-secondary w-100" (click)="goNext()" [disabled]="!canNext()">Next</button>
             </div>
           </div>
+
+          <div class="mt-3" *ngIf="isLastPage">
+            <button
+              class="btn btn-success w-100"
+              type="button"
+              (click)="markComplete()"
+              [disabled]="markingComplete || progressStatus === 'completed'"
+            >
+              {{ progressStatus === 'completed' ? 'Completed' : 'Mark Complete' }}
+            </button>
+          </div>
         </div>
       </div>
 

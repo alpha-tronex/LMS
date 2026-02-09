@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CoursesService } from '@core/services/courses.service';
 import { ChapterAsset, ChapterDetail, ChapterPage } from '@models/course-content';
+import { ChapterProgressStatus } from '@models/chapter-progress';
 import { LoggerService } from '@core/services/logger.service';
 
 @Component({
@@ -21,6 +22,11 @@ export class ChapterViewerComponent implements OnInit {
   chapter: ChapterDetail | null = null;
 
   pageIndex = 0; // 0-based
+
+  private progressUpdating = false;
+
+  progressStatus: ChapterProgressStatus = 'not_started';
+  markingComplete = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -55,6 +61,9 @@ export class ChapterViewerComponent implements OnInit {
       this.pageIndex = safe - 1;
       // If chapter already loaded, clamp page in case count changed
       this.clampPageIndex();
+
+      // If chapter is loaded, upsert progress based on current page
+      this.updateProgressForCurrentPage();
     });
 
     this.loadChapter();
@@ -69,11 +78,76 @@ export class ChapterViewerComponent implements OnInit {
         this.chapter = detail;
         this.loading = false;
         this.clampPageIndex();
+        this.loadProgressStatus();
+        this.updateProgressForCurrentPage();
       },
       error: (err) => {
         this.logger.error('Failed to load chapter', err);
         this.error = 'Failed to load chapter content.';
         this.loading = false;
+      },
+    });
+  }
+
+  private loadProgressStatus(): void {
+    if (!this.courseId || !this.chapterId) return;
+
+    this.coursesService.getCourseProgress(this.courseId).subscribe({
+      next: (items) => {
+        const found = (Array.isArray(items) ? items : []).find(
+          (i) => i && String(i.chapterId) === String(this.chapterId)
+        );
+        this.progressStatus = (found && found.status) || 'not_started';
+      },
+      error: (err) => {
+        // Non-blocking: status is just for UI and avoiding downgrades.
+        this.logger.error('Failed to load chapter progress status', err);
+      },
+    });
+  }
+
+  private updateProgressForCurrentPage(): void {
+    if (this.progressUpdating) return;
+    if (!this.courseId || !this.chapterId) return;
+    if (!this.chapter) return;
+
+    // Viewing a chapter should move it into in_progress, but completion is explicit.
+    // Also avoid downgrading an already-completed chapter.
+    const status: ChapterProgressStatus =
+      this.progressStatus === 'completed' ? 'completed' : 'in_progress';
+
+    this.progressUpdating = true;
+    this.coursesService.setChapterProgress(this.courseId, this.chapterId, status).subscribe({
+      next: () => {
+        this.progressStatus = status;
+        this.progressUpdating = false;
+      },
+      error: (err) => {
+        // Non-blocking: progress should not prevent viewing content.
+        this.logger.error('Failed to update chapter progress', err);
+        this.progressUpdating = false;
+      },
+    });
+  }
+
+  get isLastPage(): boolean {
+    return this.pageCount > 0 && this.currentPageNumber >= this.pageCount;
+  }
+
+  markComplete(): void {
+    if (this.markingComplete) return;
+    if (!this.courseId || !this.chapterId) return;
+    if (!this.chapter) return;
+
+    this.markingComplete = true;
+    this.coursesService.setChapterProgress(this.courseId, this.chapterId, 'completed').subscribe({
+      next: () => {
+        this.progressStatus = 'completed';
+        this.markingComplete = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to mark chapter complete', err);
+        this.markingComplete = false;
       },
     });
   }

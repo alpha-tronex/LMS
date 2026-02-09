@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CoursesService } from '@core/services/courses.service';
 import { Course } from '@models/course';
 import { ChapterOutline, LessonOutline } from '@models/course-content';
+import { ChapterProgressStatus } from '@models/chapter-progress';
 import { LoggerService } from '@core/services/logger.service';
 
 @Component({
@@ -20,6 +21,10 @@ export class CourseDetailComponent implements OnInit {
   outlineLoading = true;
   outlineError = '';
   lessons: LessonOutline[] = [];
+
+  progressLoading = true;
+  progressError = '';
+  progressByChapterId = new Map<string, ChapterProgressStatus>();
 
   constructor(
     private route: ActivatedRoute,
@@ -67,6 +72,38 @@ export class CourseDetailComponent implements OnInit {
         this.outlineLoading = false;
       },
     });
+
+    this.coursesService.getCourseProgress(courseId).subscribe({
+      next: (items) => {
+        const map = new Map<string, ChapterProgressStatus>();
+        for (const item of Array.isArray(items) ? items : []) {
+          if (!item || !item.chapterId) continue;
+          map.set(String(item.chapterId), item.status || 'not_started');
+        }
+        this.progressByChapterId = map;
+        this.progressLoading = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to load course progress', err);
+        this.progressError = 'Failed to load progress.';
+        this.progressLoading = false;
+      },
+    });
+  }
+
+  getChapterStatus(chapter: ChapterOutline): ChapterProgressStatus {
+    if (!chapter || !chapter.id) return 'not_started';
+    return this.progressByChapterId.get(String(chapter.id)) || 'not_started';
+  }
+
+  isChapterCompleted(chapter: ChapterOutline): boolean {
+    return this.getChapterStatus(chapter) === 'completed';
+  }
+
+  isLessonCompleted(lesson: LessonOutline): boolean {
+    const chapters = lesson && Array.isArray(lesson.chapters) ? lesson.chapters : [];
+    if (chapters.length === 0) return false;
+    return chapters.every((c) => this.isChapterCompleted(c));
   }
 
   openChapter(chapter: ChapterOutline): void {

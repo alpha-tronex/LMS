@@ -38,7 +38,10 @@
             <div *ngFor="let lesson of lessons" class="mb-3">
               <div class="card">
                 <div class="card-body">
-                  <h6 class="mb-1">{{ lesson.title }}</h6>
+                  <h6 class="mb-1">
+                    {{ lesson.title }}
+                    <span *ngIf="isLessonCompleted(lesson)" class="badge badge-success ml-2">Completed</span>
+                  </h6>
                   <p class="text-muted mb-2" *ngIf="lesson.description">{{ lesson.description }}</p>
                   <p class="text-muted mb-2" *ngIf="!lesson.description">No lesson description.</p>
 
@@ -47,6 +50,7 @@
                       <button type="button" class="btn btn-link p-0" (click)="openChapter(chapter)">
                         {{ chapter.title }}
                       </button>
+                      <span *ngIf="isChapterCompleted(chapter)" class="badge badge-success ml-2">Completed</span>
                     </li>
                   </ul>
 

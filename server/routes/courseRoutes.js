@@ -5,7 +5,11 @@ function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
 }
 
-module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter) {
+function isValidProgressStatus(value) {
+  return value === 'not_started' || value === 'in_progress' || value === 'completed';
+}
+
+module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress) {
   // List active courses
   app.get('/api/courses', verifyToken, async (req, res) => {
     try {
@@ -172,6 +176,154 @@ module.exports = function courseRoutes(app, Course, Enrollment, Lesson, Chapter)
         lessons: resultLessons,
       });
     } catch (err) {
+      console.log('err: ' + err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get chapter-level progress for the current user in a course
+  app.get('/api/courses/:courseId/progress', verifyToken, async (req, res) => {
+    try {
+      const userId = req.user && req.user.id;
+      const { courseId } = req.params;
+
+      if (!userId || !isValidObjectId(String(userId))) {
+        return res.status(400).json({ error: 'Invalid user id' });
+      }
+      if (!isValidObjectId(courseId)) {
+        return res.status(400).json({ error: 'Invalid courseId' });
+      }
+
+      const course = await Course.findOne({
+        _id: new mongoose.Types.ObjectId(courseId),
+        status: 'active',
+      }).lean();
+
+      if (!course) {
+        return res.status(404).json({ error: 'Course not found' });
+      }
+
+      if (!ChapterProgress) {
+        return res.status(500).json({ error: 'ChapterProgress model not configured' });
+      }
+
+      const items = await ChapterProgress.find({
+        userId: new mongoose.Types.ObjectId(String(userId)),
+        courseId: new mongoose.Types.ObjectId(courseId),
+      })
+        .sort({ updatedAt: -1 })
+        .lean();
+
+      res.status(200).json(
+        (items || []).map((p) => ({
+          chapterId: String(p.chapterId),
+          status: p.status || 'not_started',
+          updatedAt: p.updatedAt ? p.updatedAt.toISOString() : null,
+        }))
+      );
+    } catch (err) {
+      console.log('err: ' + err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Upsert chapter progress for the current user
+  app.post('/api/courses/:courseId/progress', verifyToken, async (req, res) => {
+    try {
+      const userId = req.user && req.user.id;
+      const { courseId } = req.params;
+
+      if (!userId || !isValidObjectId(String(userId))) {
+        return res.status(400).json({ error: 'Invalid user id' });
+      }
+      if (!isValidObjectId(courseId)) {
+        return res.status(400).json({ error: 'Invalid courseId' });
+      }
+
+      const chapterIdRaw = req.body && req.body.chapterId;
+      const statusRaw = req.body && req.body.status;
+      const chapterId = typeof chapterIdRaw === 'string' ? chapterIdRaw : '';
+      const status = typeof statusRaw === 'string' ? statusRaw : '';
+
+      if (!isValidObjectId(chapterId)) {
+        return res.status(400).json({ error: 'Invalid chapterId' });
+      }
+      if (!isValidProgressStatus(status)) {
+        return res.status(400).json({ error: 'Invalid status' });
+      }
+
+      const course = await Course.findOne({
+        _id: new mongoose.Types.ObjectId(courseId),
+        status: 'active',
+      }).lean();
+      if (!course) {
+        return res.status(404).json({ error: 'Course not found' });
+      }
+
+      if (!ChapterProgress) {
+        return res.status(500).json({ error: 'ChapterProgress model not configured' });
+      }
+      if (!Chapter) {
+        return res.status(500).json({ error: 'Chapter model not configured' });
+      }
+
+      const chapter = await Chapter.findOne({
+        _id: new mongoose.Types.ObjectId(chapterId),
+        courseId: new mongoose.Types.ObjectId(courseId),
+        status: 'active',
+      }).lean();
+
+      if (!chapter) {
+        return res.status(404).json({ error: 'Chapter not found' });
+      }
+
+      const now = new Date();
+      const existing = await ChapterProgress.findOne({
+        userId: new mongoose.Types.ObjectId(String(userId)),
+        chapterId: new mongoose.Types.ObjectId(chapterId),
+      }).lean();
+
+      const nextStartedAt =
+        status === 'not_started'
+          ? existing && existing.startedAt
+          : (existing && existing.startedAt) || now;
+
+      const nextCompletedAt =
+        status === 'completed'
+          ? (existing && existing.completedAt) || now
+          : null;
+
+      const updated = await ChapterProgress.findOneAndUpdate(
+        {
+          userId: new mongoose.Types.ObjectId(String(userId)),
+          chapterId: new mongoose.Types.ObjectId(chapterId),
+        },
+        {
+          $set: {
+            userId: new mongoose.Types.ObjectId(String(userId)),
+            courseId: new mongoose.Types.ObjectId(courseId),
+            lessonId: new mongoose.Types.ObjectId(String(chapter.lessonId)),
+            chapterId: new mongoose.Types.ObjectId(chapterId),
+            status,
+            startedAt: nextStartedAt,
+            completedAt: nextCompletedAt,
+            lastAccessedAt: now,
+            updatedAt: now,
+          },
+        },
+        { upsert: true, new: true }
+      ).lean();
+
+      res.status(200).json({
+        chapterId: String(updated.chapterId),
+        status: updated.status,
+        updatedAt: updated.updatedAt ? updated.updatedAt.toISOString() : null,
+      });
+    } catch (err) {
+      // Handle unique index race condition gracefully
+      if (err && err.code === 11000) {
+        return res.status(200).json({ message: 'Updated' });
+      }
       console.log('err: ' + err);
       res.status(500).json({ error: 'Internal server error' });
     }

@@ -53,6 +53,7 @@ const Course = require(`${__dirname}/models/Course.js`);
 const Enrollment = require(`${__dirname}/models/Enrollment.js`);
 const Lesson = require(`${__dirname}/models/Lesson.js`);
 const Chapter = require(`${__dirname}/models/Chapter.js`);
+const ChapterProgress = require(`${__dirname}/models/ChapterProgress.js`);
 
 // Connect to MongoDB
 const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/userDB";
@@ -86,7 +87,7 @@ authRoutes(app, User);
 assessmentRoutes(app, User);
 
 // Setup course routes (student-facing)
-courseRoutes(app, Course, Enrollment, Lesson, Chapter);
+courseRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress);
 
 // Setup admin routes
 adminUserRoutes(app, User);
