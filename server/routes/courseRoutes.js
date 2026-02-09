@@ -16,7 +16,8 @@ module.exports = function courseRoutes(
   Lesson,
   Chapter,
   ChapterProgress,
-  ContentAssessment
+  ContentAssessment,
+  User
 ) {
   // List active courses
   app.get('/api/courses', verifyToken, async (req, res) => {
@@ -329,6 +330,56 @@ module.exports = function courseRoutes(
 
       if (!chapter) {
         return res.status(404).json({ error: 'Chapter not found' });
+      }
+
+      // Milestone E: if a required chapter checkpoint assessment exists, only allow
+      // marking the chapter as completed after a passing attempt.
+      if (status === 'completed' && ContentAssessment && User) {
+        const mapping = await ContentAssessment.findOne({
+          status: 'active',
+          scopeType: 'chapter',
+          scopeId: chapterId,
+          courseId: courseId,
+          chapterId: chapterId,
+          $or: [{ isRequired: true }, { isRequired: { $exists: false } }],
+        }).lean();
+
+        if (mapping) {
+          const user = await User.findById(new mongoose.Types.ObjectId(String(userId))).lean();
+          if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+          }
+
+          const attempts = Array.isArray(user.assessments) ? user.assessments : [];
+          const passScore = mapping.passScore;
+
+          const hasPassed = attempts.some((a) => {
+            if (!a) return false;
+            if (Number(a.id) !== Number(mapping.assessmentId)) return false;
+            if (a.scopeType !== 'chapter') return false;
+            if (String(a.courseId || '') !== String(courseId)) return false;
+            if (String(a.chapterId || '') !== String(chapterId)) return false;
+            if (a.passed === true) return true;
+
+            if (!Number.isFinite(Number(passScore))) {
+              return true;
+            }
+
+            const score = Number(a.score);
+            const total = Number(a.totalQuestions);
+            if (!Number.isFinite(score) || !Number.isFinite(total) || total <= 0) return false;
+            const pct = (score / total) * 100;
+            return pct >= Number(passScore);
+          });
+
+          if (!hasPassed) {
+            return res.status(409).json({
+              error: 'Checkpoint quiz required before completing this chapter',
+              requiredAssessmentId: mapping.assessmentId,
+              passScore: mapping.passScore ?? null,
+            });
+          }
+        }
       }
 
       const now = new Date();

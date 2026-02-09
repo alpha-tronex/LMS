@@ -28,6 +28,26 @@ const userSchema = new mongoose.Schema({
     {
       id: Number,
       title: String,
+
+      // Optional scope metadata (Milestone E)
+      scopeType: {
+        type: String,
+        required: false,
+        enum: ['chapter', 'lesson', 'course'],
+      },
+      courseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: false,
+      },
+      lessonId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: false,
+      },
+      chapterId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: false,
+      },
+
       completedAt: Date,
       questions: [
         {
@@ -41,6 +61,8 @@ const userSchema = new mongoose.Schema({
       ],
       score: Number,
       totalQuestions: Number,
+      percentScore: Number,
+      passed: Boolean,
       duration: Number,
       createdAt: Date,
       updatedAt: Date,

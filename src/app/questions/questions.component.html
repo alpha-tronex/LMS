@@ -118,7 +118,7 @@
   
   <div class="container" *ngIf="!curQuestion && !submitted">
     <div class="alert alert-warning">
-      <p class="mb-0">Please check again later. Thanks.</p>
+      <p class="mb-0">{{ error || 'Please check again later. Thanks.' }}</p>
     </div>
   </div>
 </section>

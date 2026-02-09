@@ -186,6 +186,7 @@ export class ChapterViewerComponent implements OnInit {
     if (!this.chapter) return;
 
     this.markingComplete = true;
+    this.error = '';
     this.coursesService.setChapterProgress(this.courseId, this.chapterId, 'completed').subscribe({
       next: () => {
         this.progressStatus = 'completed';
@@ -193,6 +194,7 @@ export class ChapterViewerComponent implements OnInit {
       },
       error: (err) => {
         this.logger.error('Failed to mark chapter complete', err);
+        this.error = (err && (err.error || err.message)) || 'Failed to mark chapter complete.';
         this.markingComplete = false;
       },
     });

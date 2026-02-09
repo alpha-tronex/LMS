@@ -12,10 +12,12 @@ import { CourseContentManagementComponent } from './courses/course-content-manag
 import { EnrollmentManagementComponent } from './enrollments/enrollment-management/enrollment-management.component';
 import { CourseInstructorsComponent } from './courses/course-instructors/course-instructors.component';
 import { ChapterPageEditorComponent } from './courses/chapter-page-editor/chapter-page-editor.component';
+import { CourseRosterComponent } from './courses/course-roster/course-roster.component';
 
 const routes: Routes = [
   { path: '', component: AdminDashboardComponent },
   { path: 'course-management', component: CourseManagementComponent },
+  { path: 'course-roster/:courseId', component: CourseRosterComponent },
   { path: 'course-content/:courseId/chapters/:chapterId/pages/new', component: ChapterPageEditorComponent },
   { path: 'course-content/:courseId/chapters/:chapterId/pages/:pageNumber', component: ChapterPageEditorComponent },
   { path: 'course-content/:courseId', component: CourseContentManagementComponent },

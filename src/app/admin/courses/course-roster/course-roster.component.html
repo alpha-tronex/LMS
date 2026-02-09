@@ -1,0 +1,71 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Course Roster</h2>
+      <div class="btn-group" role="group">
+        <a class="btn btn-outline-light btn-sm" [routerLink]="['/courses', courseId]">
+          <i class="fas fa-external-link-alt"></i> View Course
+        </a>
+        <button class="btn btn-outline-light btn-sm" (click)="backToCourses()">
+          <i class="fas fa-arrow-left"></i> Back to Courses
+        </button>
+      </div>
+    </div>
+
+    <div class="card text-dark mb-4">
+      <div class="card-body text-start">
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+
+        <div *ngIf="loadingCourse" class="text-center py-3">
+          <p>Loading course...</p>
+        </div>
+
+        <div *ngIf="!loadingCourse" class="mb-2">
+          <h5 class="mb-1">{{ course?.title || ('Course ' + courseId) }}</h5>
+          <p class="text-muted mb-0">{{ course?.description || '—' }}</p>
+          <small class="text-muted">Status: {{ course?.status || '—' }}</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card text-dark">
+      <div class="card-header bg-secondary text-white text-start">
+        <h5 class="mb-0"><i class="fas fa-users"></i> Enrolled Students</h5>
+      </div>
+      <div class="card-body">
+        <div *ngIf="loadingRoster" class="text-center py-3">
+          <p>Loading roster...</p>
+        </div>
+
+        <div *ngIf="!loadingRoster && enrollments.length === 0" class="py-3 text-muted text-start">
+          <em>No enrolled students found.</em>
+        </div>
+
+        <div class="table-responsive" *ngIf="!loadingRoster && enrollments.length > 0">
+          <table class="table table-sm table-striped text-start">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Enrolled</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of enrollments">
+                <td>{{ row.username }}</td>
+                <td>{{ (row.fname + ' ' + row.lname).trim() }}</td>
+                <td>{{ row.email }}</td>
+                <td>{{ formatDate(row.enrolledAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

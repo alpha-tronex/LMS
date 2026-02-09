@@ -24,6 +24,8 @@ export class QuestionsComponent implements OnInit {
   startTime: number;
   elapsedTime: number = 0;
 
+  error: string = '';
+
   private returnTo: 'chapter' | 'course' | null = null;
   private returnCourseId: string | null = null;
   private returnChapterId: string | null = null;
@@ -56,8 +58,15 @@ export class QuestionsComponent implements OnInit {
     
     // Start timer when assessment loads
     this.startTime = Date.now();
-    
-    this.questionsService.getAssessment(id).subscribe({
+
+    const scope =
+      this.returnTo === 'chapter' && this.returnCourseId && this.returnChapterId
+        ? { scopeType: 'chapter' as const, courseId: this.returnCourseId, chapterId: this.returnChapterId }
+        : this.returnTo === 'course' && this.returnCourseId
+          ? { scopeType: 'course' as const, courseId: this.returnCourseId }
+          : null;
+
+    this.questionsService.getAssessment(id, scope || undefined).subscribe({
       next: (data: Quiz) => {
         this.assessment = data as Quiz;
         if (this.assessment && this.assessment.questions.length > 0) {
@@ -65,7 +74,10 @@ export class QuestionsComponent implements OnInit {
           this.setQuestionType();
         }
       },
-      error: (error) => this.logger.error('Error fetching questions', error)
+      error: (error) => {
+        this.logger.error('Error fetching questions', error);
+        this.error = (error && (error.error || error.message)) || 'Failed to load assessment.';
+      },
     });
     this.logger.debug('QuestionsComponent initialized');
   }
@@ -183,6 +195,14 @@ export class QuestionsComponent implements OnInit {
       id: this.assessment.id,
       title: this.assessment.title,
       completedAt: new Date(),
+      scopeType:
+        this.returnTo === 'chapter'
+          ? 'chapter'
+          : this.returnTo === 'course'
+            ? 'course'
+            : undefined,
+      courseId: this.returnCourseId || undefined,
+      chapterId: this.returnChapterId || undefined,
       questions: this.assessment.questions.map(q => ({
         questionNum: q.questionNum,
         question: q.question,

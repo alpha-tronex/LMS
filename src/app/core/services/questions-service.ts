@@ -15,8 +15,19 @@ export class QuestionsService {
     this.http = http;
   }
 
-  getAssessment(assessmentId?: number): Observable<Quiz> {
-    const url = assessmentId !== undefined ? `/api/assessment?id=${assessmentId}` : '/api/assessment';
+  getAssessment(
+    assessmentId?: number,
+    scope?: { scopeType: 'chapter' | 'lesson' | 'course'; courseId: string; lessonId?: string | null; chapterId?: string | null }
+  ): Observable<Quiz> {
+    const params: string[] = [];
+    if (assessmentId !== undefined) params.push(`id=${encodeURIComponent(String(assessmentId))}`);
+    if (scope) {
+      params.push(`scopeType=${encodeURIComponent(scope.scopeType)}`);
+      params.push(`courseId=${encodeURIComponent(scope.courseId)}`);
+      if (scope.lessonId) params.push(`lessonId=${encodeURIComponent(scope.lessonId)}`);
+      if (scope.chapterId) params.push(`chapterId=${encodeURIComponent(scope.chapterId)}`);
+    }
+    const url = params.length > 0 ? `/api/assessment?${params.join('&')}` : '/api/assessment';
     return this.http.get<Quiz>(url).pipe(
       retry(3),
       catchError((error) => {

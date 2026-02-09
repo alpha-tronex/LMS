@@ -86,10 +86,10 @@ mongoose.connection.once('open', async () => {
 authRoutes(app, User);
 
 // Setup assessment routes (student-facing)
-assessmentRoutes(app, User);
+assessmentRoutes(app, User, ContentAssessment);
 
 // Setup course routes (student-facing)
-courseRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress, ContentAssessment);
+courseRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress, ContentAssessment, User);
 
 // Setup admin routes
 adminUserRoutes(app, User);

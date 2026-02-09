@@ -41,7 +41,7 @@ Notes:
 Notes:
 - Chapter completion is explicit via a "Mark Complete" action (no auto-complete on last page).
 
-## Milestone D — Attach assessments by scope
+## ``Milestone D — Attach assessments by scope``
 **Status:** DONE
 - [x] Mongo: add `content_assessments` mapping (chapter/lesson/course)
 - [x] Backend: attach/detach endpoints for chapter/lesson/course
@@ -53,11 +53,10 @@ Notes (agreed rules):
 - Course final assessment: max 2 attempts; 80% required to pass the course.
 
 ## Milestone E — Attempts + history across scopes
-**Status:** NOT STARTED
-Next up: enforce pass thresholds + attempt limits per scope, then extend submissions/history to include scope IDs.
-- [ ] Submission: include `courseId`/`lessonId`/`chapterId` in attempt payload
-- [ ] History: show attempts grouped by course + scope (simple)
-- [ ] Admin: roster view per course
+**Status:** DONE
+- [x] Submission: include `courseId`/`lessonId`/`chapterId` in attempt payload
+- [x] History: show attempts grouped by course + scope (simple)
+- [x] Admin: roster view per course
 
 ## Milestone F — Archiving everywhere
 **Status:** PARTIAL

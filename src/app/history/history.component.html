@@ -17,29 +17,35 @@
           You haven't taken any assessments yet.
         </div>
 
-        <div *ngIf="!loading && !error && assessments.length > 0" class="table-responsive">
-          <table class="table table-striped table-hover">
-            <thead class="table-light">
-              <tr>
-                <th>Assessment Title</th>
-                <th>Date Completed</th>
-                <th>Score</th>
-                <th>Total Questions</th>
-                <th>Percentage</th>
-                <th>Time Taken</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let assessment of assessments">
-                <td>{{ assessment.title }}</td>
-                <td>{{ formatDate(assessment.completedAt) }}</td>
-                <td>{{ assessment.score }}</td>
-                <td>{{ assessment.totalQuestions }}</td>
-                <td>{{ ((assessment.score / assessment.totalQuestions) * 100).toFixed(1) }}%</td>
-                <td>{{ formatDuration(assessment.duration) }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div *ngIf="!loading && !error && assessments.length > 0">
+          <div *ngFor="let group of groupedAssessments; trackBy: trackGroup" class="mb-4">
+            <h5 class="text-start mb-2">{{ group.label }}</h5>
+
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Assessment Title</th>
+                    <th>Date Completed</th>
+                    <th>Score</th>
+                    <th>Total Questions</th>
+                    <th>Percentage</th>
+                    <th>Time Taken</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let assessment of group.attempts">
+                    <td>{{ assessment.title }}</td>
+                    <td>{{ formatDate(assessment.completedAt) }}</td>
+                    <td>{{ assessment.score }}</td>
+                    <td>{{ assessment.totalQuestions }}</td>
+                    <td>{{ getPercent(assessment) }}</td>
+                    <td>{{ formatDuration(assessment.duration) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
