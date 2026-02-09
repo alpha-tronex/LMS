@@ -28,6 +28,45 @@
           <h5 class="mb-1">{{ course.title }}</h5>
           <p class="text-muted mb-0">{{ course.description || '—' }}</p>
           <small class="text-muted">Status: {{ course.status }}</small>
+
+          <div class="mt-3">
+            <h6 class="mb-2">Course Assessment</h6>
+            <div class="row align-items-end">
+              <div class="col-md-7 mb-2">
+                <label class="form-label"><strong>Assessment</strong></label>
+                <select
+                  class="form-select"
+                  [(ngModel)]="selectedAssessmentIdByScopeKey['course:' + courseId]"
+                  [disabled]="saving || availableAssessmentsLoading || course.status === 'archived'">
+                  <option [ngValue]="null">— Select —</option>
+                  <option *ngFor="let a of availableAssessments" [ngValue]="a.id">
+                    {{ a.id }} — {{ a.title }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-5 mb-2">
+                <div class="btn-group" role="group">
+                  <button
+                    class="btn btn-primary btn-sm"
+                    (click)="attachAssessment('course', courseId)"
+                    [disabled]="saving || availableAssessmentsLoading || course.status === 'archived'">
+                    Attach/Replace
+                  </button>
+                  <button
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="detachAssessment('course', courseId)"
+                    [disabled]="saving || !getActiveMapping('course', courseId)">
+                    Archive Mapping
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <small class="text-muted" *ngIf="getActiveMapping('course', courseId) as m">
+              Attached: {{ m.assessmentId }}<span *ngIf="getAssessmentTitle(m.assessmentId)"> — {{ getAssessmentTitle(m.assessmentId) }}</span>
+            </small>
+            <small class="text-muted" *ngIf="!getActiveMapping('course', courseId)">Attached: —</small>
+          </div>
         </div>
 
         <div *ngIf="!course" class="alert alert-info mb-0">
@@ -97,8 +136,19 @@
                     <button *ngIf="isEditingLesson(lesson)" class="btn btn-outline-secondary btn-sm" (click)="cancelEditLesson()" [disabled]="saving">
                       Cancel
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" (click)="archiveLesson(lesson)" [disabled]="saving || lesson.status === 'archived'">
+                    <button
+                      *ngIf="lesson.status !== 'archived'"
+                      class="btn btn-outline-danger btn-sm"
+                      (click)="archiveLesson(lesson)"
+                      [disabled]="saving">
                       <i class="fas fa-archive"></i> Archive
+                    </button>
+                    <button
+                      *ngIf="lesson.status === 'archived'"
+                      class="btn btn-outline-success btn-sm"
+                      (click)="unarchiveLesson(lesson)"
+                      [disabled]="saving">
+                      <i class="fas fa-box-open"></i> Unarchive
                     </button>
                   </div>
                 </div>
@@ -123,6 +173,44 @@
                 <div *ngIf="!isEditingLesson(lesson)" class="mb-3">
                   <div class="text-muted">Sort: {{ lesson.sortOrder }}</div>
                   <div class="text-muted">{{ lesson.description || '—' }}</div>
+                </div>
+
+                <div class="mb-3">
+                  <h6 class="mb-2">Lesson Assessment</h6>
+                  <div class="row align-items-end">
+                    <div class="col-md-7 mb-2">
+                      <select
+                        class="form-select form-select-sm"
+                        [(ngModel)]="selectedAssessmentIdByScopeKey['lesson:' + lesson.id]"
+                        [disabled]="saving || availableAssessmentsLoading || lesson.status === 'archived'">
+                        <option [ngValue]="null">— Select —</option>
+                        <option *ngFor="let a of availableAssessments" [ngValue]="a.id">
+                          {{ a.id }} — {{ a.title }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-md-5 mb-2">
+                      <div class="btn-group" role="group">
+                        <button
+                          class="btn btn-primary btn-sm"
+                          (click)="attachAssessment('lesson', lesson.id)"
+                          [disabled]="saving || availableAssessmentsLoading || lesson.status === 'archived'">
+                          Attach/Replace
+                        </button>
+                        <button
+                          class="btn btn-outline-danger btn-sm"
+                          (click)="detachAssessment('lesson', lesson.id)"
+                          [disabled]="saving || !getActiveMapping('lesson', lesson.id)">
+                          Archive
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <small class="text-muted" *ngIf="getActiveMapping('lesson', lesson.id) as lm">
+                    Attached: {{ lm.assessmentId }}<span *ngIf="getAssessmentTitle(lm.assessmentId)"> — {{ getAssessmentTitle(lm.assessmentId) }}</span>
+                  </small>
+                  <small class="text-muted" *ngIf="!getActiveMapping('lesson', lesson.id)">Attached: —</small>
                 </div>
 
                 <hr />
@@ -158,7 +246,8 @@
                         <th style="width: 38%">Title</th>
                         <th style="width: 10%">Sort</th>
                         <th style="width: 12%">Status</th>
-                        <th style="width: 40%">Actions</th>
+                        <th style="width: 20%">Assessment</th>
+                        <th style="width: 20%">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -178,6 +267,38 @@
                             </span>
                           </td>
                           <td>
+                            <div class="mb-1">
+                              <small class="text-muted" *ngIf="getActiveMapping('chapter', chapter.id) as cm">
+                                {{ cm.assessmentId }}<span *ngIf="getAssessmentTitle(cm.assessmentId)"> — {{ getAssessmentTitle(cm.assessmentId) }}</span>
+                              </small>
+                              <small class="text-muted" *ngIf="!getActiveMapping('chapter', chapter.id)">—</small>
+                            </div>
+
+                            <div class="d-flex">
+                              <select
+                                class="form-select form-select-sm me-1"
+                                [(ngModel)]="selectedAssessmentIdByScopeKey['chapter:' + chapter.id]"
+                                [disabled]="saving || availableAssessmentsLoading || chapter.status === 'archived'">
+                                <option [ngValue]="null">— Select —</option>
+                                <option *ngFor="let a of availableAssessments" [ngValue]="a.id">
+                                  {{ a.id }} — {{ a.title }}
+                                </option>
+                              </select>
+                              <button
+                                class="btn btn-primary btn-sm me-1"
+                                (click)="attachAssessment('chapter', chapter.id)"
+                                [disabled]="saving || availableAssessmentsLoading || chapter.status === 'archived'">
+                                Attach
+                              </button>
+                              <button
+                                class="btn btn-outline-danger btn-sm"
+                                (click)="detachAssessment('chapter', chapter.id)"
+                                [disabled]="saving || !getActiveMapping('chapter', chapter.id)">
+                                Archive
+                              </button>
+                            </div>
+                          </td>
+                          <td>
                             <div class="btn-group" role="group">
                               <button class="btn btn-outline-secondary btn-sm" (click)="openContentEditor(chapter)" [disabled]="saving || chapter.status === 'archived'">
                                 <i class="fas fa-file-upload"></i> Content
@@ -191,8 +312,19 @@
                               <button *ngIf="isEditingChapter(chapter)" class="btn btn-outline-secondary btn-sm" (click)="cancelEditChapter()" [disabled]="saving">
                                 Cancel
                               </button>
-                              <button class="btn btn-outline-danger btn-sm" (click)="archiveChapter(lesson.id, chapter)" [disabled]="saving || chapter.status === 'archived'">
+                              <button
+                                *ngIf="chapter.status !== 'archived'"
+                                class="btn btn-outline-danger btn-sm"
+                                (click)="archiveChapter(lesson.id, chapter)"
+                                [disabled]="saving">
                                 <i class="fas fa-archive"></i> Archive
+                              </button>
+                              <button
+                                *ngIf="chapter.status === 'archived'"
+                                class="btn btn-outline-success btn-sm"
+                                (click)="unarchiveChapter(lesson.id, chapter)"
+                                [disabled]="saving">
+                                <i class="fas fa-box-open"></i> Unarchive
                               </button>
                             </div>
                           </td>
@@ -206,6 +338,57 @@
           </div>
         </div>
 
+      </div>
+    </div>
+
+    <div class="card text-dark mt-4">
+      <div class="card-header bg-dark text-white text-start">
+        <h5 class="mb-0"><i class="fas fa-clipboard-list"></i> Assessment Mappings</h5>
+      </div>
+      <div class="card-body text-start">
+        <div *ngIf="mappingsLoading" class="text-center py-2">
+          <p class="mb-0">Loading mappings...</p>
+        </div>
+
+        <div *ngIf="!mappingsLoading && (!contentAssessmentMappings || contentAssessmentMappings.length === 0)" class="alert alert-light mb-0">
+          No mappings.
+        </div>
+
+        <div *ngIf="!mappingsLoading && contentAssessmentMappings && contentAssessmentMappings.length > 0" class="table-responsive">
+          <table class="table table-sm table-striped align-middle">
+            <thead>
+              <tr>
+                <th style="width: 12%">Scope</th>
+                <th style="width: 38%">Name</th>
+                <th style="width: 20%">Assessment</th>
+                <th style="width: 15%">Status</th>
+                <th style="width: 15%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of contentAssessmentMappings">
+                <td>{{ m.scopeType }}</td>
+                <td>{{ mappingScopeLabel(m) }}</td>
+                <td>
+                  {{ m.assessmentId }}
+                  <span *ngIf="getAssessmentTitle(m.assessmentId)"> — {{ getAssessmentTitle(m.assessmentId) }}</span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="m.status === 'active' ? 'bg-success' : 'bg-secondary'">{{ m.status }}</span>
+                </td>
+                <td>
+                  <button
+                    *ngIf="m.status === 'archived'"
+                    class="btn btn-outline-success btn-sm"
+                    (click)="unarchiveAssessmentMapping(m)"
+                    [disabled]="saving || getActiveMapping(m.scopeType, m.scopeId)">
+                    Unarchive
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

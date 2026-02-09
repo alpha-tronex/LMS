@@ -59,12 +59,12 @@ Notes (agreed rules):
 - [x] Admin: roster view per course
 
 ## Milestone F — Archiving everywhere
-**Status:** PARTIAL
+**Status:** DONE
 Next up: once Milestone D exists, archive/unarchive assessments by toggling mapping status and hide archived assessments in student entry points.
 - [x] Courses: archive instead of delete
 - [x] Enrollments: withdraw instead of delete
 - [x] Lessons/chapters: archive instead of delete
-- [ ] Assessments: archive via mapping status
+- [x] Assessments: archive via mapping status
 - [x] Student views hide archived content
 
 Notes:

@@ -39,11 +39,80 @@ export interface ChapterDetail {
   content: any;
 }
 
+export type ContentAssessmentScopeType = 'chapter' | 'lesson' | 'course';
+
+export interface AdminContentAssessmentMapping {
+  id: string;
+  scopeType: ContentAssessmentScopeType;
+  scopeId: string;
+  courseId: string;
+  lessonId: string | null;
+  chapterId: string | null;
+  assessmentId: number;
+  isRequired: boolean;
+  passScore: number | null;
+  maxAttempts: number | null;
+  status: 'active' | 'archived';
+  archivedAt: string | null;
+  updatedAt: string | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AdminContentService {
   constructor(private http: HttpClient, private logger: LoggerService) {}
+
+  listContentAssessmentMappings(
+    courseId?: string,
+    includeArchived = true
+  ): Observable<AdminContentAssessmentMapping[]> {
+    const q = includeArchived ? '?includeArchived=1' : '?includeArchived=0';
+    const courseFilter = courseId ? `&courseId=${encodeURIComponent(String(courseId))}` : '';
+    return this.http
+      .get<AdminContentAssessmentMapping[]>(`/api/admin/content-assessments${q}${courseFilter}`)
+      .pipe(
+        retry(1),
+        catchError((error) => {
+          this.logger.error('Error in listContentAssessmentMappings', error);
+          return this.handleError(error);
+        })
+      );
+  }
+
+  attachContentAssessmentMapping(payload: {
+    scopeType: ContentAssessmentScopeType;
+    scopeId: string;
+    assessmentId: number;
+  }): Observable<any> {
+    return this.http.post<any>('/api/admin/content-assessments/attach', payload).pipe(
+      catchError((error) => {
+        this.logger.error('Error in attachContentAssessmentMapping', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  detachContentAssessmentMapping(payload: {
+    scopeType: ContentAssessmentScopeType;
+    scopeId: string;
+  }): Observable<any> {
+    return this.http.post<any>('/api/admin/content-assessments/detach', payload).pipe(
+      catchError((error) => {
+        this.logger.error('Error in detachContentAssessmentMapping', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  unarchiveContentAssessmentMapping(mappingId: string): Observable<any> {
+    return this.http.post<any>(`/api/admin/content-assessments/${mappingId}/unarchive`, {}).pipe(
+      catchError((error) => {
+        this.logger.error('Error in unarchiveContentAssessmentMapping', error);
+        return this.handleError(error);
+      })
+    );
+  }
 
   listLessons(courseId: string, includeArchived = true): Observable<AdminLesson[]> {
     const q = includeArchived ? '?includeArchived=1' : '';
@@ -89,6 +158,15 @@ export class AdminContentService {
     );
   }
 
+  unarchiveLesson(lessonId: string): Observable<any> {
+    return this.http.post<any>(`/api/admin/lessons/${lessonId}/unarchive`, {}).pipe(
+      catchError((error) => {
+        this.logger.error('Error in unarchiveLesson', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
   listChapters(lessonId: string, includeArchived = true): Observable<AdminChapter[]> {
     const q = includeArchived ? '?includeArchived=1' : '';
     return this.http.get<AdminChapter[]>(`/api/admin/lessons/${lessonId}/chapters${q}`).pipe(
@@ -128,6 +206,15 @@ export class AdminContentService {
     return this.http.post<any>(`/api/admin/chapters/${chapterId}/archive`, {}).pipe(
       catchError((error) => {
         this.logger.error('Error in archiveChapter', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  unarchiveChapter(chapterId: string): Observable<any> {
+    return this.http.post<any>(`/api/admin/chapters/${chapterId}/unarchive`, {}).pipe(
+      catchError((error) => {
+        this.logger.error('Error in unarchiveChapter', error);
         return this.handleError(error);
       })
     );

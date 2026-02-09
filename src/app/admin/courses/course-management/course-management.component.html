@@ -54,6 +54,7 @@
                 <th style="width: 22%">Title</th>
                 <th>Description</th>
                 <th style="width: 10%">Status</th>
+                <th style="width: 26%">Course Assessment</th>
                 <th style="width: 22%">Actions</th>
               </tr>
             </thead>
@@ -71,6 +72,60 @@
                   <span class="badge" [ngClass]="course.status === 'active' ? 'bg-success' : 'bg-secondary'">
                     {{ course.status }}
                   </span>
+                </td>
+                <td>
+                  <div class="mb-1">
+                    <small class="text-muted" *ngIf="getCourseMapping(course.id) as m">
+                      Attached: {{ m.assessmentId }}
+                      <span *ngIf="getAssessmentTitle(m.assessmentId)"> — {{ getAssessmentTitle(m.assessmentId) }}</span>
+                    </small>
+                    <small class="text-muted" *ngIf="!getCourseMapping(course.id)">Attached: —</small>
+                  </div>
+
+                  <div class="d-flex">
+                    <select
+                      class="form-select form-select-sm me-1"
+                      [(ngModel)]="selectedCourseAssessmentId[course.id]"
+                      [disabled]="saving || availableAssessmentsLoading || course.status === 'archived'">
+                      <option [ngValue]="null">— Select —</option>
+                      <option *ngFor="let a of availableAssessments" [ngValue]="a.id">
+                        {{ a.id }} — {{ a.title }}
+                      </option>
+                    </select>
+                    <button
+                      class="btn btn-primary btn-sm me-1"
+                      (click)="attachCourseAssessment(course)"
+                      [disabled]="saving || availableAssessmentsLoading || course.status === 'archived'">
+                      Attach
+                    </button>
+                    <button
+                      class="btn btn-outline-danger btn-sm"
+                      (click)="archiveCourseAssessment(course)"
+                      [disabled]="saving || !getCourseMapping(course.id)">
+                      Archive
+                    </button>
+                  </div>
+
+                  <div class="mt-2" *ngIf="getArchivedCourseMappings(course.id).length > 0">
+                    <small class="text-muted d-block mb-1">Archived mappings:</small>
+                    <div *ngFor="let am of getArchivedCourseMappings(course.id)" class="d-flex align-items-center mb-1">
+                      <span class="badge bg-secondary me-2">archived</span>
+                      <small class="text-muted me-2">
+                        {{ am.assessmentId }}
+                        <span *ngIf="getAssessmentTitle(am.assessmentId)"> — {{ getAssessmentTitle(am.assessmentId) }}</span>
+                      </small>
+                      <button
+                        class="btn btn-outline-success btn-sm"
+                        (click)="unarchiveCourseAssessmentMapping(course, am)"
+                        [disabled]="saving || course.status === 'archived' || !!getCourseMapping(course.id)">
+                        Unarchive
+                      </button>
+                    </div>
+
+                    <small class="text-muted" *ngIf="getCourseMapping(course.id)">
+                      Unarchive disabled while an active mapping exists.
+                    </small>
+                  </div>
                 </td>
                 <td>
                   <div class="btn-group" role="group">
@@ -96,8 +151,19 @@
                     <button *ngIf="isEditing(course)" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()" [disabled]="saving">
                       Cancel
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" (click)="archiveCourse(course)" [disabled]="saving || course.status === 'archived'">
+                    <button
+                      *ngIf="course.status !== 'archived'"
+                      class="btn btn-outline-danger btn-sm"
+                      (click)="archiveCourse(course)"
+                      [disabled]="saving">
                       <i class="fas fa-archive"></i> Archive
+                    </button>
+                    <button
+                      *ngIf="course.status === 'archived'"
+                      class="btn btn-outline-success btn-sm"
+                      (click)="unarchiveCourse(course)"
+                      [disabled]="saving">
+                      <i class="fas fa-box-open"></i> Unarchive
                     </button>
                   </div>
                 </td>

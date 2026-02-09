@@ -29,6 +29,79 @@ module.exports = function adminContentAssessmentRoutes(
   Chapter,
   ContentAssessment
 ) {
+  // Unarchive a previously archived mapping by id.
+  app.post(
+    '/api/admin/content-assessments/:mappingId/unarchive',
+    verifyToken,
+    verifyAdminOrInstructor,
+    async (req, res) => {
+      try {
+        if (!ContentAssessment) {
+          return res.status(500).json({ error: 'ContentAssessment model not configured' });
+        }
+
+        const mappingId = req.params && req.params.mappingId;
+        if (!isValidObjectId(String(mappingId))) {
+          return res.status(400).json({ error: 'Invalid mappingId' });
+        }
+
+        const archived = await ContentAssessment.findOne({
+          _id: new mongoose.Types.ObjectId(String(mappingId)),
+          status: 'archived',
+        }).lean();
+
+        if (!archived) {
+          return res.status(404).json({ error: 'Archived mapping not found' });
+        }
+
+        // Prevent multiple active mappings for a single scope.
+        const existingActive = await ContentAssessment.findOne({
+          scopeType: archived.scopeType,
+          scopeId: archived.scopeId,
+          status: 'active',
+        }).lean();
+
+        if (existingActive) {
+          return res.status(409).json({
+            error: 'An active mapping already exists for this scope',
+            activeMappingId: String(existingActive._id),
+          });
+        }
+
+        const now = new Date();
+        const updated = await ContentAssessment.findOneAndUpdate(
+          { _id: new mongoose.Types.ObjectId(String(mappingId)), status: 'archived' },
+          {
+            $set: {
+              status: 'active',
+              archivedAt: null,
+              updatedAt: now,
+            },
+          },
+          { new: true }
+        ).lean();
+
+        return res.status(200).json({
+          message: 'Mapping unarchived',
+          id: String(updated._id),
+          scopeType: updated.scopeType,
+          scopeId: String(updated.scopeId),
+          courseId: String(updated.courseId),
+          lessonId: updated.lessonId ? String(updated.lessonId) : null,
+          chapterId: updated.chapterId ? String(updated.chapterId) : null,
+          assessmentId: updated.assessmentId,
+          isRequired: !!updated.isRequired,
+          passScore: updated.passScore ?? null,
+          maxAttempts: updated.maxAttempts ?? null,
+          status: updated.status,
+        });
+      } catch (err) {
+        console.log('err: ' + err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+  );
+
   // Attach (or replace) an active assessment mapping for a scope.
   app.post(
     '/api/admin/content-assessments/attach',
@@ -235,12 +308,23 @@ module.exports = function adminContentAssessmentRoutes(
         }
 
         const courseId = req.query && req.query.courseId;
+        const includeArchivedRaw = req.query && req.query.includeArchived;
+        const statusParam = req.query && req.query.status;
         const q = {};
         if (courseId !== undefined) {
           if (!isValidObjectId(String(courseId))) {
             return res.status(400).json({ error: 'Invalid courseId' });
           }
           q.courseId = new mongoose.Types.ObjectId(String(courseId));
+        }
+
+        if (typeof statusParam === 'string' && statusParam.length > 0) {
+          if (statusParam !== 'active' && statusParam !== 'archived') {
+            return res.status(400).json({ error: 'Invalid status' });
+          }
+          q.status = statusParam;
+        } else if (includeArchivedRaw === '0' || includeArchivedRaw === 0 || includeArchivedRaw === false) {
+          q.status = 'active';
         }
 
         const items = await ContentAssessment.find(q).sort({ updatedAt: -1 }).lean();

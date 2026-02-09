@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminCourse, AdminCourseService } from '@admin/services/admin-course.service';
+import { AdminAssessmentService } from '@admin/services/admin-assessment.service';
+import {
+  AdminContentAssessmentMapping,
+  AdminContentService,
+} from '@admin/services/admin-content.service';
 import { LoggerService } from '@core/services/logger.service';
 
 @Component({
@@ -28,8 +33,18 @@ export class CourseManagementComponent implements OnInit {
   editTitle = '';
   editDescription = '';
 
+  // Milestone F: course assessment mapping
+  availableAssessments: Array<{ id: number; title: string }> = [];
+  availableAssessmentsLoading = false;
+  mappingsLoading = false;
+  courseMappingsByCourseId = new Map<string, AdminContentAssessmentMapping>();
+  archivedCourseMappingsByCourseId = new Map<string, AdminContentAssessmentMapping[]>();
+  selectedCourseAssessmentId: Record<string, number | null> = {};
+
   constructor(
     private adminCourseService: AdminCourseService,
+    private adminContentService: AdminContentService,
+    private adminAssessmentService: AdminAssessmentService,
     private logger: LoggerService
   ) {}
 
@@ -56,7 +71,172 @@ export class CourseManagementComponent implements OnInit {
       return;
     }
 
+    this.loadAvailableAssessments();
+    this.loadCourseAssessmentMappings();
     this.loadCourses();
+  }
+
+  private loadAvailableAssessments(): void {
+    this.availableAssessmentsLoading = true;
+    this.adminAssessmentService.getAvailableAssessments().subscribe({
+      next: (items) => {
+        const list = Array.isArray(items) ? items : [];
+        this.availableAssessments = list
+          .map((a) => ({ id: Number(a && a.id), title: String((a && a.title) || '') }))
+          .filter((a) => Number.isFinite(a.id) && a.title.length > 0)
+          .sort((a, b) => a.id - b.id);
+        this.availableAssessmentsLoading = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to load available assessments', err);
+        this.availableAssessments = [];
+        this.availableAssessmentsLoading = false;
+      },
+    });
+  }
+
+  private loadCourseAssessmentMappings(): void {
+    this.mappingsLoading = true;
+    // Load archived too so admins can unarchive older mappings
+    this.adminContentService.listContentAssessmentMappings(undefined, true).subscribe({
+      next: (items) => {
+        const map = new Map<string, AdminContentAssessmentMapping>();
+        const archivedByCourseId = new Map<string, AdminContentAssessmentMapping[]>();
+        for (const m of Array.isArray(items) ? items : []) {
+          if (!m) continue;
+          if (m.scopeType !== 'course') continue;
+
+          const courseId = String(m.scopeId);
+          if (m.status === 'active') {
+            map.set(courseId, m);
+            continue;
+          }
+
+          if (m.status === 'archived') {
+            const arr = archivedByCourseId.get(courseId) || [];
+            arr.push(m);
+            archivedByCourseId.set(courseId, arr);
+          }
+        }
+
+        // Sort archived mappings by most-recent first (best-effort).
+        for (const [courseId, arr] of archivedByCourseId.entries()) {
+          arr.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+          archivedByCourseId.set(courseId, arr);
+        }
+
+        this.courseMappingsByCourseId = map;
+        this.archivedCourseMappingsByCourseId = archivedByCourseId;
+        this.mappingsLoading = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to load course assessment mappings', err);
+        this.courseMappingsByCourseId = new Map();
+        this.archivedCourseMappingsByCourseId = new Map();
+        this.mappingsLoading = false;
+      },
+    });
+  }
+
+  getCourseMapping(courseId: string): AdminContentAssessmentMapping | null {
+    return this.courseMappingsByCourseId.get(String(courseId)) || null;
+  }
+
+  getArchivedCourseMappings(courseId: string): AdminContentAssessmentMapping[] {
+    return this.archivedCourseMappingsByCourseId.get(String(courseId)) || [];
+  }
+
+  getAssessmentTitle(assessmentId: number): string {
+    const id = Number(assessmentId);
+    const found = (Array.isArray(this.availableAssessments) ? this.availableAssessments : []).find(
+      (a) => a && Number(a.id) === id
+    );
+    return found ? found.title : '';
+  }
+
+  attachCourseAssessment(course: AdminCourse): void {
+    if (!course) return;
+    if (course.status === 'archived') return;
+
+    const selected = this.selectedCourseAssessmentId[String(course.id)];
+    const assessmentId = Number(selected);
+    if (!Number.isFinite(assessmentId)) {
+      this.error = 'Please select an assessment to attach.';
+      return;
+    }
+
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminContentService
+      .attachContentAssessmentMapping({ scopeType: 'course', scopeId: course.id, assessmentId })
+      .subscribe({
+        next: () => {
+          this.messageType = 'success';
+          this.message = 'Course assessment attached.';
+          this.saving = false;
+          this.loadCourseAssessmentMappings();
+        },
+        error: (err) => {
+          this.logger.error('Failed to attach course assessment mapping', err);
+          this.error = 'Failed to attach course assessment.';
+          this.saving = false;
+        },
+      });
+  }
+
+  archiveCourseAssessment(course: AdminCourse): void {
+    if (!course) return;
+
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminContentService
+      .detachContentAssessmentMapping({ scopeType: 'course', scopeId: course.id })
+      .subscribe({
+        next: () => {
+          this.messageType = 'success';
+          this.message = 'Course assessment mapping archived.';
+          this.saving = false;
+          this.loadCourseAssessmentMappings();
+        },
+        error: (err) => {
+          this.logger.error('Failed to archive course assessment mapping', err);
+          this.error = 'Failed to archive course assessment mapping.';
+          this.saving = false;
+        },
+      });
+  }
+
+  unarchiveCourseAssessmentMapping(course: AdminCourse, mapping: AdminContentAssessmentMapping): void {
+    if (!course || !mapping) return;
+    if (mapping.status !== 'archived') return;
+    if (course.status === 'archived') return;
+
+    if (this.getCourseMapping(course.id)) {
+      this.error = 'Cannot unarchive: an active course assessment mapping already exists.';
+      return;
+    }
+
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminContentService.unarchiveContentAssessmentMapping(mapping.id).subscribe({
+      next: () => {
+        this.messageType = 'success';
+        this.message = 'Course assessment mapping unarchived.';
+        this.saving = false;
+        this.loadCourseAssessmentMappings();
+      },
+      error: (err) => {
+        this.logger.error('Failed to unarchive course assessment mapping', err);
+        this.error = 'Failed to unarchive course assessment mapping.';
+        this.saving = false;
+      },
+    });
   }
 
   loadCourses(): void {
@@ -171,6 +351,30 @@ export class CourseManagementComponent implements OnInit {
       error: (err) => {
         this.logger.error('Failed to archive course', err);
         this.error = 'Failed to archive course.';
+        this.saving = false;
+      },
+    });
+  }
+
+  unarchiveCourse(course: AdminCourse): void {
+    if (!course || course.status !== 'archived') return;
+
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminCourseService.unarchiveCourse(course.id).subscribe({
+      next: () => {
+        this.courses = this.courses.map((c) =>
+          c.id === course.id ? { ...c, status: 'active' } : c
+        );
+        this.messageType = 'success';
+        this.message = 'Course unarchived.';
+        this.saving = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to unarchive course', err);
+        this.error = 'Failed to unarchive course.';
         this.saving = false;
       },
     });

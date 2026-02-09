@@ -268,6 +268,42 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
     }
   );
 
+  // Unarchive lesson (also unarchives its chapters)
+  app.post(
+    '/api/admin/lessons/:lessonId/unarchive',
+    verifyToken,
+    verifyAdminOrInstructor,
+    async (req, res) => {
+      try {
+        const { lessonId } = req.params;
+        if (!isValidObjectId(lessonId)) {
+          return res.status(400).json({ error: 'Invalid lessonId' });
+        }
+
+        const now = new Date();
+        const updated = await Lesson.findByIdAndUpdate(
+          new mongoose.Types.ObjectId(lessonId),
+          { $set: { status: 'active', updatedAt: now } },
+          { new: true }
+        ).lean();
+
+        if (!updated) {
+          return res.status(404).json({ error: 'Lesson not found' });
+        }
+
+        await Chapter.updateMany(
+          { lessonId: new mongoose.Types.ObjectId(lessonId) },
+          { $set: { status: 'active', updatedAt: now } }
+        );
+
+        res.status(200).json({ message: 'Unarchived', lessonId: String(lessonId) });
+      } catch (err) {
+        console.log('err: ' + err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+  );
+
   // Create chapter under lesson
   app.post(
     '/api/admin/lessons/:lessonId/chapters',
@@ -474,6 +510,36 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
         }
 
         res.status(200).json({ message: 'Archived', chapterId: String(chapterId) });
+      } catch (err) {
+        console.log('err: ' + err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  // Unarchive chapter
+  app.post(
+    '/api/admin/chapters/:chapterId/unarchive',
+    verifyToken,
+    verifyAdminOrInstructor,
+    async (req, res) => {
+      try {
+        const { chapterId } = req.params;
+        if (!isValidObjectId(chapterId)) {
+          return res.status(400).json({ error: 'Invalid chapterId' });
+        }
+
+        const updated = await Chapter.findByIdAndUpdate(
+          new mongoose.Types.ObjectId(chapterId),
+          { $set: { status: 'active', updatedAt: new Date() } },
+          { new: true }
+        ).lean();
+
+        if (!updated) {
+          return res.status(404).json({ error: 'Chapter not found' });
+        }
+
+        res.status(200).json({ message: 'Unarchived', chapterId: String(chapterId) });
       } catch (err) {
         console.log('err: ' + err);
         res.status(500).json({ error: 'Internal server error' });

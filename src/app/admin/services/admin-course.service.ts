@@ -67,6 +67,15 @@ export class AdminCourseService {
     );
   }
 
+  unarchiveCourse(courseId: string): Observable<any> {
+    return this.http.post<any>(`/api/admin/courses/${courseId}/unarchive`, {}).pipe(
+      catchError((error) => {
+        this.logger.error('Error in unarchiveCourse', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
   getCourseInstructors(courseId: string): Observable<CourseInstructorAssignment> {
     return this.http.get<CourseInstructorAssignment>(`/api/admin/courses/${courseId}/instructors`).pipe(
       catchError((error) => {

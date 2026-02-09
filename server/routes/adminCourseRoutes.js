@@ -160,6 +160,36 @@ module.exports = function adminCourseRoutes(app, Course, User) {
     }
   );
 
+  // Unarchive course
+  app.post(
+    '/api/admin/courses/:courseId/unarchive',
+    verifyToken,
+    verifyAdminOrInstructor,
+    async (req, res) => {
+      try {
+        const { courseId } = req.params;
+        if (!isValidObjectId(courseId)) {
+          return res.status(400).json({ error: 'Invalid courseId' });
+        }
+
+        const updated = await Course.findByIdAndUpdate(
+          new mongoose.Types.ObjectId(courseId),
+          { $set: { status: 'active', updatedAt: new Date() } },
+          { new: true }
+        ).lean();
+
+        if (!updated) {
+          return res.status(404).json({ error: 'Course not found' });
+        }
+
+        res.status(200).json({ message: 'Unarchived', courseId: String(courseId) });
+      } catch (err) {
+        console.log('err: ' + err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    }
+  );
+
   // List courses (includes archived)
   app.get('/api/admin/courses', verifyToken, verifyAdminOrInstructor, async (req, res) => {
     try {

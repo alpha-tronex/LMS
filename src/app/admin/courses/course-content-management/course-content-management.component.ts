@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminCourse, AdminCourseService } from '@admin/services/admin-course.service';
+import { AdminAssessmentService } from '@admin/services/admin-assessment.service';
 import {
   AdminChapter,
+  AdminContentAssessmentMapping,
   AdminContentService,
+  ContentAssessmentScopeType,
   AdminLesson,
   UploadedAsset,
 } from '@admin/services/admin-content.service';
@@ -28,6 +31,13 @@ export class CourseContentManagementComponent implements OnInit {
   error = '';
   message = '';
   messageType: MessageType = 'success';
+
+  // Milestone F: assessment mappings (content_assessments)
+  availableAssessments: Array<{ id: number; title: string }> = [];
+  availableAssessmentsLoading = false;
+  mappingsLoading = false;
+  contentAssessmentMappings: AdminContentAssessmentMapping[] = [];
+  selectedAssessmentIdByScopeKey: Record<string, number | null> = {};
 
   // Create lesson
   newLessonTitle = '';
@@ -72,6 +82,7 @@ export class CourseContentManagementComponent implements OnInit {
     private router: Router,
     private adminCourseService: AdminCourseService,
     private adminContentService: AdminContentService,
+    private adminAssessmentService: AdminAssessmentService,
     private logger: LoggerService
   ) {}
 
@@ -104,7 +115,166 @@ export class CourseContentManagementComponent implements OnInit {
     }
 
     this.courseId = id;
+
+    this.loadAvailableAssessments();
+    this.loadContentAssessmentMappings();
     this.loadAll();
+  }
+
+  private scopeKey(scopeType: ContentAssessmentScopeType, scopeId: string): string {
+    return `${scopeType}:${String(scopeId)}`;
+  }
+
+  private loadAvailableAssessments(): void {
+    this.availableAssessmentsLoading = true;
+    this.adminAssessmentService.getAvailableAssessments().subscribe({
+      next: (items) => {
+        const list = Array.isArray(items) ? items : [];
+        this.availableAssessments = list
+          .map((a) => ({ id: Number(a && a.id), title: String((a && a.title) || '') }))
+          .filter((a) => Number.isFinite(a.id) && a.title.length > 0)
+          .sort((a, b) => a.id - b.id);
+        this.availableAssessmentsLoading = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to load available assessments', err);
+        this.availableAssessments = [];
+        this.availableAssessmentsLoading = false;
+      },
+    });
+  }
+
+  private loadContentAssessmentMappings(): void {
+    if (!this.courseId) return;
+    this.mappingsLoading = true;
+    this.adminContentService.listContentAssessmentMappings(this.courseId, true).subscribe({
+      next: (items) => {
+        this.contentAssessmentMappings = Array.isArray(items) ? items : [];
+        this.mappingsLoading = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to load content assessment mappings', err);
+        this.contentAssessmentMappings = [];
+        this.mappingsLoading = false;
+      },
+    });
+  }
+
+  getActiveMapping(scopeType: ContentAssessmentScopeType, scopeId: string): AdminContentAssessmentMapping | null {
+    const sid = String(scopeId);
+    const found = (Array.isArray(this.contentAssessmentMappings) ? this.contentAssessmentMappings : []).find(
+      (m) => m && m.status === 'active' && m.scopeType === scopeType && String(m.scopeId) === sid
+    );
+    return found || null;
+  }
+
+  getAssessmentTitle(assessmentId: number): string {
+    const id = Number(assessmentId);
+    const found = (Array.isArray(this.availableAssessments) ? this.availableAssessments : []).find(
+      (a) => a && Number(a.id) === id
+    );
+    return found ? found.title : '';
+  }
+
+  attachAssessment(scopeType: ContentAssessmentScopeType, scopeId: string): void {
+    const key = this.scopeKey(scopeType, scopeId);
+    const selected = this.selectedAssessmentIdByScopeKey[key];
+    const assessmentId = Number(selected);
+    if (!Number.isFinite(assessmentId)) {
+      this.error = 'Please select an assessment to attach.';
+      return;
+    }
+
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminContentService
+      .attachContentAssessmentMapping({ scopeType, scopeId, assessmentId })
+      .subscribe({
+        next: () => {
+          this.messageType = 'success';
+          this.message = 'Assessment mapping attached.';
+          this.saving = false;
+          this.loadContentAssessmentMappings();
+        },
+        error: (err) => {
+          this.logger.error('Failed to attach assessment mapping', err);
+          this.error = 'Failed to attach assessment mapping.';
+          this.saving = false;
+        },
+      });
+  }
+
+  detachAssessment(scopeType: ContentAssessmentScopeType, scopeId: string): void {
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminContentService.detachContentAssessmentMapping({ scopeType, scopeId }).subscribe({
+      next: () => {
+        this.messageType = 'success';
+        this.message = 'Assessment mapping archived.';
+        this.saving = false;
+        this.loadContentAssessmentMappings();
+      },
+      error: (err) => {
+        this.logger.error('Failed to detach assessment mapping', err);
+        this.error = 'Failed to archive assessment mapping.';
+        this.saving = false;
+      },
+    });
+  }
+
+  unarchiveAssessmentMapping(mapping: AdminContentAssessmentMapping): void {
+    if (!mapping || mapping.status !== 'archived') return;
+
+    // Guard: backend will also reject, but keep UX clear.
+    const existing = this.getActiveMapping(mapping.scopeType, mapping.scopeId);
+    if (existing) {
+      this.error = 'Cannot unarchive: an active mapping already exists for this scope.';
+      return;
+    }
+
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminContentService.unarchiveContentAssessmentMapping(mapping.id).subscribe({
+      next: () => {
+        this.messageType = 'success';
+        this.message = 'Assessment mapping unarchived.';
+        this.saving = false;
+        this.loadContentAssessmentMappings();
+      },
+      error: (err) => {
+        this.logger.error('Failed to unarchive assessment mapping', err);
+        this.error = 'Failed to unarchive assessment mapping.';
+        this.saving = false;
+      },
+    });
+  }
+
+  mappingScopeLabel(mapping: AdminContentAssessmentMapping): string {
+    if (!mapping) return '';
+    if (mapping.scopeType === 'course') {
+      return this.course ? this.course.title : this.courseId;
+    }
+    if (mapping.scopeType === 'lesson') {
+      const lesson = (Array.isArray(this.lessons) ? this.lessons : []).find(
+        (l) => l && String(l.id) === String(mapping.scopeId)
+      );
+      return lesson ? lesson.title : String(mapping.scopeId);
+    }
+    const lesson = (Array.isArray(this.lessons) ? this.lessons : []).find(
+      (l) => l && Array.isArray(l.chapters) && l.chapters.some((c) => c && String(c.id) === String(mapping.scopeId))
+    );
+    const chapter = lesson
+      ? (Array.isArray(lesson.chapters) ? lesson.chapters : []).find(
+          (c) => c && String(c.id) === String(mapping.scopeId)
+        )
+      : null;
+    return chapter ? chapter.title : String(mapping.scopeId);
   }
 
   loadAll(): void {
@@ -303,6 +473,37 @@ export class CourseContentManagementComponent implements OnInit {
     });
   }
 
+  unarchiveLesson(lesson: AdminLesson): void {
+    if (!lesson || lesson.status !== 'archived') return;
+
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminContentService.unarchiveLesson(lesson.id).subscribe({
+      next: () => {
+        this.lessons = this.lessons.map((l) =>
+          l.id === lesson.id ? { ...l, status: 'active' } : l
+        );
+
+        // Mirror backend behavior (lesson unarchive also unarchives its chapters)
+        const target = this.lessons.find((l) => l.id === lesson.id);
+        if (target && Array.isArray(target.chapters)) {
+          target.chapters = target.chapters.map((c) => ({ ...c, status: 'active' }));
+        }
+
+        this.messageType = 'success';
+        this.message = 'Lesson unarchived.';
+        this.saving = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to unarchive lesson', err);
+        this.error = 'Failed to unarchive lesson.';
+        this.saving = false;
+      },
+    });
+  }
+
   isEditingLesson(lesson: AdminLesson): boolean {
     return this.editingLessonId === lesson.id;
   }
@@ -435,6 +636,33 @@ export class CourseContentManagementComponent implements OnInit {
       error: (err) => {
         this.logger.error('Failed to archive chapter', err);
         this.error = 'Failed to archive chapter.';
+        this.saving = false;
+      },
+    });
+  }
+
+  unarchiveChapter(lessonId: string, chapter: AdminChapter): void {
+    if (!chapter || chapter.status !== 'archived') return;
+
+    this.saving = true;
+    this.error = '';
+    this.message = '';
+
+    this.adminContentService.unarchiveChapter(chapter.id).subscribe({
+      next: () => {
+        const target = this.lessons.find((l) => l.id === lessonId);
+        if (target) {
+          target.chapters = (target.chapters || []).map((c) =>
+            c.id === chapter.id ? { ...c, status: 'active' } : c
+          );
+        }
+        this.messageType = 'success';
+        this.message = 'Chapter unarchived.';
+        this.saving = false;
+      },
+      error: (err) => {
+        this.logger.error('Failed to unarchive chapter', err);
+        this.error = 'Failed to unarchive chapter.';
         this.saving = false;
       },
     });
