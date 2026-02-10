@@ -1,29 +1,3 @@
-.quiz-list {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.quiz-list h3 {
-  color: white;
-  font-weight: 600;
-}
-
-.quiz-link {
-  font-size: 1.1rem;
-  padding: 1rem 1.5rem;
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  color: #212529;
-  font-weight: 500;
-}
-
-.quiz-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  color: #0d6efd;
-}
-
 /* Dashboard Styles */
 .stat-card {
   transition: all 0.3s ease;

@@ -19,7 +19,7 @@ export class BreadcrumbComponent implements OnInit {
   private routeLabels: { [key: string]: string } = {
     'home': 'Home',
     'account': 'My Account',
-    'history': 'Assessment History',
+    'history': 'Learning History',
     'login': 'Login',
     'register': 'Register',
     'questions': 'Take Assessment',

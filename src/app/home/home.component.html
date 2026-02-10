@@ -1,229 +1,117 @@
-<!-- Masthead-->
 <section class="masthead bg-primary text-white text-center">
-
-  <!-- Welcome Section (for non-logged in users) -->
-  <section class="page-section" *ngIf="!getUsername()">
+  <section class="page-section">
     <div class="container">
       <h2 class="page-section-heading text-center text-uppercase text-white mb-4">Welcome to LMS</h2>
 
-      <!-- Icon Divider-->
       <div class="divider-custom divider-light">
         <div class="divider-custom-line"></div>
         <div class="divider-custom-icon"><i class="fas fa-graduation-cap"></i></div>
         <div class="divider-custom-line"></div>
       </div>
 
-      <div class="row">
-        <!-- Features Cards -->
-        <div class="col-md-4 mb-4">
-          <div class="card h-100 text-center border-primary">
-            <div class="card-body">
-              <div class="feature-icon mb-3">
-                <i class="fas fa-clipboard-list fa-4x text-primary"></i>
-              </div>
-              <h4 class="card-title">Interactive Assessments</h4>
-              <p class="card-text">Test your knowledge with our comprehensive collection of interactive assessments covering
-                various topics.</p>
-            </div>
-          </div>
-        </div>
+      <p class="lead mb-4">
+        Browse courses, enroll, complete chapters, and finish your final assessment to earn completion.
+      </p>
 
-        <div class="col-md-4 mb-4">
-          <div class="card h-100 text-center border-success">
-            <div class="card-body">
-              <div class="feature-icon mb-3">
-                <i class="fas fa-chart-line fa-4x text-success"></i>
-              </div>
-              <h4 class="card-title">Track Progress</h4>
-              <p class="card-text">Monitor your learning journey with detailed statistics and performance tracking.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-          <div class="card h-100 text-center border-info">
-            <div class="card-body">
-              <div class="feature-icon mb-3">
-                <i class="fas fa-trophy fa-4x text-info"></i>
-              </div>
-              <h4 class="card-title">Improve Skills</h4>
-              <p class="card-text">Enhance your knowledge and skills through continuous practice and instant feedback.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div class="d-flex justify-content-center gap-3 mb-4" *ngIf="!loggedIn">
+        <a [routerLink]="['/register']" class="btn btn-light btn-lg">
+          <i class="fas fa-user-plus"></i> Register
+        </a>
+        <a [routerLink]="['/login']" class="btn btn-outline-light btn-lg">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </a>
       </div>
 
-      <!-- CTA Section -->
-      <div class="row mt-5">
-        <div class="col-12">
-          <div class="card bg-primary text-white">
-            <div class="card-body text-center py-5">
-              <h3 class="mb-4">Ready to Start Learning?</h3>
-              <p class="lead mb-4">Join LMS today and begin your educational journey!</p>
-              <div class="d-flex justify-content-center gap-3">
-                <a [routerLink]="['/register']" class="btn btn-light btn-lg">
-                  <i class="fas fa-user-plus"></i> Register Now
-                </a>
-                <a [routerLink]="['/login']" class="btn btn-outline-light btn-lg">
-                  <i class="fas fa-sign-in-alt"></i> Login
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+      <div class="card text-dark">
+        <div class="card-body">
+          <h4 class="mb-3" *ngIf="loggedIn">Welcome back, {{ username }}.</h4>
+          <h4 class="mb-3" *ngIf="!loggedIn">Get started.</h4>
 
-  <!-- Dashboard Section (for logged in users) -->
-  <section class="page-section" *ngIf="getUsername()">
-    <div class="container">
-      <h2 class="page-section-heading text-center text-uppercase text-white mb-4">LMS Dashboard</h2>
+          <div *ngIf="loggedIn" class="mb-3">
+            <div *ngIf="myCoursesLoading" class="text-muted">Loading your course summary...</div>
+            <div *ngIf="myCoursesError" class="alert alert-danger">{{ myCoursesError }}</div>
 
-      <!-- Icon Divider-->
-      <div class="divider-custom divider-light">
-        <div class="divider-custom-line"></div>
-        <div class="divider-custom-icon"><i class="fas fa-chart-line"></i></div>
-        <div class="divider-custom-line"></div>
-      </div>
-
-      <!-- Loading Spinner -->
-      <div *ngIf="loadingStats" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-
-      <!-- Dashboard Stats -->
-      <div *ngIf="!loadingStats">
-        <!-- Stats Cards Row -->
-        <div class="row mb-5">
-          <!-- Total Assessments Available -->
-          <div class="col-md-4 mb-3">
-            <div class="card stat-card h-100 border-primary">
-              <div class="card-body text-center">
-                <div class="stat-icon mb-3">
-                  <i class="fas fa-file-alt fa-3x text-primary"></i>
-                </div>
-                <h3 class="stat-number text-primary">{{ totalAssessments }}</h3>
-                <p class="stat-label text-muted mb-0">Available Assessments</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Completed Assessments -->
-          <div class="col-md-4 mb-3">
-            <div class="card stat-card h-100 border-success">
-              <div class="card-body text-center">
-                <div class="stat-icon mb-3">
-                  <i class="fas fa-check-circle fa-3x text-success"></i>
-                </div>
-                <h3 class="stat-number text-success">{{ completedAssessments }}</h3>
-                <p class="stat-label text-muted mb-0">Completed Assessments</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Average Score -->
-          <div class="col-md-4 mb-3">
-            <div class="card stat-card h-100 border-warning">
-              <div class="card-body text-center">
-                <div class="stat-icon mb-3">
-                  <i class="fas fa-star fa-3x text-warning"></i>
-                </div>
-                <h3 class="stat-number text-warning">{{ averageScore }}%</h3>
-                <p class="stat-label text-muted mb-0">Average Score</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="row">
-          <div class="col-12">
-            <div class="card">
-              <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Activity</h5>
-              </div>
-              <div class="card-body">
-                <div *ngIf="recentAssessments.length === 0" class="text-center text-muted py-4">
-                  <i class="fas fa-inbox fa-3x mb-3"></i>
-                  <p>No assessment attempts yet. Start an assessment to see your activity here!</p>
-                </div>
-
-                <div *ngIf="recentAssessments.length > 0" class="table-responsive">
-                  <table class="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>Assessment</th>
-                        <th>Score</th>
-                        <th>Percentage</th>
-                        <th>Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let assessment of recentAssessments">
-                        <td><strong>{{ assessment.title }}</strong></td>
-                        <td>{{ assessment.score }} / {{ assessment.totalQuestions }}</td>
-                        <td>
-                          <span class="badge" [ngClass]="{
-                                'bg-success': assessment.percentage >= 80,
-                                'bg-warning text-dark': assessment.percentage >= 60 && assessment.percentage < 80,
-                                'bg-danger': assessment.percentage < 60
-                              }">
-                            {{ assessment.percentage }}%
-                          </span>
-                        </td>
-                        <td>{{ assessment.completedAt | date: 'short' }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div *ngIf="completedAssessments > 3" class="text-center mt-3">
-                  <a [routerLink]="['/history']" class="btn btn-outline-primary">
-                    View Full History <i class="fas fa-arrow-right"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row mt-4">
-          <div class="col-12">
-            <div class="card bg-light">
-              <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h5>
-
-                <!-- Assessment Selector -->
-                <div class="mb-3">
-                  <label for="quizSelect" class="form-label fw-bold">Select an Assessment</label>
-                  <div class="input-group">
-                    <input type="text" class="form-control" id="quizSelect" list="quizList"
-                      [(ngModel)]="selectedAssessmentTitle" (input)="onAssessmentInput()" placeholder="Choose an assessment..."
-                      [style.width.px]="inputWidth">
-                    <datalist id="quizList">
-                      <option *ngFor="let assessment of availableAssessments" [value]="assessment.title">
-                        {{ assessment.title }}
-                      </option>
-                    </datalist>
-                    <button class="btn btn-success" (click)="startSelectedAssessment()" [disabled]="!isValidAssessmentSelected()">
-                      <i class="fas fa-play"></i> Start Assessment
-                    </button>
+            <div *ngIf="!myCoursesLoading && !myCoursesError" class="row mb-3">
+              <div class="col-md-6 mb-2">
+                <div class="card stat-card h-100 border-primary">
+                  <div class="card-body text-center">
+                    <div class="stat-icon mb-2"><i class="fas fa-book fa-2x text-primary"></i></div>
+                    <div class="stat-number text-primary">{{ enrolledCount }}</div>
+                    <div class="stat-label text-muted">Enrolled Courses</div>
                   </div>
                 </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="card stat-card h-100 border-success">
+                  <div class="card-body text-center">
+                    <div class="stat-icon mb-2"><i class="fas fa-check-circle fa-2x text-success"></i></div>
+                    <div class="stat-number text-success">{{ completedCount }}</div>
+                    <div class="stat-label text-muted">Completed Courses</div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                <!-- Other Actions -->
-                <div class="d-flex flex-wrap gap-2">
-                  <a [routerLink]="['/history']" class="btn btn-outline-secondary">
-                    <i class="fas fa-history"></i> View History
-                  </a>
-                  <a [routerLink]="['/account']" class="btn btn-outline-secondary">
-                    <i class="fas fa-user"></i> My Account
-                  </a>
+            <div *ngIf="!myCoursesLoading && !myCoursesError && myCourses.length > 0" class="mb-3">
+              <h6 class="text-muted mb-2">Recently enrolled</h6>
+              <div class="row">
+                <div class="col-md-4 mb-2" *ngFor="let c of myCourses">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <strong>{{ c.title }}</strong>
+                        <span *ngIf="c.courseCompleted" class="badge badge-success ml-2">Completed</span>
+                      </div>
+                      <div class="small text-muted" *ngIf="c.enrolledAt">Enrolled: {{ c.enrolledAt | date: 'short' }}</div>
+                    </div>
+                    <div class="card-footer bg-white">
+                      <a class="btn btn-outline-primary btn-sm" [routerLink]="['/courses', c.id]">Open</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h5 class="card-title mb-3"><i class="fas fa-bolt"></i> Quick Links</h5>
+
+          <div class="row">
+            <div class="col-md-6 col-lg-3 mb-3">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-search fa-2x mb-2 text-primary"></i>
+                  <h6>Browse Courses</h6>
+                  <a [routerLink]="['/courses']" class="btn btn-outline-primary btn-sm">Open</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-3">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-list-check fa-2x mb-2 text-success"></i>
+                  <h6>My Courses</h6>
+                  <a [routerLink]="['/my-courses']" class="btn btn-outline-success btn-sm">Open</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-3">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-user fa-2x mb-2 text-info"></i>
+                  <h6>Account</h6>
+                  <a [routerLink]="['/account']" class="btn btn-outline-info btn-sm">Open</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 mb-3" *ngIf="isAdmin">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <i class="fas fa-user-shield fa-2x mb-2 text-dark"></i>
+                  <h6>Admin Dashboard</h6>
+                  <a [routerLink]="['/admin']" class="btn btn-outline-dark btn-sm">Open</a>
                 </div>
               </div>
             </div>

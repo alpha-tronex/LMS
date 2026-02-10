@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CoursesService } from '@core/services/courses.service';
 import { QuestionsService } from '@core/services/questions-service';
-import { LoginService } from '@core/services/login-service';
 import { LoggerService } from '@core/services/logger.service';
 
 @Component({
@@ -32,24 +31,32 @@ export class HistoryComponent implements OnInit {
   constructor(
     private coursesService: CoursesService,
     private questionsService: QuestionsService,
-    private loginService: LoginService,
     private logger: LoggerService
   ) {}
 
   ngOnInit() {
-    // Check if user is logged in using localStorage
-    if (localStorage.getItem('currentUser')) {
-      this.username = this.loginService.userName;
-      if (this.username) {
-        this.loadAssessmentHistory();
-      } else {
-        this.error = 'Unable to retrieve user information';
-        this.loading = false;
-      }
-    } else {
-      this.error = 'Please login to view your assessment history';
+    const currentUserRaw = localStorage.getItem('currentUser');
+    if (!currentUserRaw) {
+      this.error = 'Please log in to view your learning history.';
       this.loading = false;
+      return;
     }
+
+    try {
+      const currentUser = JSON.parse(currentUserRaw);
+      const uname = currentUser && (currentUser.uname || currentUser.username);
+      this.username = typeof uname === 'string' ? uname : '';
+    } catch {
+      this.username = '';
+    }
+
+    if (!this.username) {
+      this.error = 'Unable to retrieve user information.';
+      this.loading = false;
+      return;
+    }
+
+    this.loadAssessmentHistory();
   }
 
   loadAssessmentHistory() {
@@ -61,8 +68,8 @@ export class HistoryComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        this.logger.error('Error loading assessment history', error);
-        this.error = 'Failed to load assessment history';
+        this.logger.error('Error loading learning history', error);
+        this.error = 'Failed to load learning history.';
         this.loading = false;
       }
     });
@@ -216,20 +223,20 @@ export class HistoryComponent implements OnInit {
     lessonId: string | null;
     chapterId: string | null;
   }): string {
-    if (!group || group.scopeType === 'unscoped') return 'Other Attempts';
+    if (!group || group.scopeType === 'unscoped') return 'Other Activity';
 
     const courseTitle = group.courseId ? this.courseTitleById.get(String(group.courseId)) : undefined;
     const coursePart = courseTitle ? courseTitle : group.courseId ? `Course ${group.courseId}` : 'Course';
-    if (group.scopeType === 'course') return `${coursePart} — Final Assessment`;
+    if (group.scopeType === 'course') return `${coursePart} — Course Assessment`;
     if (group.scopeType === 'lesson') {
       const lessonTitle = group.lessonId ? this.lessonTitleById.get(String(group.lessonId)) : undefined;
       const lessonPart = lessonTitle ? lessonTitle : group.lessonId ? `Lesson ${group.lessonId}` : 'Lesson';
-      return `${coursePart} — ${lessonPart}`;
+      return `${coursePart} — Lesson: ${lessonPart}`;
     }
     if (group.scopeType === 'chapter') {
       const chapterTitle = group.chapterId ? this.chapterTitleById.get(String(group.chapterId)) : undefined;
       const chapterPart = chapterTitle ? chapterTitle : group.chapterId ? `Chapter ${group.chapterId}` : 'Chapter';
-      return `${coursePart} — ${chapterPart}`;
+      return `${coursePart} — Chapter: ${chapterPart}`;
     }
     return coursePart;
   }
