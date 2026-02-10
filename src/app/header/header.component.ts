@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginService } from '@core/services/login-service';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'app-header',
@@ -19,6 +20,8 @@ import { LoginService } from '@core/services/login-service';
 })
 export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription: any;
+
+  welcomeShort = environment.welcomeShort;
 
   quizSubmenuOpen = false;
   coursesSubmenuOpen = false;

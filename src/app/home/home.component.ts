@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CoursesService } from '@core/services/courses.service';
 import { LoggerService } from '@core/services/logger.service';
 import { Course } from '@models/course';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'app-home',
@@ -13,6 +14,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   loggedIn = false;
   username = '';
   isAdmin = false;
+
+  welcomeShort = environment.welcomeShort;
 
   myCoursesLoading = false;
   myCoursesError = '';

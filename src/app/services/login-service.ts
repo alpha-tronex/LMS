@@ -4,11 +4,12 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { User } from '@models/users';
 import { UserRole } from '@models/user-role';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class LoginService {
   //loggedInStudentChange: Subject<User> = new Subject<User>();
-  welcomePhrase: string = 'Welcome to LMS. Please log in or register to get started!';
+  welcomePhrase: string = environment.welcomeLoginPrompt;
   user: User;
   http: HttpClient;
   loggedIn: boolean = false;

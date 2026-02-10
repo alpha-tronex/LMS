@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'app-footer',
@@ -8,9 +9,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class FooterComponent implements OnInit {
   currentYear: number = new Date().getFullYear();
-  aboutText: string = `Sadaqah Jariyah for my mother and my father and 
-                       all mothers and fathers who are no longer with us 
-                       who instilled beneficial knowledge in their children.`;
+  aboutText: string = environment.aboutText;
+  aboutMessage: string = environment.aboutMessage;
+
   constructor() { }
 
   ngOnInit() {
