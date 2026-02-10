@@ -4,4 +4,5 @@ export interface Course {
   description: string;
   enrolledAt?: string | null;
   courseCompleted?: boolean;
+  courseInProgress?: boolean;
 }

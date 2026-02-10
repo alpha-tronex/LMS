@@ -68,6 +68,49 @@ module.exports = function courseRoutes(
 
       const courseById = new Map(courses.map((c) => [String(c._id), c]));
 
+      // Pre-compute progress signals across all enrolled courses.
+      const progressCourseIds = new Set();
+      if (ChapterProgress && courseIds && courseIds.length > 0) {
+        try {
+          const progressItems = await ChapterProgress.find({
+            userId: new mongoose.Types.ObjectId(String(userId)),
+            courseId: { $in: courseIds },
+            $or: [
+              { status: 'in_progress' },
+              { status: 'completed' },
+              { startedAt: { $exists: true, $ne: null } },
+              { lastAccessedAt: { $exists: true, $ne: null } },
+              { completedAt: { $exists: true, $ne: null } },
+            ],
+          })
+            .select({ courseId: 1 })
+            .lean();
+
+          for (const p of progressItems || []) {
+            if (p && p.courseId) progressCourseIds.add(String(p.courseId));
+          }
+        } catch (e) {
+          // Non-blocking: we can still compute completion.
+        }
+      }
+
+      const attemptCourseIds = new Set();
+      if (User) {
+        try {
+          const user = await User.findById(new mongoose.Types.ObjectId(String(userId)))
+            .select({ assessments: 1 })
+            .lean();
+          const attempts = user && Array.isArray(user.assessments) ? user.assessments : [];
+          for (const a of attempts) {
+            if (!a) continue;
+            if (!a.courseId) continue;
+            attemptCourseIds.add(String(a.courseId));
+          }
+        } catch (e) {
+          // Non-blocking
+        }
+      }
+
       const results = enrollments
         .map((e) => {
           const course = courseById.get(String(e.courseId));
@@ -97,8 +140,12 @@ module.exports = function courseRoutes(
             });
 
             item.courseCompleted = !!(completion && completion.ok && completion.completed);
+            item.courseInProgress =
+              !item.courseCompleted &&
+              (progressCourseIds.has(String(item.id)) || attemptCourseIds.has(String(item.id)));
           } catch (e) {
             item.courseCompleted = false;
+            item.courseInProgress = false;
           }
         })
       );

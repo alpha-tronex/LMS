@@ -13,6 +13,7 @@ export class CourseCatalogComponent implements OnInit {
   courses: Course[] = [];
   enrolledCourseIds = new Set<string>();
   completedCourseIds = new Set<string>();
+  inProgressCourseIds = new Set<string>();
 
   loading = true;
   error = '';
@@ -55,6 +56,9 @@ export class CourseCatalogComponent implements OnInit {
         const items = myCourses || [];
         this.enrolledCourseIds = new Set(items.map((c) => c.id));
         this.completedCourseIds = new Set(items.filter((c) => !!c.courseCompleted).map((c) => c.id));
+        this.inProgressCourseIds = new Set(
+          items.filter((c) => !c.courseCompleted && !!c.courseInProgress).map((c) => c.id)
+        );
         this.loading = false;
       },
       error: (err) => {
@@ -73,6 +77,10 @@ export class CourseCatalogComponent implements OnInit {
     return this.completedCourseIds.has(courseId);
   }
 
+  isInProgress(courseId: string): boolean {
+    return this.inProgressCourseIds.has(courseId);
+  }
+
   enroll(courseId: string): void {
     this.coursesService.enroll(courseId).subscribe({
       next: () => {
@@ -89,6 +97,8 @@ export class CourseCatalogComponent implements OnInit {
     this.coursesService.withdraw(courseId).subscribe({
       next: () => {
         this.enrolledCourseIds.delete(courseId);
+        this.completedCourseIds.delete(courseId);
+        this.inProgressCourseIds.delete(courseId);
       },
       error: (err) => {
         this.logger.error('Withdraw failed', err);

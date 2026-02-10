@@ -27,6 +27,7 @@
                 <h5 class="card-title">
                   {{ course.title }}
                   <span *ngIf="course.courseCompleted" class="badge badge-success ml-2">Completed</span>
+                  <span *ngIf="!course.courseCompleted && course.courseInProgress" class="badge badge-info ml-2">In Progress</span>
                 </h5>
                 <p class="card-text" *ngIf="course.description">{{ course.description }}</p>
                 <p class="card-text text-muted" *ngIf="!course.description">No description provided.</p>
