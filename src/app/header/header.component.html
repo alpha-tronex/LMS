@@ -23,7 +23,21 @@
                   <div *ngIf="isStrictAdmin()" class="dropdown-divider"></div>
                   <a *ngIf="isStrictAdmin()" class="dropdown-item" [routerLink]="['admin/user-management']" (click)="collapseNavbar()"><i class="fas fa-users"></i> Users</a>
                   <div *ngIf="isStrictAdmin()" class="dropdown-divider"></div>
-                  <a class="dropdown-item" [routerLink]="['admin/course-management']" (click)="collapseNavbar()"><i class="fas fa-book"></i> Courses</a>
+                  <div class="dropdown-submenu">
+                    <a
+                      class="dropdown-item dropdown-toggle"
+                      href="#"
+                      tabindex="-1"
+                      [attr.aria-expanded]="coursesSubmenuOpen"
+                      (click)="toggleCoursesSubmenu($event)">
+                      <i class="fas fa-book"></i> Courses
+                    </a>
+                    <div class="dropdown-menu" [class.show]="coursesSubmenuOpen">
+                      <a class="dropdown-item" [routerLink]="['admin/course-management']" (click)="collapseNavbar()"><i class="fas fa-list"></i> Manage Courses</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" [routerLink]="['admin/course-content']" (click)="collapseNavbar()"><i class="fas fa-sitemap"></i> Lessons + Chapters</a>
+                    </div>
+                  </div>
                   <div class="dropdown-divider"></div>
                   <div class="dropdown-submenu">
                     <a

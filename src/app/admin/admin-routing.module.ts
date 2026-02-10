@@ -9,6 +9,7 @@ import { UploadAssessmentComponent } from './assessments/upload-assessment/uploa
 import { AssessmentManagementComponent } from './assessments/assessment-management/assessment-management.component';
 import { CourseManagementComponent } from './courses/course-management/course-management.component';
 import { CourseContentManagementComponent } from './courses/course-content-management/course-content-management.component';
+import { CourseContentPickerComponent } from './courses/course-content-picker/course-content-picker.component';
 import { EnrollmentManagementComponent } from './enrollments/enrollment-management/enrollment-management.component';
 import { CourseInstructorsComponent } from './courses/course-instructors/course-instructors.component';
 import { ChapterPageEditorComponent } from './courses/chapter-page-editor/chapter-page-editor.component';
@@ -18,6 +19,7 @@ const routes: Routes = [
   { path: '', component: AdminDashboardComponent },
   { path: 'course-management', component: CourseManagementComponent },
   { path: 'course-roster/:courseId', component: CourseRosterComponent },
+  { path: 'course-content', component: CourseContentPickerComponent },
   { path: 'course-content/:courseId/chapters/:chapterId/pages/new', component: ChapterPageEditorComponent },
   { path: 'course-content/:courseId/chapters/:chapterId/pages/:pageNumber', component: ChapterPageEditorComponent },
   { path: 'course-content/:courseId', component: CourseContentManagementComponent },

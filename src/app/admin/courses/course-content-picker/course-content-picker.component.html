@@ -1,0 +1,69 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Lessons & Chapters</h2>
+      <a class="btn btn-outline-light btn-sm" [routerLink]="['/admin/course-management']">
+        <i class="fas fa-arrow-left"></i> Back to Courses
+      </a>
+    </div>
+
+    <div class="card text-dark">
+      <div class="card-body">
+        <div *ngIf="loading" class="text-center py-4">
+          <p>Loading courses...</p>
+        </div>
+
+        <div *ngIf="error" class="alert alert-danger text-start">
+          {{ error }}
+        </div>
+
+        <div *ngIf="!loading && !error && courses.length === 0" class="alert alert-info text-start">
+          No courses found.
+        </div>
+
+        <div *ngIf="!loading && !error && courses.length > 0" class="table-responsive">
+          <table class="table table-striped table-hover text-start">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 26%">Course</th>
+                <th>Description</th>
+                <th style="width: 10%">Status</th>
+                <th style="width: 30%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let course of courses">
+                <td><strong>{{ course.title }}</strong></td>
+                <td>{{ course.description || '—' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="course.status === 'active' ? 'bg-success' : 'bg-secondary'">
+                    {{ course.status }}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/admin/course-content', course.id]">
+                      <i class="fas fa-sitemap"></i> Content
+                    </a>
+                    <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/admin/course-roster', course.id]">
+                      <i class="fas fa-users"></i> Roster
+                    </a>
+                    <a
+                      *ngIf="isStrictAdmin"
+                      class="btn btn-outline-secondary btn-sm"
+                      [routerLink]="['/admin/course-instructors', course.id]">
+                      <i class="fas fa-user-check"></i> Instructors
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

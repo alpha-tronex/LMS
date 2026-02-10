@@ -15,6 +15,7 @@ import { AssessmentManagementComponent } from './assessments/assessment-manageme
 import { SharedModule } from '../shared/shared.module';
 import { CourseManagementComponent } from './courses/course-management/course-management.component';
 import { CourseContentManagementComponent } from './courses/course-content-management/course-content-management.component';
+import { CourseContentPickerComponent } from './courses/course-content-picker/course-content-picker.component';
 import { CourseInstructorsComponent } from './courses/course-instructors/course-instructors.component';
 import { EnrollmentManagementComponent } from './enrollments/enrollment-management/enrollment-management.component';
 import { ChapterPageEditorComponent } from './courses/chapter-page-editor/chapter-page-editor.component';
@@ -26,6 +27,7 @@ import { CourseRosterComponent } from './courses/course-roster/course-roster.com
     AdminBreadcrumbComponent,
     AdminMenuComponent,
     CourseManagementComponent,
+    CourseContentPickerComponent,
     CourseContentManagementComponent,
     ChapterPageEditorComponent,
     CourseInstructorsComponent,

@@ -21,6 +21,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription: any;
 
   quizSubmenuOpen = false;
+  coursesSubmenuOpen = false;
 
   @ViewChild('adminDropdownWrapper')
   private adminDropdownWrapper?: ElementRef<HTMLElement>;
@@ -50,6 +51,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     // This prevents the submenu staying open between opens.
     this.removeAdminDropdownHideListener = this.renderer.listen(wrapper, 'hide.bs.dropdown', () => {
       this.quizSubmenuOpen = false;
+      this.coursesSubmenuOpen = false;
     });
   }
 
@@ -76,6 +78,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   collapseNavbar(): void {
     this.quizSubmenuOpen = false;
+    this.coursesSubmenuOpen = false;
     const navbarToggler = document.querySelector('.navbar-toggler') as HTMLElement;
     const navbarCollapse = document.getElementById('navbarResponsive');
     if (navbarCollapse && navbarCollapse.classList.contains('show')) {
@@ -88,18 +91,27 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   toggleQuizSubmenu(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
+    this.coursesSubmenuOpen = false;
     this.quizSubmenuOpen = !this.quizSubmenuOpen;
+  }
+
+  toggleCoursesSubmenu(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.quizSubmenuOpen = false;
+    this.coursesSubmenuOpen = !this.coursesSubmenuOpen;
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.quizSubmenuOpen) {
+    if (!this.quizSubmenuOpen && !this.coursesSubmenuOpen) {
       return;
     }
 
     const target = event.target as HTMLElement | null;
     if (!target) {
       this.quizSubmenuOpen = false;
+      this.coursesSubmenuOpen = false;
       return;
     }
 
@@ -109,6 +121,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.quizSubmenuOpen = false;
+    this.coursesSubmenuOpen = false;
   }
 
   logOff() {
