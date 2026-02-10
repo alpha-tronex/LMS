@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { verifyToken } = require('../middleware/authMiddleware');
+const { computeCourseCompletion } = require('../utils/courseCompletion');
 
 function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
@@ -79,6 +80,28 @@ module.exports = function courseRoutes(
           };
         })
         .filter(Boolean);
+
+      // Compute completion per enrolled course.
+      await Promise.all(
+        results.map(async (item) => {
+          try {
+            const completion = await computeCourseCompletion({
+              Course,
+              Lesson,
+              Chapter,
+              ChapterProgress,
+              ContentAssessment,
+              User,
+              userId,
+              courseId: item.id,
+            });
+
+            item.courseCompleted = !!(completion && completion.ok && completion.completed);
+          } catch (e) {
+            item.courseCompleted = false;
+          }
+        })
+      );
 
       res.status(200).json(results);
     } catch (err) {

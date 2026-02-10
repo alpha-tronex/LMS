@@ -21,7 +21,10 @@
           <div class="col-md-6 col-lg-4 mb-4" *ngFor="let course of courses">
             <div class="card h-100">
               <div class="card-body">
-                <h5 class="card-title">{{ course.title }}</h5>
+                <h5 class="card-title">
+                  {{ course.title }}
+                  <span *ngIf="isEnrolled(course.id) && isCompleted(course.id)" class="badge badge-success ml-2">Completed</span>
+                </h5>
                 <p class="card-text" *ngIf="course.description">{{ course.description }}</p>
                 <p class="card-text text-muted" *ngIf="!course.description">No description provided.</p>
               </div>

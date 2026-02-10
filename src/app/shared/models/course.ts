@@ -3,4 +3,5 @@ export interface Course {
   title: string;
   description: string;
   enrolledAt?: string | null;
+  courseCompleted?: boolean;
 }

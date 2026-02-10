@@ -12,6 +12,7 @@ import { LoggerService } from '@core/services/logger.service';
 export class CourseCatalogComponent implements OnInit {
   courses: Course[] = [];
   enrolledCourseIds = new Set<string>();
+  completedCourseIds = new Set<string>();
 
   loading = true;
   error = '';
@@ -51,7 +52,9 @@ export class CourseCatalogComponent implements OnInit {
   loadMyCourses(): void {
     this.coursesService.getMyCourses().subscribe({
       next: (myCourses) => {
-        this.enrolledCourseIds = new Set((myCourses || []).map((c) => c.id));
+        const items = myCourses || [];
+        this.enrolledCourseIds = new Set(items.map((c) => c.id));
+        this.completedCourseIds = new Set(items.filter((c) => !!c.courseCompleted).map((c) => c.id));
         this.loading = false;
       },
       error: (err) => {
@@ -64,6 +67,10 @@ export class CourseCatalogComponent implements OnInit {
 
   isEnrolled(courseId: string): boolean {
     return this.enrolledCourseIds.has(courseId);
+  }
+
+  isCompleted(courseId: string): boolean {
+    return this.completedCourseIds.has(courseId);
   }
 
   enroll(courseId: string): void {
