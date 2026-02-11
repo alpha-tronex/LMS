@@ -19,6 +19,7 @@ export class AdminBreadcrumbComponent implements OnInit {
   private routeLabels: { [key: string]: string } = {
     'admin': 'Admin',
     'course-management': 'Course Management',
+    'course-data-management': 'Course Data Management',
     'course-content': 'Course Content',
     'user-management': 'User Management',
     'user-details': 'User Details',

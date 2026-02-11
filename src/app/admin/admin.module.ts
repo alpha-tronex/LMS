@@ -20,6 +20,7 @@ import { CourseInstructorsComponent } from './courses/course-instructors/course-
 import { EnrollmentManagementComponent } from './enrollments/enrollment-management/enrollment-management.component';
 import { ChapterPageEditorComponent } from './courses/chapter-page-editor/chapter-page-editor.component';
 import { CourseRosterComponent } from './courses/course-roster/course-roster.component';
+import { CourseDataManagementComponent } from './courses/course-data-management/course-data-management.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { CourseRosterComponent } from './courses/course-roster/course-roster.com
     ChapterPageEditorComponent,
     CourseInstructorsComponent,
     CourseRosterComponent,
+    CourseDataManagementComponent,
     EnrollmentManagementComponent,
     UserManagementComponent,
     CreateAssessmentComponent,

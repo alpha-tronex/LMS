@@ -14,10 +14,12 @@ import { EnrollmentManagementComponent } from './enrollments/enrollment-manageme
 import { CourseInstructorsComponent } from './courses/course-instructors/course-instructors.component';
 import { ChapterPageEditorComponent } from './courses/chapter-page-editor/chapter-page-editor.component';
 import { CourseRosterComponent } from './courses/course-roster/course-roster.component';
+import { CourseDataManagementComponent } from './courses/course-data-management/course-data-management.component';
 
 const routes: Routes = [
   { path: '', component: AdminDashboardComponent },
   { path: 'course-management', component: CourseManagementComponent },
+  { path: 'course-data-management', component: CourseDataManagementComponent },
   { path: 'course-roster/:courseId', component: CourseRosterComponent },
   { path: 'course-content', component: CourseContentPickerComponent },
   { path: 'course-content/:courseId/chapters/:chapterId/pages/new', component: ChapterPageEditorComponent },

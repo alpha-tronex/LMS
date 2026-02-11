@@ -96,6 +96,51 @@ export class AdminCourseService {
       );
   }
 
+  purgeCourse(courseId: string): Observable<any> {
+    return this.http.delete<any>(`/api/admin/courses/${courseId}/purge`).pipe(
+      catchError((error) => {
+        this.logger.error('Error in purgeCourse', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  purgeAllCourses(): Observable<any> {
+    return this.http.delete<any>('/api/admin/courses/purge-all').pipe(
+      catchError((error) => {
+        this.logger.error('Error in purgeAllCourses', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  deleteCourseFromUser(userId: string, courseId: string): Observable<any> {
+    return this.http.delete<any>(`/api/admin/users/${userId}/courses/${courseId}`).pipe(
+      catchError((error) => {
+        this.logger.error('Error in deleteCourseFromUser', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  deleteAllCoursesFromUser(userId: string): Observable<any> {
+    return this.http.delete<any>(`/api/admin/users/${userId}/courses`).pipe(
+      catchError((error) => {
+        this.logger.error('Error in deleteAllCoursesFromUser', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
+  deleteAllCoursesFromAllUsers(): Observable<any> {
+    return this.http.delete<any>('/api/admin/users/courses').pipe(
+      catchError((error) => {
+        this.logger.error('Error in deleteAllCoursesFromAllUsers', error);
+        return this.handleError(error);
+      })
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     const backendError = error.error || 'Something bad happened; please try again later.';
     return throwError(backendError);

@@ -40,6 +40,13 @@ export class AdminMenuComponent {
       ...(this.isStrictAdmin
         ? [
             {
+              title: 'Course Data Management',
+              description: 'Delete courses and user course data',
+              icon: 'fas fa-trash',
+              route: '/admin/course-data-management',
+              color: 'danger'
+            } as MenuItem,
+            {
               title: 'User Management',
               description: 'View, edit, and manage user accounts',
               icon: 'fas fa-users',

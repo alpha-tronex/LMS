@@ -1,0 +1,213 @@
+<section class="masthead bg-primary text-white text-center">
+  <div class="container">
+    <app-admin-breadcrumb></app-admin-breadcrumb>
+
+    <h2 class="mb-4">Course Data Management</h2>
+
+    <div class="card text-dark">
+      <div class="card-body">
+        <div *ngIf="message" class="alert" [ngClass]="messageType === 'success' ? 'alert-success' : 'alert-danger'">
+          {{ message }}
+        </div>
+
+        <div class="row text-start" *ngIf="isStrictAdmin">
+          <!-- Section 1: Delete specific course -->
+          <div class="col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-trash"></i> Delete Specific Course
+                </h5>
+              </div>
+              <div class="card-body">
+                <p class="text-muted">Delete one course and all related data</p>
+
+                <div class="mb-3">
+                  <label for="courseSelect" class="form-label"><strong>Select Course:</strong></label>
+                  <select
+                    id="courseSelect"
+                    class="form-select"
+                    [(ngModel)]="selectedCourseId"
+                    [disabled]="courses.length === 0">
+                    <option value="">-- Choose a course --</option>
+                    <option *ngFor="let course of courses" [value]="course.id">
+                      {{ course.title }}
+                    </option>
+                  </select>
+                  <small class="text-muted" *ngIf="courses.length === 0">No courses found</small>
+                  <small class="text-muted" *ngIf="courses.length > 0">{{ courses.length }} course(s) available</small>
+                </div>
+
+                <button
+                  class="btn btn-danger w-100"
+                  [disabled]="!selectedCourseId || loading"
+                  (click)="purgeSpecificCourse()">
+                  <i class="fas fa-trash"></i> Delete Selected Course
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Delete all courses -->
+          <div class="col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-bomb"></i> Delete All Courses
+                </h5>
+              </div>
+              <div class="card-body">
+                <p class="text-muted">Delete all courses and all related data</p>
+
+                <div class="alert alert-danger mb-3">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <strong>Warning:</strong> This will delete ALL courses and related data. This action cannot be undone!
+                </div>
+
+                <button
+                  class="btn btn-danger w-100"
+                  [disabled]="loading"
+                  (click)="purgeAllCourses()">
+                  <i class="fas fa-fire"></i> Delete All Courses
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Delete specific course from specific user -->
+          <div class="col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                  <i class="fas fa-user-times"></i> Delete Specific Course from User
+                </h5>
+              </div>
+              <div class="card-body">
+                <p class="text-muted">Remove one course from one user</p>
+
+                <div class="mb-3">
+                  <label for="userSelectCourse" class="form-label"><strong>Select User:</strong></label>
+                  <select
+                    id="userSelectCourse"
+                    class="form-select"
+                    [(ngModel)]="selectedUserIdForSpecificCourse"
+                    [disabled]="users.length === 0">
+                    <option value="">-- Choose a user --</option>
+                    <option *ngFor="let user of users" [value]="user.id">
+                      {{ getUserDisplayName(user) }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="courseSelectUser" class="form-label"><strong>Select Course:</strong></label>
+                  <select
+                    id="courseSelectUser"
+                    class="form-select"
+                    [(ngModel)]="selectedCourseIdForSpecificUser"
+                    [disabled]="courses.length === 0">
+                    <option value="">-- Choose a course --</option>
+                    <option *ngFor="let course of courses" [value]="course.id">
+                      {{ course.title }}
+                    </option>
+                  </select>
+                </div>
+
+                <button
+                  class="btn btn-warning w-100"
+                  [disabled]="!selectedUserIdForSpecificCourse || !selectedCourseIdForSpecificUser || loading"
+                  (click)="deleteSpecificCourseFromUser()">
+                  <i class="fas fa-trash-alt"></i> Remove Course from User
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Delete all courses from a specific user -->
+          <div class="col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                  <i class="fas fa-user-minus"></i> Delete All Courses from User
+                </h5>
+              </div>
+              <div class="card-body">
+                <p class="text-muted">Remove all courses from one user</p>
+
+                <div class="mb-3">
+                  <label for="userSelectAllCourses" class="form-label"><strong>Select User:</strong></label>
+                  <select
+                    id="userSelectAllCourses"
+                    class="form-select"
+                    [(ngModel)]="selectedUserIdForAllCourses"
+                    [disabled]="users.length === 0">
+                    <option value="">-- Choose a user --</option>
+                    <option *ngFor="let user of users" [value]="user.id">
+                      {{ getUserDisplayName(user) }}
+                    </option>
+                  </select>
+                </div>
+
+                <button
+                  class="btn btn-warning w-100"
+                  [disabled]="!selectedUserIdForAllCourses || loading"
+                  (click)="deleteAllCoursesFromUser()">
+                  <i class="fas fa-trash"></i> Remove All Courses from User
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Delete all courses from all users -->
+          <div class="col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-users-slash"></i> Delete All Courses from All Users
+                </h5>
+              </div>
+              <div class="card-body">
+                <p class="text-muted">Remove all enrollments and progress for everyone</p>
+
+                <div class="alert alert-danger mb-3">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <strong>Warning:</strong> This removes ALL enrollments/progress/surveys from ALL users. This action cannot be undone!
+                </div>
+
+                <button
+                  class="btn btn-danger w-100"
+                  [disabled]="loading"
+                  (click)="deleteAllCoursesFromAllUsers()">
+                  <i class="fas fa-bomb"></i> Remove All Courses from All Users
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="loading" class="text-center mt-4">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Processing...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<alpha-tronex-modal
+  [show]="showConfirmModal"
+  [title]="confirmTitle"
+  [type]="'danger'"
+  [content]="confirmMessage + ' This action cannot be undone.'"
+  [scrollToTopOnHide]="true"
+  (close)="closeConfirmModal()"
+  (confirm)="confirmActionExecute()">
+  <div modal-actions>
+    <button type="button" class="btn btn-secondary" (click)="closeConfirmModal()">Cancel</button>
+    <button type="button" class="btn btn-danger ml-2 mr-2" (click)="confirmActionExecute()">
+      <i class="fas fa-trash"></i> Confirm Delete
+    </button>
+  </div>
+</alpha-tronex-modal>

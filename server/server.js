@@ -10,6 +10,7 @@ const adminAssessmentRoutes = require(`${__dirname}/routes/adminAssessmentRoutes
 const adminContentAssessmentRoutes = require(`${__dirname}/routes/adminContentAssessmentRoutes.js`);
 const courseRoutes = require(`${__dirname}/routes/courseRoutes.js`);
 const adminCourseRoutes = require(`${__dirname}/routes/adminCourseRoutes.js`);
+const adminCourseDataRoutes = require(`${__dirname}/routes/adminCourseDataRoutes.js`);
 const adminEnrollmentRoutes = require(`${__dirname}/routes/adminEnrollmentRoutes.js`);
 const adminLessonChapterRoutes = require(`${__dirname}/routes/adminLessonChapterRoutes.js`);
 const adminUploadRoutes = require(`${__dirname}/routes/adminUploadRoutes.js`);
@@ -105,6 +106,7 @@ adminUserRoutes(app, User);
 adminAssessmentRoutes(app);
 adminContentAssessmentRoutes(app, Course, Lesson, Chapter, ContentAssessment);
 adminCourseRoutes(app, Course, User);
+adminCourseDataRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress, ContentAssessment, CourseSurvey, User);
 adminEnrollmentRoutes(app, Course, Enrollment, User);
 adminLessonChapterRoutes(app, Course, Lesson, Chapter);
 adminUploadRoutes(app);
