@@ -9,6 +9,7 @@ export interface AdminCourse {
   title: string;
   description: string;
   status: 'active' | 'archived';
+  canEdit?: boolean;
 }
 
 export interface CourseInstructorAssignment {

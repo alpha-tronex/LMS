@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { verifyToken, verifyAdminOrInstructor } = require('../middleware/authMiddleware');
 const { sendValidationError } = require('../utils/responses');
+const { requireCourseAccess } = require('../utils/courseAccess');
 
 const disableLegacyContentFields =
   String(process.env.DISABLE_LEGACY_CONTENT_FIELDS || '').toLowerCase() === '1' ||
@@ -17,6 +18,40 @@ function stripLegacyContentFields(content) {
 
 function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
+}
+
+async function requireCourseAccessForLesson({ Course, Lesson, req, res, lessonId }) {
+  if (!isValidObjectId(String(lessonId))) {
+    res.status(400).json({ error: 'Invalid lessonId' });
+    return null;
+  }
+
+  const lesson = await Lesson.findById(new mongoose.Types.ObjectId(String(lessonId))).lean();
+  if (!lesson) {
+    res.status(404).json({ error: 'Lesson not found' });
+    return null;
+  }
+
+  const course = await requireCourseAccess({ Course, req, res, courseId: String(lesson.courseId) });
+  if (!course) return null;
+  return { lesson, course };
+}
+
+async function requireCourseAccessForChapter({ Course, Chapter, req, res, chapterId }) {
+  if (!isValidObjectId(String(chapterId))) {
+    res.status(400).json({ error: 'Invalid chapterId' });
+    return null;
+  }
+
+  const chapter = await Chapter.findById(new mongoose.Types.ObjectId(String(chapterId))).lean();
+  if (!chapter) {
+    res.status(404).json({ error: 'Chapter not found' });
+    return null;
+  }
+
+  const course = await requireCourseAccess({ Course, req, res, courseId: String(chapter.courseId) });
+  if (!course) return null;
+  return { chapter, course };
 }
 
 function parseBoolean(value) {
@@ -120,10 +155,8 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
           return res.status(400).json({ error: 'Invalid courseId' });
         }
 
-        const course = await Course.findById(new mongoose.Types.ObjectId(courseId)).lean();
-        if (!course) {
-          return res.status(404).json({ error: 'Course not found' });
-        }
+        const course = await requireCourseAccess({ Course, req, res, courseId });
+        if (!course) return;
 
         const validation = validateLessonPayload({ ...(req.body || {}), courseId }, {
           requireTitle: true,
@@ -170,6 +203,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
           return res.status(400).json({ error: 'Invalid courseId' });
         }
 
+        const course = await requireCourseAccess({ Course, req, res, courseId });
+        if (!course) return;
+
         const includeArchived = parseBoolean(req.query && req.query.includeArchived);
         const filter = {
           courseId: new mongoose.Types.ObjectId(courseId),
@@ -206,6 +242,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
       if (!isValidObjectId(lessonId)) {
         return res.status(400).json({ error: 'Invalid lessonId' });
       }
+
+      const access = await requireCourseAccessForLesson({ Course, Lesson, req, res, lessonId });
+      if (!access) return;
 
       const validation = validateLessonPayload(req.body || {}, {
         requireTitle: false,
@@ -258,6 +297,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
           return res.status(400).json({ error: 'Invalid lessonId' });
         }
 
+        const access = await requireCourseAccessForLesson({ Course, Lesson, req, res, lessonId });
+        if (!access) return;
+
         const now = new Date();
         const updated = await Lesson.findByIdAndUpdate(
           new mongoose.Types.ObjectId(lessonId),
@@ -293,6 +335,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
         if (!isValidObjectId(lessonId)) {
           return res.status(400).json({ error: 'Invalid lessonId' });
         }
+
+        const access = await requireCourseAccessForLesson({ Course, Lesson, req, res, lessonId });
+        if (!access) return;
 
         const now = new Date();
         const updated = await Lesson.findByIdAndUpdate(
@@ -330,10 +375,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
           return res.status(400).json({ error: 'Invalid lessonId' });
         }
 
-        const lesson = await Lesson.findById(new mongoose.Types.ObjectId(lessonId)).lean();
-        if (!lesson) {
-          return res.status(404).json({ error: 'Lesson not found' });
-        }
+        const access = await requireCourseAccessForLesson({ Course, Lesson, req, res, lessonId });
+        if (!access) return;
+        const lesson = access.lesson;
 
         const validation = validateChapterPayload(req.body || {}, { requireTitle: true });
         if (!validation.valid) {
@@ -378,6 +422,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
           return res.status(400).json({ error: 'Invalid lessonId' });
         }
 
+        const access = await requireCourseAccessForLesson({ Course, Lesson, req, res, lessonId });
+        if (!access) return;
+
         const includeArchived = parseBoolean(req.query && req.query.includeArchived);
         const filter = {
           lessonId: new mongoose.Types.ObjectId(lessonId),
@@ -414,6 +461,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
       if (!isValidObjectId(chapterId)) {
         return res.status(400).json({ error: 'Invalid chapterId' });
       }
+
+      const access = await requireCourseAccessForChapter({ Course, Chapter, req, res, chapterId });
+      if (!access) return;
 
       const validation = validateChapterPayload(req.body || {}, { requireTitle: false });
       if (!validation.valid) {
@@ -457,6 +507,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
       if (!isValidObjectId(chapterId)) {
         return res.status(400).json({ error: 'Invalid chapterId' });
       }
+
+      const access = await requireCourseAccessForChapter({ Course, Chapter, req, res, chapterId });
+      if (!access) return;
 
       const chapter = await Chapter.findOne({
         _id: new mongoose.Types.ObjectId(chapterId),
@@ -517,6 +570,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
           return res.status(400).json({ error: 'Invalid chapterId' });
         }
 
+        const access = await requireCourseAccessForChapter({ Course, Chapter, req, res, chapterId });
+        if (!access) return;
+
         const updated = await Chapter.findByIdAndUpdate(
           new mongoose.Types.ObjectId(chapterId),
           { $set: { status: 'archived', updatedAt: new Date() } },
@@ -546,6 +602,9 @@ module.exports = function adminLessonChapterRoutes(app, Course, Lesson, Chapter)
         if (!isValidObjectId(chapterId)) {
           return res.status(400).json({ error: 'Invalid chapterId' });
         }
+
+        const access = await requireCourseAccessForChapter({ Course, Chapter, req, res, chapterId });
+        if (!access) return;
 
         const updated = await Chapter.findByIdAndUpdate(
           new mongoose.Types.ObjectId(chapterId),

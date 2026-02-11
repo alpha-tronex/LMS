@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { verifyToken, verifyAdmin, verifyAdminOrInstructor } = require('../middleware/authMiddleware');
 const { sendValidationError } = require('../utils/responses');
+const { requireCourseAccess, getUserId, isStrictAdminRequest, isInstructorAssigned } = require('../utils/courseAccess');
 
 function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
@@ -67,6 +68,8 @@ module.exports = function adminCourseRoutes(app, Course, User) {
       const requesterRole = req.user && (req.user.role || req.user.type);
       const requesterId = req.user && req.user.id;
 
+       const canEdit = requesterRole === 'admin' || requesterRole === 'instructor';
+
       const course = await Course.create({
         title: validation.title,
         description: validation.description || '',
@@ -84,6 +87,7 @@ module.exports = function adminCourseRoutes(app, Course, User) {
         title: course.title,
         description: course.description || '',
         status: course.status,
+        canEdit: !!canEdit,
       });
     } catch (err) {
       console.log('err: ' + err);
@@ -98,6 +102,10 @@ module.exports = function adminCourseRoutes(app, Course, User) {
       if (!isValidObjectId(courseId)) {
         return res.status(400).json({ error: 'Invalid courseId' });
       }
+
+      // Admin can update any course; instructors only their assigned courses.
+      const course = await requireCourseAccess({ Course, req, res, courseId });
+      if (!course) return;
 
       const validation = validateCoursePayload(req.body || {}, { requireTitle: false });
       if (!validation.valid) {
@@ -143,6 +151,9 @@ module.exports = function adminCourseRoutes(app, Course, User) {
           return res.status(400).json({ error: 'Invalid courseId' });
         }
 
+        const course = await requireCourseAccess({ Course, req, res, courseId });
+        if (!course) return;
+
         const updated = await Course.findByIdAndUpdate(
           new mongoose.Types.ObjectId(courseId),
           { $set: { status: 'archived', updatedAt: new Date() } },
@@ -173,6 +184,9 @@ module.exports = function adminCourseRoutes(app, Course, User) {
           return res.status(400).json({ error: 'Invalid courseId' });
         }
 
+        const course = await requireCourseAccess({ Course, req, res, courseId });
+        if (!course) return;
+
         const updated = await Course.findByIdAndUpdate(
           new mongoose.Types.ObjectId(courseId),
           { $set: { status: 'active', updatedAt: new Date() } },
@@ -196,12 +210,21 @@ module.exports = function adminCourseRoutes(app, Course, User) {
     try {
       const courses = await Course.find({}).sort({ updatedAt: -1 }).lean();
 
-      const results = courses.map((c) => ({
-        id: String(c._id),
-        title: c.title,
-        description: c.description || '',
-        status: c.status,
-      }));
+      const userId = getUserId(req);
+      const isAdmin = isStrictAdminRequest(req);
+
+      const results = courses.map((c) => {
+        const canEdit =
+          isAdmin || (userId && isValidObjectId(String(userId)) && isInstructorAssigned(c, userId));
+
+        return {
+          id: String(c._id),
+          title: c.title,
+          description: c.description || '',
+          status: c.status,
+          canEdit: !!canEdit,
+        };
+      });
 
       res.status(200).json(results);
     } catch (err) {

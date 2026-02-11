@@ -59,7 +59,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let course of courses">
+              <tr
+                *ngFor="let course of courses"
+                [class.table-secondary]="!canEditCourse(course)"
+                [class.text-muted]="!canEditCourse(course)">
                 <td>
                   <span *ngIf="!isEditing(course)"><strong>{{ course.title }}</strong></span>
                   <input *ngIf="isEditing(course)" class="form-control" [(ngModel)]="editTitle" [disabled]="saving" />
@@ -86,7 +89,7 @@
                     <select
                       class="form-select form-select-sm me-1 assessment-picker"
                       [(ngModel)]="selectedCourseAssessmentId[course.id]"
-                      [disabled]="saving || availableAssessmentsLoading || course.status === 'archived'">
+                      [disabled]="saving || availableAssessmentsLoading || course.status === 'archived' || !canEditCourse(course)">
                       <option [ngValue]="null">— Select —</option>
                       <option *ngFor="let a of availableAssessments" [ngValue]="a.id">
                         {{ a.id }} — {{ a.title }}
@@ -95,13 +98,13 @@
                     <button
                       class="btn btn-primary btn-sm me-1"
                       (click)="attachCourseAssessment(course)"
-                      [disabled]="saving || availableAssessmentsLoading || course.status === 'archived'">
+                      [disabled]="saving || availableAssessmentsLoading || course.status === 'archived' || !canEditCourse(course)">
                       Attach
                     </button>
                     <button
                       class="btn btn-outline-danger btn-sm"
                       (click)="archiveCourseAssessment(course)"
-                      [disabled]="saving || !getCourseMapping(course.id)">
+                      [disabled]="saving || !getCourseMapping(course.id) || !canEditCourse(course)">
                       Archive
                     </button>
                   </div>
@@ -117,7 +120,7 @@
                       <button
                         class="btn btn-outline-success btn-sm"
                         (click)="unarchiveCourseAssessmentMapping(course, am)"
-                        [disabled]="saving || course.status === 'archived' || !!getCourseMapping(course.id)">
+                        [disabled]="saving || course.status === 'archived' || !!getCourseMapping(course.id) || !canEditCourse(course)">
                         Unarchive
                       </button>
                     </div>
@@ -129,10 +132,22 @@
                 </td>
                 <td>
                   <div class="btn-group" role="group">
-                    <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/admin/course-content', course.id]" [class.disabled]="saving">
+                    <a
+                      class="btn btn-outline-secondary btn-sm"
+                      [routerLink]="['/admin/course-content', course.id]"
+                      [class.disabled]="saving || !canEditCourse(course)"
+                      [attr.aria-disabled]="saving || !canEditCourse(course)"
+                      [attr.tabindex]="(saving || !canEditCourse(course)) ? -1 : null"
+                      (click)="blockNavigationIfNoAccess($event, course)">
                       <i class="fas fa-sitemap"></i> Content
                     </a>
-                    <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/admin/course-roster', course.id]" [class.disabled]="saving">
+                    <a
+                      class="btn btn-outline-secondary btn-sm"
+                      [routerLink]="['/admin/course-roster', course.id]"
+                      [class.disabled]="saving || !canEditCourse(course)"
+                      [attr.aria-disabled]="saving || !canEditCourse(course)"
+                      [attr.tabindex]="(saving || !canEditCourse(course)) ? -1 : null"
+                      (click)="blockNavigationIfNoAccess($event, course)">
                       <i class="fas fa-users"></i> Roster
                     </a>
                     <a
@@ -142,10 +157,18 @@
                       [class.disabled]="saving">
                       <i class="fas fa-user-check"></i> Instructors
                     </a>
-                    <button *ngIf="!isEditing(course)" class="btn btn-outline-primary btn-sm" (click)="startEdit(course)" [disabled]="saving">
+                    <button
+                      *ngIf="!isEditing(course)"
+                      class="btn btn-outline-primary btn-sm"
+                      (click)="startEdit(course)"
+                      [disabled]="saving || !canEditCourse(course)">
                       <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button *ngIf="isEditing(course)" class="btn btn-primary btn-sm" (click)="saveEdit(course)" [disabled]="saving">
+                    <button
+                      *ngIf="isEditing(course)"
+                      class="btn btn-primary btn-sm"
+                      (click)="saveEdit(course)"
+                      [disabled]="saving || !canEditCourse(course)">
                       <i class="fas fa-save"></i> Save
                     </button>
                     <button *ngIf="isEditing(course)" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()" [disabled]="saving">
@@ -155,14 +178,14 @@
                       *ngIf="course.status !== 'archived'"
                       class="btn btn-outline-danger btn-sm"
                       (click)="archiveCourse(course)"
-                      [disabled]="saving">
+                      [disabled]="saving || !canEditCourse(course)">
                       <i class="fas fa-archive"></i> Archive
                     </button>
                     <button
                       *ngIf="course.status === 'archived'"
                       class="btn btn-outline-success btn-sm"
                       (click)="unarchiveCourse(course)"
-                      [disabled]="saving">
+                      [disabled]="saving || !canEditCourse(course)">
                       <i class="fas fa-box-open"></i> Unarchive
                     </button>
                   </div>

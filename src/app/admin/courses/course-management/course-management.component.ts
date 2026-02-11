@@ -48,6 +48,22 @@ export class CourseManagementComponent implements OnInit {
     private logger: LoggerService
   ) {}
 
+  canEditCourse(course: AdminCourse | null | undefined): boolean {
+    if (this.isStrictAdmin) return true;
+    if (!course) return false;
+    return course.canEdit === true;
+  }
+
+  blockNavigationIfNoAccess(event: Event, course: AdminCourse): void {
+    if (this.canEditCourse(course)) return;
+    if (event && typeof (event as any).preventDefault === 'function') {
+      (event as any).preventDefault();
+    }
+    if (event && typeof (event as any).stopPropagation === 'function') {
+      (event as any).stopPropagation();
+    }
+  }
+
   ngOnInit(): void {
     const currentUserRaw = localStorage.getItem('currentUser');
     if (!currentUserRaw) {
@@ -156,6 +172,10 @@ export class CourseManagementComponent implements OnInit {
 
   attachCourseAssessment(course: AdminCourse): void {
     if (!course) return;
+    if (!this.canEditCourse(course)) {
+      this.error = 'Access denied. You are not assigned to this course.';
+      return;
+    }
     if (course.status === 'archived') return;
 
     const selected = this.selectedCourseAssessmentId[String(course.id)];
@@ -188,6 +208,10 @@ export class CourseManagementComponent implements OnInit {
 
   archiveCourseAssessment(course: AdminCourse): void {
     if (!course) return;
+    if (!this.canEditCourse(course)) {
+      this.error = 'Access denied. You are not assigned to this course.';
+      return;
+    }
 
     this.saving = true;
     this.error = '';
@@ -212,6 +236,10 @@ export class CourseManagementComponent implements OnInit {
 
   unarchiveCourseAssessmentMapping(course: AdminCourse, mapping: AdminContentAssessmentMapping): void {
     if (!course || !mapping) return;
+    if (!this.canEditCourse(course)) {
+      this.error = 'Access denied. You are not assigned to this course.';
+      return;
+    }
     if (mapping.status !== 'archived') return;
     if (course.status === 'archived') return;
 
@@ -258,6 +286,10 @@ export class CourseManagementComponent implements OnInit {
   }
 
   startEdit(course: AdminCourse): void {
+    if (!this.canEditCourse(course)) {
+      this.error = 'Access denied. You are not assigned to this course.';
+      return;
+    }
     this.editingCourseId = course.id;
     this.editTitle = course.title;
     this.editDescription = course.description || '';
@@ -273,6 +305,10 @@ export class CourseManagementComponent implements OnInit {
 
   saveEdit(course: AdminCourse): void {
     if (!this.editingCourseId) return;
+    if (!this.canEditCourse(course)) {
+      this.error = 'Access denied. You are not assigned to this course.';
+      return;
+    }
 
     const title = (this.editTitle || '').trim();
     if (!title) {
@@ -334,6 +370,10 @@ export class CourseManagementComponent implements OnInit {
 
   archiveCourse(course: AdminCourse): void {
     if (!course || course.status === 'archived') return;
+    if (!this.canEditCourse(course)) {
+      this.error = 'Access denied. You are not assigned to this course.';
+      return;
+    }
 
     this.saving = true;
     this.error = '';
@@ -358,6 +398,10 @@ export class CourseManagementComponent implements OnInit {
 
   unarchiveCourse(course: AdminCourse): void {
     if (!course || course.status !== 'archived') return;
+    if (!this.canEditCourse(course)) {
+      this.error = 'Access denied. You are not assigned to this course.';
+      return;
+    }
 
     this.saving = true;
     this.error = '';

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
 const { verifyToken, verifyAdminOrInstructor } = require('../middleware/authMiddleware');
+const { requireCourseAccess, getRole, getUserId, isValidObjectId: isValidCourseObjectId } = require('../utils/courseAccess');
 
 function isValidObjectId(value) {
   return typeof value === 'string' && mongoose.Types.ObjectId.isValid(value);
@@ -56,6 +57,17 @@ module.exports = function adminContentAssessmentRoutes(
 
         if (!archived) {
           return res.status(404).json({ error: 'Archived mapping not found' });
+        }
+
+        // Enforce course-level access for instructors.
+        if (Course) {
+          const access = await requireCourseAccess({
+            Course,
+            req,
+            res,
+            courseId: String(archived.courseId),
+          });
+          if (!access) return;
         }
 
         // Prevent multiple active mappings for a single scope.
@@ -142,12 +154,10 @@ module.exports = function adminContentAssessmentRoutes(
 
         if (scopeType === 'course') {
           if (!Course) return res.status(500).json({ error: 'Course model not configured' });
-          const course = await Course.findOne({
-            _id: new mongoose.Types.ObjectId(String(scopeId)),
-            status: 'active',
-          }).lean();
-          if (!course) return res.status(404).json({ error: 'Course not found' });
-          courseId = course._id;
+          const courseAccess = await requireCourseAccess({ Course, req, res, courseId: String(scopeId) });
+          if (!courseAccess) return;
+          if (courseAccess.status !== 'active') return res.status(404).json({ error: 'Course not found' });
+          courseId = courseAccess._id;
         }
 
         if (scopeType === 'lesson') {
@@ -157,6 +167,12 @@ module.exports = function adminContentAssessmentRoutes(
             status: 'active',
           }).lean();
           if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
+
+          if (Course) {
+            const courseAccess = await requireCourseAccess({ Course, req, res, courseId: String(lesson.courseId) });
+            if (!courseAccess) return;
+          }
+
           courseId = lesson.courseId;
           lessonId = lesson._id;
         }
@@ -168,6 +184,12 @@ module.exports = function adminContentAssessmentRoutes(
             status: 'active',
           }).lean();
           if (!chapter) return res.status(404).json({ error: 'Chapter not found' });
+
+          if (Course) {
+            const courseAccess = await requireCourseAccess({ Course, req, res, courseId: String(chapter.courseId) });
+            if (!courseAccess) return;
+          }
+
           courseId = chapter.courseId;
           lessonId = chapter.lessonId;
           chapterId = chapter._id;
@@ -267,12 +289,28 @@ module.exports = function adminContentAssessmentRoutes(
           return res.status(400).json({ error: 'Invalid scopeId' });
         }
 
+        const existing = await ContentAssessment.findOne({
+          scopeType,
+          scopeId: new mongoose.Types.ObjectId(String(scopeId)),
+          status: 'active',
+        }).lean();
+
+        if (!existing) {
+          return res.status(404).json({ error: 'Active mapping not found' });
+        }
+
+        if (Course) {
+          const courseAccess = await requireCourseAccess({
+            Course,
+            req,
+            res,
+            courseId: String(existing.courseId),
+          });
+          if (!courseAccess) return;
+        }
+
         const updated = await ContentAssessment.findOneAndUpdate(
-          {
-            scopeType,
-            scopeId: new mongoose.Types.ObjectId(String(scopeId)),
-            status: 'active',
-          },
+          { _id: new mongoose.Types.ObjectId(String(existing._id)), status: 'active' },
           {
             $set: {
               status: 'archived',
@@ -281,10 +319,6 @@ module.exports = function adminContentAssessmentRoutes(
           },
           { new: true }
         ).lean();
-
-        if (!updated) {
-          return res.status(404).json({ error: 'Active mapping not found' });
-        }
 
         return res.status(200).json({
           message: 'Mapping archived',
@@ -320,6 +354,28 @@ module.exports = function adminContentAssessmentRoutes(
             return res.status(400).json({ error: 'Invalid courseId' });
           }
           q.courseId = new mongoose.Types.ObjectId(String(courseId));
+        }
+
+        // Instructors only see mappings for their assigned courses.
+        const role = getRole(req);
+        if (role === 'instructor' && Course) {
+          const userId = getUserId(req);
+          if (!userId || !isValidCourseObjectId(String(userId))) {
+            return res.status(400).json({ error: 'Invalid user id' });
+          }
+
+          const allowedCourses = await Course.find({ instructorIds: new mongoose.Types.ObjectId(String(userId)) }, { _id: 1 }).lean();
+          const allowedCourseIds = (allowedCourses || []).map((c) => c._id);
+
+          if (q.courseId) {
+            const requested = String(q.courseId);
+            const allowed = allowedCourseIds.some((id) => String(id) === requested);
+            if (!allowed) {
+              return res.status(403).json({ error: 'Access denied. Course instructor privileges required.' });
+            }
+          } else {
+            q.courseId = { $in: allowedCourseIds };
+          }
         }
 
         if (typeof statusParam === 'string' && statusParam.length > 0) {
