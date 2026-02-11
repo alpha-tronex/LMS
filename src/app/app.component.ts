@@ -37,8 +37,7 @@ export class AppComponent implements OnInit, OnDestroy {
           user.role = user.type;
           localStorage.setItem('currentUser', JSON.stringify(user));
         }
-        this.loginService.user = user;
-        this.loginService.loggedIn = true;
+        this.loginService.setCurrentUser(user);
         // Start idle monitoring for already logged in user
         this.idleTimeoutService.startWatching();
       } catch (e) {

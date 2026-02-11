@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { User } from '@models/users';
 import { LoggerService } from '@core/services/logger.service';
@@ -13,17 +13,35 @@ import { environment } from '../../../environments/environment';
 export class LoginService {
   //loggedInStudentChange: Subject<User> = new Subject<User>();
   welcomePhrase: string = environment.welcomeLoginPrompt;
+
+  private authStateSubject: BehaviorSubject<User | null>;
+  authState$: Observable<User | null>;
+
   user: User;
   http: HttpClient;
   loggedIn: boolean = false;
 
   constructor(http: HttpClient, private logger: LoggerService) {
     this.http = http;
+
+    const storedUser = this.readStoredUser();
+    this.authStateSubject = new BehaviorSubject<User | null>(storedUser);
+    this.authState$ = this.authStateSubject.asObservable();
+    if (storedUser) {
+      this.user = storedUser;
+      this.loggedIn = true;
+    }
     /*
     this.loggedInStudentChange.subscribe((student) => {
       this.loggedInStudent = student;
     });
     */
+  }
+
+  setCurrentUser(user: User | null): void {
+    this.user = user as any;
+    this.loggedIn = !!user;
+    this.authStateSubject.next(user);
   }
 
   get userName(): string {
@@ -54,12 +72,11 @@ export class LoginService {
     return this.http.post<User>('/api/login', user).pipe(
       // retry(3),
       tap(response => {
-        this.user = response;
         this.logger.info('Logged in', { username: this.user?.uname });
         // Store user with token in localStorage for access across components
         localStorage.setItem('currentUser', JSON.stringify(response));
         // Signal that user is logged in (app.component will start idle monitoring)
-        this.loggedIn = true;
+        this.setCurrentUser(response);
       }),
       catchError((error) => {
         this.logger.error('Error in login', error);
@@ -74,12 +91,11 @@ export class LoginService {
     { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) }).pipe(
       // retry(3),
       tap(response => {
-        this.user = response;
         this.logger.info('Registered user', { username: this.user?.uname });
         // Store user with token in localStorage for access across components
         // Signal that user is logged in (app.component will start idle monitoring)
-        this.loggedIn = true;
         localStorage.setItem('currentUser', JSON.stringify(response));
+        this.setCurrentUser(response);
       }),
       catchError((error) => {
         this.logger.error('Error in register', error);
@@ -91,7 +107,6 @@ export class LoginService {
   updateUser(user: User): Observable<User> {
     return this.http.put<User>('/api/user/update', user).pipe(
       tap(response => {
-        this.user = response;
         this.logger.info('User updated', { username: this.user?.uname });
         // Update localStorage with new user data (preserve token)
         const currentUser = localStorage.getItem('currentUser');
@@ -99,7 +114,11 @@ export class LoginService {
           const parsedUser = JSON.parse(currentUser);
           const updatedUser = { ...response, token: parsedUser.token };
           localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          this.setCurrentUser(updatedUser);
+          return;
         }
+
+        this.setCurrentUser(response);
       }),
       catchError((error) => {
         this.logger.error('Error in updateUser', error);
@@ -109,11 +128,30 @@ export class LoginService {
   }
 
   logout(): void {
-    this.user = null;
-    this.loggedIn = false;
     this.welcomePhrase = 'You have been logged off. Please log back in to continue learning.';
     // Clear user from localStorage
     localStorage.removeItem('currentUser');
+    this.setCurrentUser(null);
+  }
+
+  private readStoredUser(): User | null {
+    try {
+      const raw = localStorage.getItem('currentUser');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed) return null;
+
+      // Backward compatibility: older stored sessions used `type`.
+      if (parsed && !parsed.role && parsed.type) {
+        parsed.role = parsed.type;
+        localStorage.setItem('currentUser', JSON.stringify(parsed));
+      }
+
+      return parsed as User;
+    } catch (e) {
+      this.logger.error('Failed to read stored user', e);
+      return null;
+    }
   }
 
   handleError(error: HttpErrorResponse) {

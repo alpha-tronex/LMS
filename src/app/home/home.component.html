@@ -73,45 +73,87 @@
             </div>
           </div>
 
-          <h5 class="card-title mb-3"><i class="fas fa-bolt"></i> Quick Links</h5>
+          <div *ngIf="!loggedIn" class="text-center">
+            <h5 class="card-title mb-3"><i class="fas fa-graduation-cap"></i> How it works</h5>
 
-          <div class="row">
-            <div class="col-md-6 col-lg-3 mb-3">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="fas fa-search fa-2x mb-2 text-primary"></i>
-                  <h6>Browse Courses</h6>
-                  <a [routerLink]="['/courses']" class="btn btn-outline-primary btn-sm">Open</a>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <div class="mb-2"><i class="fas fa-user-plus fa-2x text-primary"></i></div>
+                    <h6>Create your account</h6>
+                    <div class="text-muted small">Register once to enroll and track progress across courses.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <div class="mb-2"><i class="fas fa-book-open fa-2x text-success"></i></div>
+                    <h6>Learn chapter by chapter</h6>
+                    <div class="text-muted small">Work through lessons and chapters at your own pace.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <div class="mb-2"><i class="fas fa-check-circle fa-2x text-info"></i></div>
+                    <h6>Earn completion</h6>
+                    <div class="text-muted small">Finish the required content and pass the final assessment (if assigned).</div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="col-md-6 col-lg-3 mb-3">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="fas fa-list-check fa-2x mb-2 text-success"></i>
-                  <h6>My Courses</h6>
-                  <a [routerLink]="['/my-courses']" class="btn btn-outline-success btn-sm">Open</a>
+            <a [routerLink]="['/courses']" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-search"></i> Browse Courses
+            </a>
+          </div>
+
+          <div *ngIf="loggedIn">
+            <h5 class="card-title mb-3"><i class="fas fa-bolt"></i> Quick Links</h5>
+
+            <div class="row">
+              <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <i class="fas fa-search fa-2x mb-2 text-primary"></i>
+                    <h6>Browse Courses</h6>
+                    <a [routerLink]="['/courses']" class="btn btn-outline-primary btn-sm">Open</a>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="col-md-6 col-lg-3 mb-3">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="fas fa-user fa-2x mb-2 text-info"></i>
-                  <h6>Account</h6>
-                  <a [routerLink]="['/account']" class="btn btn-outline-info btn-sm">Open</a>
+              <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <i class="fas fa-list-check fa-2x mb-2 text-success"></i>
+                    <h6>My Courses</h6>
+                    <a [routerLink]="['/my-courses']" class="btn btn-outline-success btn-sm">Open</a>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="col-md-6 col-lg-3 mb-3" *ngIf="isAdmin">
-              <div class="card h-100">
-                <div class="card-body text-center">
-                  <i class="fas fa-user-shield fa-2x mb-2 text-dark"></i>
-                  <h6>Admin Dashboard</h6>
-                  <a [routerLink]="['/admin']" class="btn btn-outline-dark btn-sm">Open</a>
+              <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <i class="fas fa-user fa-2x mb-2 text-info"></i>
+                    <h6>Account</h6>
+                    <a [routerLink]="['/account']" class="btn btn-outline-info btn-sm">Open</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-lg-3 mb-3" *ngIf="isAdmin">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <i class="fas fa-user-shield fa-2x mb-2 text-dark"></i>
+                    <h6>Admin Dashboard</h6>
+                    <a [routerLink]="['/admin']" class="btn btn-outline-dark btn-sm">Open</a>
+                  </div>
                 </div>
               </div>
             </div>

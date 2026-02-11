@@ -1,3 +1,27 @@
 .table td {
   vertical-align: middle;
 }
+
+.assessment-picker-col {
+  min-width: 0;
+}
+
+.assessment-picker {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Inline chapter controls: keep the select from crowding buttons */
+.assessment-inline-controls {
+  min-width: 0;
+}
+
+.assessment-inline-controls .assessment-picker {
+  flex: 0 0 240px;
+  width: 240px;
+  max-width: 240px;
+  min-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

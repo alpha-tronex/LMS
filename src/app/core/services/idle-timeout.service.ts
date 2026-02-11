@@ -230,8 +230,8 @@ export class IdleTimeoutService {
     // Store message for display on login page
     sessionStorage.setItem('logoutReason', 'You have been logged out due to inactivity.');
     
-    // Navigate to login page
-    this.router.navigate(['/login']);
+    // After logout, always return the user to the home page
+    this.router.navigate(['/home']);
   }
 
   /**

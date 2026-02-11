@@ -3,6 +3,8 @@ import { CoursesService } from '@core/services/courses.service';
 import { LoggerService } from '@core/services/logger.service';
 import { Course } from '@models/course';
 import { environment } from '../../environments/environment';
+import { Subscription } from 'rxjs';
+import { LoginService } from '@core/services/login-service';
 
 @Component({
     selector: 'app-home',
@@ -17,6 +19,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   welcomeShort = environment.welcomeShort;
 
+  private authSubscription?: Subscription;
+
   myCoursesLoading = false;
   myCoursesError = '';
   myCourses: Course[] = [];
@@ -25,7 +29,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private coursesService: CoursesService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private loginService: LoginService
   ) { }
 
   ngOnInit() {
@@ -37,6 +42,26 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.loggedIn) {
       this.loadMyCourses();
     }
+
+    this.authSubscription = this.loginService.authState$.subscribe((user) => {
+      const wasLoggedIn = this.loggedIn;
+      this.loggedIn = !!user;
+      this.username = user?.uname || '';
+      this.isAdmin = (user?.role || '').toLowerCase() === 'admin';
+
+      if (!this.loggedIn) {
+        this.myCoursesLoading = false;
+        this.myCoursesError = '';
+        this.myCourses = [];
+        this.enrolledCount = 0;
+        this.completedCount = 0;
+        return;
+      }
+
+      if (!wasLoggedIn) {
+        this.loadMyCourses();
+      }
+    });
   }
 
   loadMyCourses(): void {
@@ -75,6 +100,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
     // if (this.subscription) {
     //   this.subscription.unsubscribe();
     // }

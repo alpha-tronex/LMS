@@ -9,14 +9,15 @@ import {
   ViewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { LoginService } from '@core/services/login-service';
 import { environment } from '../../environments/environment';
 
 @Component({
-    selector: 'app-header',
-    templateUrl: './header.component.html',
-    styleUrls: ['./header.component.css'],
-    standalone: false
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css'],
+  standalone: false
 })
 export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription: any;
@@ -31,6 +32,9 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private removeAdminDropdownHideListener?: () => void;
 
+  private authSubscription?: Subscription;
+  private currentUser: any | null = null;
+
   // Modal state for shared alpha-tronex popup
   showPopup = false;
   popupTitle = 'Under Construction';
@@ -40,9 +44,14 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private loginService: LoginService,
     private renderer: Renderer2
-  ) { }
+  ) {}
 
-  ngOnInit() {}
+  ngOnInit(): void {
+    this.currentUser = this.getCurrentUserFromStorage();
+    this.authSubscription = this.loginService.authState$.subscribe((user) => {
+      this.currentUser = this.normalizeUser(user);
+    });
+  }
 
   ngAfterViewInit(): void {
     const wrapper = this.adminDropdownWrapper?.nativeElement;
@@ -59,24 +68,17 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getUsername(): string {
-    if (localStorage.getItem('currentUser')) {
-      return this.loginService.userName;
-    }
-    return '';
+    return this.currentUser?.uname || this.currentUser?.username || '';
   }
 
   isAdmin(): boolean {
-    if (localStorage.getItem('currentUser')) {
-      return this.loginService.isAdminOrInstructor();
-    }
-    return false;
+    const role = (this.currentUser?.role || '').toString().toLowerCase();
+    return role === 'admin' || role === 'instructor';
   }
 
   isStrictAdmin(): boolean {
-    if (localStorage.getItem('currentUser')) {
-      return this.loginService.isAdmin();
-    }
-    return false;
+    const role = (this.currentUser?.role || '').toString().toLowerCase();
+    return role === 'admin';
   }
 
   collapseNavbar(): void {
@@ -127,16 +129,20 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.coursesSubmenuOpen = false;
   }
 
-  logOff() {
+  logOff(): void {
     this.collapseNavbar();
     this.loginService.logout();
-    this.router.navigate(['home']);
+    this.router.navigate(['/home']);
   }
 
   ngOnDestroy(): void {
     if (this.removeAdminDropdownHideListener) {
       this.removeAdminDropdownHideListener();
       this.removeAdminDropdownHideListener = undefined;
+    }
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+      this.authSubscription = undefined;
     }
     // if (this.subscription) {
     //   this.subscription.unsubscribe();
@@ -161,4 +167,30 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     { name: 'Lesson Management', icon: 'fas fa-book', url: '#' },
     { name: 'Enrollment Management', icon: 'fas fa-user-check', url: '#' }
   ];
+
+  private getCurrentUserFromStorage(): any | null {
+    try {
+      const raw = localStorage.getItem('currentUser');
+      if (!raw) return null;
+      return this.normalizeUser(JSON.parse(raw));
+    } catch {
+      return null;
+    }
+  }
+
+  private normalizeUser(user: any | null): any | null {
+    if (!user) return null;
+
+    // Backward compatibility: older stored sessions used `type`.
+    if (user && !user.role && user.type) {
+      user.role = user.type;
+      try {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      } catch {
+        // ignore
+      }
+    }
+
+    return user;
+  }
 }

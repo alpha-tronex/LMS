@@ -82,9 +82,9 @@
                     <small class="text-muted" *ngIf="!getCourseMapping(course.id)">Attached: —</small>
                   </div>
 
-                  <div class="d-flex">
+                  <div class="d-flex assessment-inline-controls">
                     <select
-                      class="form-select form-select-sm me-1"
+                      class="form-select form-select-sm me-1 assessment-picker"
                       [(ngModel)]="selectedCourseAssessmentId[course.id]"
                       [disabled]="saving || availableAssessmentsLoading || course.status === 'archived'">
                       <option [ngValue]="null">— Select —</option>
