@@ -81,6 +81,9 @@ All admin pages now include the breadcrumb component at the top:
 3. Use the quick actions cards or header dropdown to navigate to specific sections
 4. The breadcrumb trail shows your current location and allows quick navigation back to parent pages
 
+### Instructor Guides
+- Assessments: see [INSTRUCTOR_ASSESSMENTS.md](./INSTRUCTOR_ASSESSMENTS.md)
+
 ### For Developers
 To add a new admin page:
 1. Create the component in the appropriate folder (`users/` or `quizzes/`)

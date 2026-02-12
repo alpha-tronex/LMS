@@ -323,14 +323,29 @@ export class EditAssessmentComponent implements OnInit, AfterViewInit {
 
     // Update assessment
     this.adminAssessmentService.uploadAssessment(quizData).subscribe({
-      next: (_response) => {
-        this.successMessage = 'Assessment updated successfully!';
+      next: (response: any) => {
+        const createdNewVersion = !!(response && response.createdNewVersion);
+        const newAssessmentId = response && response.assessmentId !== undefined ? Number(response.assessmentId) : null;
+
+        if (response && response.createdNewVersion && response.assessmentId !== undefined) {
+          this.successMessage =
+            `Assessment is attached, so a new version was created (ID: ${response.assessmentId}). ` +
+            'Attach the new ID to your course to use the updated assessment.';
+        } else {
+          this.successMessage = 'Assessment updated successfully!';
+        }
         setTimeout(() => {
-          this.router.navigate(['/admin/assessment-management']);
+          if (createdNewVersion && Number.isFinite(Number(newAssessmentId))) {
+            this.router.navigate(['/admin/course-management'], {
+              queryParams: { assessmentId: String(newAssessmentId) },
+            });
+          } else {
+            this.router.navigate(['/admin/assessment-management']);
+          }
         }, 2000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Error updating assessment';
+        this.errorMessage = (typeof error === 'string' ? error : (error && error.message)) || 'Error updating assessment';
         this.isSubmitting = false;
       }
     });

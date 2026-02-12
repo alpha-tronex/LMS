@@ -1,6 +1,7 @@
 const { verifyToken, verifyAdmin, verifyAdminOrInstructor } = require('../middleware/authMiddleware');
 const fs = require('fs');
 const path = require('path');
+const { getRole, getUserId } = require('../utils/courseAccess');
 
 function readAssessmentsFromDisk() {
   const assessmentsDir = path.join(__dirname, '../assessments');
@@ -53,10 +54,58 @@ function readAssessmentsFromDisk() {
  * Admin Assessment Routes
  * Handles assessment file operations (upload, delete) for administrators
  */
-module.exports = function (app) {
+module.exports = function (app, ContentAssessment) {
   const disableLegacy =
     String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === '1' ||
     String(process.env.DISABLE_LEGACY_QUIZZES || '').toLowerCase() === 'true';
+
+  function resolveAssessmentFilePath(assessmentId) {
+    const id = String(assessmentId);
+    const newPath = path.join(__dirname, '../assessments', `assessment_${id}.json`);
+    const legacyPath = path.join(__dirname, '../quizzes', `quiz_${id}.json`);
+    if (fs.existsSync(newPath)) return newPath;
+    if (!disableLegacy && fs.existsSync(legacyPath)) return legacyPath;
+    return null;
+  }
+
+  function readAssessmentOwner(filePath) {
+    try {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      const ownerId = parsed && parsed.ownerId ? String(parsed.ownerId) : '';
+      const ownerRole = parsed && parsed.ownerRole ? String(parsed.ownerRole) : '';
+      return { ownerId: ownerId || null, ownerRole: ownerRole || null, parsed };
+    } catch (_) {
+      return { ownerId: null, ownerRole: null, parsed: null };
+    }
+  }
+
+  async function assessmentHasAnyMappings(assessmentId) {
+    if (!ContentAssessment) return false;
+    const id = Number(assessmentId);
+    if (!Number.isFinite(id)) return false;
+    const exists = await ContentAssessment.exists({ assessmentId: id });
+    return !!exists;
+  }
+
+  function generateVersionedTitle(baseTitle, existingAssessments) {
+    const base = String(baseTitle || '').trim() || 'Untitled Assessment';
+    const existing = new Set(
+      (Array.isArray(existingAssessments) ? existingAssessments : [])
+        .map((a) => (a && a.title ? String(a.title).toLowerCase() : ''))
+        .filter((t) => t.length > 0)
+    );
+
+    if (!existing.has(base.toLowerCase())) return base;
+
+    for (let v = 2; v <= 50; v++) {
+      const candidate = `${base} (v${v})`;
+      if (!existing.has(candidate.toLowerCase())) return candidate;
+    }
+
+    // Fallback (extremely unlikely)
+    return `${base} (${Date.now()})`;
+  }
 
   // Upload assessment (admin or instructor)
   app
@@ -64,6 +113,9 @@ module.exports = function (app) {
     .post(verifyToken, verifyAdminOrInstructor, async (req, res) => {
       try {
         const assessmentData = req.body;
+
+        const requesterRole = getRole(req);
+        const requesterId = getUserId(req);
 
         // Validate required fields (ID will be auto-assigned)
         if (!assessmentData.title) {
@@ -143,13 +195,91 @@ module.exports = function (app) {
 
         const existingIds = existingAssessments.map((a) => a.id);
 
-        // Determine assessment ID
+        const nowIso = new Date().toISOString();
+
+        const isUpdateRequest = assessmentData.id !== undefined && assessmentData.id !== null;
+        const requestedId = isUpdateRequest ? Number(assessmentData.id) : null;
+
+        // Determine assessment ID / behavior
         let newId;
-        if (assessmentData.id !== undefined) {
-          // If ID is provided, use it (this is an update operation)
-          newId = assessmentData.id;
+        let createdNewVersion = false;
+        let previousAssessmentId = null;
+
+        if (isUpdateRequest) {
+          if (!Number.isFinite(requestedId) || requestedId < 0) {
+            return res.status(400).json({ error: 'Invalid assessment id' });
+          }
+
+          const existingPath = resolveAssessmentFilePath(String(requestedId));
+
+          if (!existingPath) {
+            // Do not allow instructors to "claim" arbitrary IDs.
+            if (requesterRole !== 'admin') {
+              return res.status(404).json({ error: 'Assessment not found' });
+            }
+          }
+
+          if (existingPath) {
+            const { ownerId } = readAssessmentOwner(existingPath);
+
+            // Legacy/shared assessments without an owner are admin-owned.
+            if (!ownerId && requesterRole !== 'admin') {
+              return res.status(403).json({ error: 'Access denied. Only admins can edit shared assessments.' });
+            }
+
+            if (requesterRole !== 'admin') {
+              if (!requesterId) {
+                return res.status(403).json({ error: 'Access denied.' });
+              }
+              if (String(ownerId) !== String(requesterId)) {
+                return res.status(403).json({ error: 'Access denied. You can only edit your own assessments.' });
+              }
+            }
+
+            const attached = await assessmentHasAnyMappings(requestedId);
+            if (attached && requesterRole === 'instructor') {
+              // Versioning: do not mutate an attached assessment. Create a new one.
+              existingIds.sort((a, b) => a - b);
+              newId = 0;
+              for (let i = 0; i < existingIds.length; i++) {
+                if (existingIds[i] !== newId) break;
+                newId++;
+              }
+
+              createdNewVersion = true;
+              previousAssessmentId = requestedId;
+              assessmentData.id = newId;
+              assessmentData.basedOnAssessmentId = previousAssessmentId;
+              assessmentData.ownerId = requesterId || null;
+              assessmentData.ownerRole = requesterRole || null;
+              assessmentData.createdAt = nowIso;
+              assessmentData.updatedAt = nowIso;
+
+              // Ensure title is unique (original title will collide).
+              assessmentData.title = generateVersionedTitle(assessmentData.title, existingAssessments);
+
+              const versionPath = path.join(assessmentsDir, `assessment_${newId}.json`);
+              fs.writeFileSync(versionPath, JSON.stringify(assessmentData, null, 2), 'utf8');
+
+              console.log(
+                `Assessment version created: ${assessmentData.title} (ID: ${newId}, based on ${previousAssessmentId})`
+              );
+
+              return res.status(201).json({
+                message:
+                  'Assessment is attached to course content and cannot be modified in place. A new version was created.',
+                assessmentId: newId,
+                previousAssessmentId,
+                createdNewVersion: true,
+                title: assessmentData.title,
+              });
+            }
+          }
+
+          // Safe to overwrite (not attached, or admin override).
+          newId = requestedId;
         } else {
-          // If no ID provided, auto-assign using lowest available ID (new assessment)
+          // New assessment
           existingIds.sort((a, b) => a - b);
           newId = 0;
           for (let i = 0; i < existingIds.length; i++) {
@@ -159,6 +289,20 @@ module.exports = function (app) {
             newId++;
           }
         }
+
+        // Ownership metadata
+        if (requesterId) {
+          assessmentData.ownerId = assessmentData.ownerId || String(requesterId);
+        }
+        if (requesterRole) {
+          assessmentData.ownerRole = assessmentData.ownerRole || String(requesterRole);
+        }
+
+        // Timestamp metadata (harmless for student runtime)
+        if (!assessmentData.createdAt) {
+          assessmentData.createdAt = nowIso;
+        }
+        assessmentData.updatedAt = nowIso;
 
         assessmentData.id = newId;
         const filePath = path.join(assessmentsDir, `assessment_${newId}.json`);
@@ -172,6 +316,8 @@ module.exports = function (app) {
           message: 'Assessment uploaded successfully',
           assessmentId: newId,
           title: assessmentData.title,
+          createdNewVersion: !!createdNewVersion,
+          previousAssessmentId,
         });
       } catch (err) {
         console.log('Assessment upload error:', err);
@@ -196,14 +342,38 @@ module.exports = function (app) {
     .delete(verifyToken, verifyAdminOrInstructor, async (req, res) => {
       try {
         const assessmentId = req.params.assessmentId;
-        const newPath = path.join(__dirname, '../assessments', `assessment_${assessmentId}.json`);
-        const legacyPath = path.join(__dirname, '../quizzes', `quiz_${assessmentId}.json`);
-        const assessmentFilePath = fs.existsSync(newPath)
-          ? newPath
-          : (!disableLegacy && fs.existsSync(legacyPath) ? legacyPath : null);
+        const assessmentFilePath = resolveAssessmentFilePath(assessmentId);
 
         if (!assessmentFilePath) {
           return res.status(404).json({ error: 'Assessment file not found' });
+        }
+
+        const role = getRole(req);
+        const userId = getUserId(req);
+
+        const attached = await assessmentHasAnyMappings(assessmentId);
+        if (attached && role !== 'admin') {
+          return res.status(409).json({ error: 'Cannot delete: assessment is attached to course content.' });
+        }
+
+        if (role !== 'admin') {
+          const { ownerId } = readAssessmentOwner(assessmentFilePath);
+          if (!ownerId) {
+            return res.status(403).json({ error: 'Access denied. Only admins can delete shared assessments.' });
+          }
+          if (!userId || String(ownerId) !== String(userId)) {
+            return res.status(403).json({ error: 'Access denied. You can only delete your own assessments.' });
+          }
+          if (attached) {
+            return res.status(409).json({ error: 'Cannot delete: assessment is attached to course content.' });
+          }
+        } else {
+          const force = String(req.query && req.query.force || '').toLowerCase();
+          if (attached && force !== '1' && force !== 'true') {
+            return res.status(409).json({
+              error: 'Cannot delete: assessment is attached to course content. Detach it first, or retry with ?force=true.',
+            });
+          }
         }
 
         fs.unlinkSync(assessmentFilePath);
@@ -221,8 +391,16 @@ module.exports = function (app) {
   // Delete all assessment files (admin or instructor)
   app
     .route('/api/admin/assessment-files/all')
-    .delete(verifyToken, verifyAdminOrInstructor, async (req, res) => {
+    .delete(verifyToken, verifyAdmin, async (req, res) => {
       try {
+        const force = String(req.query && req.query.force || '').toLowerCase();
+        const anyMappings = ContentAssessment ? await ContentAssessment.exists({}) : false;
+        if (anyMappings && force !== '1' && force !== 'true') {
+          return res.status(409).json({
+            error: 'Cannot delete all assessment files while content-assessment mappings exist. Detach/cleanup mappings first, or retry with ?force=true.',
+          });
+        }
+
         const assessmentsDir = path.join(__dirname, '../assessments');
         const legacyDir = path.join(__dirname, '../quizzes');
 
@@ -262,17 +440,38 @@ module.exports = function (app) {
   // Delete assessment by ID (admin or instructor) - Alternative endpoint
   app
     .route('/api/assessment/delete/:id')
-    .delete(verifyToken, verifyAdminOrInstructor, (req, res) => {
+    .delete(verifyToken, verifyAdminOrInstructor, async (req, res) => {
       try {
         const assessmentId = req.params.id;
-        const newPath = path.join(__dirname, '../assessments', `assessment_${assessmentId}.json`);
-        const legacyPath = path.join(__dirname, '../quizzes', `quiz_${assessmentId}.json`);
-        const filePath = fs.existsSync(newPath)
-          ? newPath
-          : (!disableLegacy && fs.existsSync(legacyPath) ? legacyPath : null);
+        const filePath = resolveAssessmentFilePath(assessmentId);
 
         if (!filePath) {
           return res.status(404).json({ error: 'Assessment not found' });
+        }
+
+        const role = getRole(req);
+        const userId = getUserId(req);
+
+        const attached = await assessmentHasAnyMappings(assessmentId);
+
+        if (role !== 'admin') {
+          const { ownerId } = readAssessmentOwner(filePath);
+          if (!ownerId) {
+            return res.status(403).json({ error: 'Access denied. Only admins can delete shared assessments.' });
+          }
+          if (!userId || String(ownerId) !== String(userId)) {
+            return res.status(403).json({ error: 'Access denied. You can only delete your own assessments.' });
+          }
+          if (attached) {
+            return res.status(409).json({ error: 'Cannot delete: assessment is attached to course content.' });
+          }
+        } else {
+          const force = String(req.query && req.query.force || '').toLowerCase();
+          if (attached && force !== '1' && force !== 'true') {
+            return res.status(409).json({
+              error: 'Cannot delete: assessment is attached to course content. Detach it first, or retry with ?force=true.',
+            });
+          }
         }
 
         fs.unlinkSync(filePath);

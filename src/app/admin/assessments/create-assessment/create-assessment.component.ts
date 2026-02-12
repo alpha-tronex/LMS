@@ -201,7 +201,7 @@ getInstructions(questionType: QuestionType): string {
         }, 2000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Error creating assessment';
+        this.errorMessage = (typeof error === 'string' ? error : (error && error.message)) || 'Error creating assessment';
         this.isSubmitting = false;
       }
     });

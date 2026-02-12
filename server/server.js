@@ -103,7 +103,7 @@ courseSurveyRoutes(app, Course, Lesson, Chapter, ChapterProgress, ContentAssessm
 
 // Setup admin routes
 adminUserRoutes(app, User);
-adminAssessmentRoutes(app);
+adminAssessmentRoutes(app, ContentAssessment);
 adminContentAssessmentRoutes(app, Course, Lesson, Chapter, ContentAssessment);
 adminCourseRoutes(app, Course, User);
 adminCourseDataRoutes(app, Course, Enrollment, Lesson, Chapter, ChapterProgress, ContentAssessment, CourseSurvey, User);

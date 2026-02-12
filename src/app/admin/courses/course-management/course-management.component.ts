@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { AdminCourse, AdminCourseService } from '@admin/services/admin-course.service';
 import { AdminAssessmentService } from '@admin/services/admin-assessment.service';
 import {
@@ -41,10 +42,13 @@ export class CourseManagementComponent implements OnInit {
   archivedCourseMappingsByCourseId = new Map<string, AdminContentAssessmentMapping[]>();
   selectedCourseAssessmentId: Record<string, number | null> = {};
 
+  private prefillAssessmentId: number | null = null;
+
   constructor(
     private adminCourseService: AdminCourseService,
     private adminContentService: AdminContentService,
     private adminAssessmentService: AdminAssessmentService,
+    private route: ActivatedRoute,
     private logger: LoggerService
   ) {}
 
@@ -86,6 +90,10 @@ export class CourseManagementComponent implements OnInit {
       this.loading = false;
       return;
     }
+
+    const prefillRaw = this.route.snapshot.queryParamMap.get('assessmentId');
+    const prefill = prefillRaw !== null ? Number(prefillRaw) : null;
+    this.prefillAssessmentId = Number.isFinite(Number(prefill)) ? Number(prefill) : null;
 
     this.loadAvailableAssessments();
     this.loadCourseAssessmentMappings();
@@ -275,6 +283,20 @@ export class CourseManagementComponent implements OnInit {
     this.adminCourseService.listCourses().subscribe({
       next: (courses) => {
         this.courses = courses || [];
+
+        if (this.prefillAssessmentId !== null) {
+          for (const course of this.courses) {
+            if (!course || course.status === 'archived') continue;
+            if (!this.canEditCourse(course)) continue;
+            this.selectedCourseAssessmentId[String(course.id)] = this.prefillAssessmentId;
+          }
+
+          this.messageType = 'success';
+          this.message =
+            `New assessment version created (ID: ${this.prefillAssessmentId}). ` +
+            'Select a course row and click Attach to apply it.';
+        }
+
         this.loading = false;
       },
       error: (err) => {
